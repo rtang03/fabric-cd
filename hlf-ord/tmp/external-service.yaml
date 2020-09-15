@@ -1,0 +1,74 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o0--se
+  namespace: n0
+spec:
+  hosts:
+  - orderer0.org0.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: NONE
+  location: MESH_INTERNAL
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o1--se
+  namespace: n0
+spec:
+  hosts:
+    - orderer1.org0.com
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: NONE
+  location: MESH_INTERNAL
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o2--se
+  namespace: n0
+spec:
+  hosts:
+    - orderer2.org0.com
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: NONE
+  location: MESH_INTERNAL
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o3--se
+  namespace: n0
+spec:
+  hosts:
+    - orderer3.org0.com
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: NONE
+  location: MESH_INTERNAL
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o4--se
+  namespace: n0
+spec:
+  hosts:
+    - orderer4.org0.com
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: NONE
+  location: MESH_INTERNAL

@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "hlf-ca.fullname" . }}--vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ include "hlf-ca.fullname" . }}
+  http:
+    - match:
+      - port: 7054
+      route:
+        - destination:
+            host: {{ include "hlf-ca.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 7054
+    - match:
+      - port: 9443
+      route:
+      - destination:
+          host: {{ include "hlf-ca.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+          port:
+            number: 9443
