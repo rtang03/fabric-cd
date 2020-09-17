@@ -45,13 +45,13 @@ postgresql-0:
   postgresqlPassword: password
   service:
     type: NodePort
-    nodePort: 30432
-  master:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-  slave:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
+    nodePort: 31432
+#  master:
+#    podAnnotations:
+#      sidecar.istio.io/inject: "false"
+#  slave:
+#    podAnnotations:
+#      sidecar.istio.io/inject: "false"
   persistence:
     enabled: true
     existingClaim: pvc-org0

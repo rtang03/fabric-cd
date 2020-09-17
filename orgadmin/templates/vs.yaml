@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-postgresql-0
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ .Release.Name }}-postgresql-0
+  tcp:
+    - match:
+        - port: 5432
+      route:
+        - destination:
+            host: {{ .Release.Name }}-postgresql-0.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 5432

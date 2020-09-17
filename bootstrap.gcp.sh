@@ -5,54 +5,64 @@ SECONDS=0
 ./scripts/rm-secret.n0.sh
 ./scripts/rm-secret.n1.sh
 
+kubectl -n n1 apply -f ./networking/egress.yaml
+
 helm install admin1 -n n1 -f ./releases/org1/admin1-orgadmin.gcp.yaml ./orgadmin
 printMessage "install admin1" $?
 
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/admin1-orgadmin-cli -n n1
+kubectl wait --for=condition=Available --timeout 180s deployment/admin1-orgadmin-cli -n n1
 res=$?
 set +x
 printMessage "deployment/admin1-orgadmin-cli" $res
 
-# postgres db is deployed with statefulset; of which "--wait" does not support.
-sleep 60
+set -x
+export POD_PSQL1=$(kubectl get pods -n n1 -l "app.kubernetes.io/name=postgresql-0,app.kubernetes.io/instance=admin1" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_PSQL1 -n n1
+res=$?
+set +x
+printMessage "pod/$POD_PSQL1" $res
+
+sleep 30
 
 helm install tlsca1 -n n1 -f ./releases/org1/tlsca1-hlf-ca.gcp.yaml ./hlf-ca
 printMessage "install tlsca1" $?
 
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/tlsca1-hlf-ca -n n1
+export POD_TLSCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=tlsca1" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_TLSCA1 -n n1
 res=$?
 set +x
-printMessage "deployment/tlsca1-hlf-ca" $res
-
-sleep 5
+printMessage "pod/$POD_TLSCA1" $res
 
 helm install rca1 -n n1 -f ./releases/org1/rca1-hlf-ca.gcp.yaml ./hlf-ca
 printMessage "install rca1" $?
 
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/rca1-hlf-ca -n n1
+export POD_RCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_RCA1 -n n1
 res=$?
 set +x
-printMessage "deployment/rca1-hlf-ca" $res
+printMessage "pod/$POD_RCA1" $res
 
-sleep 30
+sleep 60
 
 helm install crypto-tlsca1 -n n1 -f ./releases/org1/tlsca1-cryptogen.gcp.yaml ./cryptogen
 printMessage "install crypto-tlsca1" $?
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/crypto-tlsca1-cryptogen -n n1
+kubectl wait --for=condition=complete --timeout 180s job/crypto-tlsca1-cryptogen -n n1
 res=$?
 set +x
 printMessage "job/crypto-tlsca1-cryptogen" $res
+
+sleep 30
 
 helm install crypto-rca1 -n n1 -f ./releases/org1/rca1-cryptogen.gcp.yaml ./cryptogen
 printMessage "install crypto-rca1" $?
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/crypto-rca1-cryptogen -n n1
+kubectl wait --for=condition=complete --timeout 180s job/crypto-rca1-cryptogen -n n1
 res=$?
 set +x
 printMessage "job/crypto-rca1-cryptogen" $res
@@ -61,53 +71,60 @@ printMessage "job/crypto-rca1-cryptogen" $res
 helm install admin0 -n n0 -f ./releases/org0/admin0-orgadmin.gcp.yaml ./orgadmin
 printMessage "install admin0" $?
 
-sleep 60
-
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/admin0-orgadmin-cli -n n0
+export POD_PSQL0=$(kubectl get pods -n n0 -l "app.kubernetes.io/name=postgresql-0,app.kubernetes.io/instance=admin0" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_PSQL0 -n n0
 res=$?
 set +x
-printMessage "deployment/admin0-orgadmin-cli" $res
+printMessage "pod/$POD_PSQL0" $res
+
+sleep 30
 
 helm install tlsca0 -n n0 -f ./releases/org0/tlsca0-hlf-ca.gcp.yaml ./hlf-ca
 printMessage "install tlsca0" $?
 
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/tlsca0-hlf-ca -n n0
+export POD_TLSCA0=$(kubectl get pods -n n0 -l "app=hlf-ca,release=tlsca0" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_TLSCA0 -n n0
 res=$?
 set +x
-printMessage "deployment/tlsca0-hlf-ca" $res
+printMessage "pod/$POD_TLSCA0" $res
 
-sleep 5
+sleep 30
 
 helm install rca0 -n n0 -f ./releases/org0/rca0-hlf-ca.gcp.yaml ./hlf-ca
 printMessage "install rca0" $?
 
 set -x
-kubectl wait --for=condition=Available --timeout 60s deployment/rca0-hlf-ca -n n0
+export POD_RCA0=$(kubectl get pods -n n0 -l "app=hlf-ca,release=rca0" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_RCA0 -n n0
 res=$?
 set +x
-printMessage "deployment/rca0-hlf-ca" $res
+printMessage "pod/$POD_RCA0" $res
 
-sleep 30
+sleep 60
 
 helm install crypto-tlsca0 -n n0 -f ./releases/org0/tlsca0-cryptogen.gcp.yaml ./cryptogen
 printMessage "install crypto-tlsca0" $?
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/crypto-tlsca0-cryptogen -n n0
+kubectl wait --for=condition=complete --timeout 180s job/crypto-tlsca0-cryptogen -n n0
 res=$?
 set +x
 printMessage "job/crypto-tlsca0-cryptogen" $res
+
+sleep 30
 
 helm install crypto-rca0 -n n0 -f ./releases/org0/rca0-cryptogen.gcp.yaml ./cryptogen
 printMessage "install crypto-rca0" $?
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/crypto-rca0-cryptogen -n n0
+kubectl wait --for=condition=complete --timeout 180s job/crypto-rca0-cryptogen -n n0
 res=$?
 set +x
 printMessage "job/crypto-rca0-cryptogen" $res
+
+sleep 5
 
 # create secret
 ./scripts/create-secret.rca0.sh
@@ -178,7 +195,7 @@ printMessage "copy chaincode" $res
 
 #sleep 60
 #
-# helm install bootstrap -n n1 -f ./releases/org1/bootstrap-hlf-operator.gcp.yaml ./hlf-operator
+# helm install bootstrap -n n1 -f ./releases/org1/bootstrap-hlf-operator.gcp.yaml --dry-run --debug ./hlf-operator
 #
 #set -x
 #kubectl wait --for=condition=complete --timeout 600s job/bootstrap-hlf-operator--bootstrap -n n1

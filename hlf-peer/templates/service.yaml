@@ -10,14 +10,14 @@ spec:
     - port: {{ .Values.service.portRequest }}
       targetPort: 7051
       protocol: TCP
-      name: request
+      name: tls-request
     - port: {{ .Values.service.portEvent }}
       targetPort: 7053
       protocol: TCP
-      name: event
-    - port: 80
+      name: tls-event
+    - port: 9443
       targetPort: 9443
-      name: metrics
+      name: http-metrics
       protocol: TCP
   selector:
     app: {{ include "hlf-peer.name" . }}

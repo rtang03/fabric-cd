@@ -48,6 +48,8 @@ spec:
             - sh
             - -c
             - |
+              # wait for sidecar proxy
+              sleep 10s
               if [ -n "$DB_TYPE" ]; then
                 dockerize -wait tcp://$DB_HOST:$DB_PORT -timeout 60s && echo "Database $DB_TYPE on $DB_HOST:$DB_PORT is ready"
               fi
@@ -142,13 +144,13 @@ spec:
                 - /var/hyperledger
             initialDelaySeconds: 15
             periodSeconds: 10
-          startupProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 15
-            periodSeconds: 10
+          #startupProbe:
+          #  httpGet:
+          #    scheme: HTTP
+          #    path: /cainfo
+          #    port: 7054
+          #  initialDelaySeconds: 30
+          #  periodSeconds: 10
           volumeMounts:
             - name: data
               mountPath: /var/hyperledger

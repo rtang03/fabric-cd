@@ -10,6 +10,9 @@ spec:
   parallelism: 1
   completions: 1
   template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       restartPolicy: Never
       {{- if .Values.bootstrap.hostAlias }}
@@ -54,6 +57,7 @@ spec:
               export DIR={{ .Values.global.workingDir }}/crypto-config/channel-artifacts
           {{- if .Values.bootstrap.tasks.create_channel.enabled}}
               printHeader "Create channel"
+              sleep 2h
               echo "Fetch block to see if channel has already been created..."
               set -x
               ${BIN}/peer channel fetch 0 -c ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} -o ${ORDERER_URL} $DIR/${CHANNEL_NAME}.block

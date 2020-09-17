@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: o0-gateway
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 443
+        name: tls-o0
+        protocol: HTTPS
+      hosts:
+        - orderer0.org0.com
+      tls:
+        mode: PASSTHROUGH
+---

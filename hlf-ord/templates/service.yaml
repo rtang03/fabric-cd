@@ -10,11 +10,11 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: 7050
       protocol: TCP
-      name: request
-    - port: 80
+      name: tls-request
+    - port: 8443
       targetPort: 8443
       protocol: TCP
-      name: metrics
+      name: http-metrics
   selector:
     app: {{ include "hlf-ord.name" . }}
     release: {{ .Release.Name }}

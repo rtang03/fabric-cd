@@ -124,32 +124,34 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           workingDir: {{ include "hlf-peer.home" . }}
           ports:
-            - name: request
+            - name: tls-request
               containerPort: 7051
               protocol: TCP
-            - name: event
+            - name: tls-event
               containerPort: 7053
               protocol: TCP
-            - name: metrics
+            - name: http-metrics
               containerPort: 9443
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              scheme: HTTP
-              port: 9443
-              path: /healthz
-            initialDelaySeconds: 5
-            periodSeconds: 5
-          readinessProbe:
-            httpGet:
-              scheme: HTTP
-              port: 9443
-              path: /healthz
-            initialDelaySeconds: 15
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              scheme: HTTP*/}}
+{{/*              port: 9443*/}}
+{{/*              path: /healthz*/}}
+{{/*            initialDelaySeconds: 5*/}}
+{{/*            periodSeconds: 5*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              scheme: HTTP*/}}
+{{/*              port: 9443*/}}
+{{/*              path: /healthz*/}}
+{{/*            initialDelaySeconds: 15*/}}
           command:
             - sh
             - -c
             - |
+              # wait for sidecar proxy
+              sleep 30
               # To avoid having separate secrets for CouchDB and HLF
               export CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=$COUCHDB_USER
               export CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=$COUCHDB_PASSWORD

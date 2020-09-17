@@ -24,3 +24,6 @@ kubectl create namespace n0
 kubectl create namespace n1
 kubectl label namespace n0 istio-injection=enabled
 kubectl label namespace n1 istio-injection=enabled
+
+curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
+curl -d '{"spec":"debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec

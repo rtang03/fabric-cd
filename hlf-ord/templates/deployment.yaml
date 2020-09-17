@@ -16,6 +16,8 @@ spec:
       maxUnavailable: 1
   template:
     metadata:
+{{/*      annotations:*/}}
+{{/*        sidecar.istio.io/inject: "false"*/}}
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -93,32 +95,34 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           workingDir: {{ include "hlf-ord.home" . }}
           ports:
-            - name: request
+            - name: grpc-request
               containerPort: 7050
               protocol: TCP
-            - name: metrics
+            - name: http-metrics
               containerPort: 8443
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              port: 8443
-              scheme: HTTP
-              path: /healthz
-            initialDelaySeconds: 15
-            periodSeconds: 5
-          readinessProbe:
-            httpGet:
-              port: 8443
-              scheme: HTTP
-              path: /healthz
-            initialDelaySeconds: 15
-            periodSeconds: 5
+          # livenessProbe:
+          #   httpGet:
+          #     port: 8443
+          #     scheme: HTTP
+          #     path: /healthz
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 5
+          # readinessProbe:
+          #   httpGet:
+          #     port: 8443
+          #     scheme: HTTP
+          #     path: /healthz
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 5
           command:
             - sh
             - -c
             - |
               mkdir -p /var/hyperledger/production/deliver
               mkdir -p /var/hyperledger/production/broadcast
+              # wait for sidecar proxy
+              sleep 30
               while [ ! -d "$ORDERER_GENERAL_LOCALMSPDIR/admincerts" ] || [ -z "$(ls -A $ORDERER_GENERAL_LOCALMSPDIR/admincerts)" ];
               do
                 echo "\033[0;31m $ORDERER_GENERAL_LOCALMSPDIR/admincerts must contain Ord admin certificates files \033[0m"

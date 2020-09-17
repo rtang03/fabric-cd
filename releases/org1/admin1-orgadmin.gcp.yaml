@@ -22,9 +22,9 @@ hostAlias:
   enabled: true
   hostnames:
     - hostname: peer0.org1.net
-      ip: 35.238.254.219
+      ip: 34.121.12.3
     - hostname: orderer0.org0.com
-      ip: 35.238.254.219
+      ip: 34.121.12.3
 
 peer:
   enabled: true
@@ -55,13 +55,7 @@ postgresql-0:
   postgresqlPassword: password
   service:
     type: NodePort
-    nodePort: 30433
-  master:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-  slave:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
+    nodePort: 31433
   persistence:
     enabled: true
     existingClaim: pvc-org1
