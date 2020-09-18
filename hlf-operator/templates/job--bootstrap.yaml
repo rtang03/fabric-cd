@@ -57,7 +57,6 @@ spec:
               export DIR={{ .Values.global.workingDir }}/crypto-config/channel-artifacts
           {{- if .Values.bootstrap.tasks.create_channel.enabled}}
               printHeader "Create channel"
-              sleep 2h
               echo "Fetch block to see if channel has already been created..."
               set -x
               ${BIN}/peer channel fetch 0 -c ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} -o ${ORDERER_URL} $DIR/${CHANNEL_NAME}.block
@@ -118,8 +117,8 @@ spec:
               set +x
               printMessage "cp block" $res
               set -x
-              # jq ".channel_group.groups.Application.groups.Org1MSP.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"p0o1-hlf-peer\",\"port\":7051}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
-              jq ".channel_group.groups.Application.groups.Org1MSP.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"peer0.org1.net\",\"port\":443}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
+              jq ".channel_group.groups.Application.groups.Org1MSP.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"p0o1-hlf-peer\",\"port\":7051}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
+              # jq ".channel_group.groups.Application.groups.Org1MSP.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"peer0.org1.net\",\"port\":443}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
               res=$?
               set +x
               printMessage "jq add anchorpeer" $res

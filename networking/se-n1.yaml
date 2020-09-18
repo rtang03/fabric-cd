@@ -1,0 +1,107 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o0-hlf-ord
+  namespace: n1
+spec:
+  hosts:
+    - o0-hlf-ord
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7050
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - orderer0.org0.com
+    - o0-hlf-ord
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o1-hlf-ord
+  namespace: n1
+spec:
+  hosts:
+    - o1-hlf-ord
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7050
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - orderer1.org0.com
+    - o1-hlf-ord
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o2-hlf-ord
+  namespace: n1
+spec:
+  hosts:
+    - o2-hlf-ord
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7050
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - orderer2.org0.com
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o3-hlf-ord
+  namespace: n1
+spec:
+  hosts:
+    - o3-hlf-ord
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7050
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - orderer3.org0.com
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: o4-hlf-ord
+  namespace: n1
+spec:
+  hosts:
+    - o4-hlf-ord
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7050
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - orderer4.org0.com
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443
+

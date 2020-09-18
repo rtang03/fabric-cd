@@ -18,10 +18,10 @@ config:
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     #Eg. address: peer0.org1-example-com:7051
     address: p0o1-hlf-peer:7051
-    target: peer0.org1.net
+    target: p0o1-hlf-peer # peer0.org1.net
   orderer:
     #Provide the address for orderer
-    address: orderer0.org0.com:443
+    address: o0-hlf-ord:7050 # orderer0.org0.com:443
 
 #######################
 ### Param for bootstrap
@@ -30,13 +30,18 @@ bootstrap:
   enabled: true
   hostAlias:
     - hostnames:
-        - orderer0.org0.com
-        - orderer1.org0.com
-        - orderer2.org0.com
-        - orderer3.org0.com
-        - orderer4.org0.com
-        - peer0.org1.net
-      ip: 34.68.246.23
+        - o0-hlf-ord
+        - o1-hlf-ord
+        - o2-hlf-ord
+        - o3-hlf-ord
+        - o4-hlf-ord
+#        - orderer0.org0.com
+#        - orderer1.org0.com
+#        - orderer2.org0.com
+#        - orderer3.org0.com
+#        - orderer4.org0.com
+#        - peer0.org1.net
+      ip: 34.121.12.3
   pvcName: pvc-org1
   secret:
     tlscacert: org0-tls-ca-cert

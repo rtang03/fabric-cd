@@ -1,0 +1,21 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: p0o1-hlf-peer
+  namespace: n0
+spec:
+  hosts:
+    - p0o1-hlf-peer
+  location: MESH_EXTERNAL
+  ports:
+    - number: 7051
+      name: https
+      protocol: TLS
+  resolution: DNS
+  subjectAltNames:
+    - peer0.org1.net
+  endpoints:
+    - address: 34.121.12.3
+      ports:
+        https: 443

@@ -1,18 +1,20 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: o0
+  name: o0-hlf-ord
   namespace: n0
 spec:
   hosts:
   - orderer0.org0.com
+  - o0-hlf-ord
   gateways:
-    -  o0-gateway
+    -  o0
   tls:
   - match:
     - port: 443
       sniHosts:
         - orderer0.org0.com
+        - o0-hlf-ord
     route:
     - destination:
         host: o0-hlf-ord.n0.svc.cluster.local
@@ -30,13 +32,13 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: o1
+  name: o1-hlf-ord
   namespace: n0
 spec:
   hosts:
     - orderer1.org0.com
-#  gateways:
-#    -  o1-gateway
+  gateways:
+    -  o1
   tls:
     - match:
         - port: 443
@@ -59,13 +61,13 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: o2
+  name: o2-hlf-ord
   namespace: n0
 spec:
   hosts:
     - orderer2.org0.com
-#  gateways:
-#    -  o2-gateway
+  gateways:
+    -  o2
   tls:
     - match:
         - port: 443
@@ -88,13 +90,13 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: o3
+  name: o3-hlf-ord
   namespace: n0
 spec:
   hosts:
     - orderer3.org0.com
-#  gateways:
-#    -  o3-gateway
+  gateways:
+    -  o3
   tls:
     - match:
         - port: 443
@@ -117,13 +119,13 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: o4
+  name: o4-hlf-ord
   namespace: n0
 spec:
   hosts:
     - orderer4.org0.com
-#  gateways:
-#    -  o4-gateway
+  gateways:
+    -  o4
   tls:
     - match:
         - port: 443

@@ -27,3 +27,5 @@ kubectl label namespace n1 istio-injection=enabled
 
 curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
 curl -d '{"spec":"debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
+
+${BIN}/peer channel create -o ${ORDERER_URL} -c ${CHANNEL_NAME} -f $DIR/channeltx/channel.tx --outputBlock $DIR/${CHANNEL_NAME}.block --tls --cafile ${ORDERER_CA}

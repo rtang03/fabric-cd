@@ -61,12 +61,12 @@ logging:
 peer:
   hostAlias:
     - hostnames:
-        - orderer0.org0.com
-        - orderer1.org0.com
-        - orderer2.org0.com
-        - orderer3.org0.com
-        - orderer4.org0.com
-        - peer0.org1.net
+        - o0-hlf-ord
+        - o1-hlf-ord
+        - o2-hlf-ord
+        - o3-hlf-ord
+        - o4-hlf-ord
+#        - peer0.org1.net
       ip: 34.121.12.3
   ledgerPath: /var/hyperledger/production
   peerName: peer0

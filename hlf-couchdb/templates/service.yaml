@@ -10,7 +10,7 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: couchdb
       protocol: TCP
-      name: couchdb
+      name: http-couchdb
   selector:
     app: {{ include "hlf-couchdb.name" . }}
     release: {{ .Release.Name }}

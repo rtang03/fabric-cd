@@ -10,6 +10,8 @@ spec:
   - route:
     - destination:
         host: {{ include "hlf-ca.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 7054
         subset: v1
 ---
 apiVersion: networking.istio.io/v1alpha3
