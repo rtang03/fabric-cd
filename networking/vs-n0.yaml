@@ -8,26 +8,24 @@ spec:
   - orderer0.org0.com
   - o0-hlf-ord
   gateways:
-    -  o0
+    -  orderer0-gw
   tls:
-  - match:
-    - port: 443
-      sniHosts:
-        - orderer0.org0.com
-        - o0-hlf-ord
-    route:
-    - destination:
-        host: o0-hlf-ord.n0.svc.cluster.local
-        port:
-          number: 7050
+    - match:
+      - port: 15443
+        sniHosts:
+          - orderer0.org0.com
+      - port: 7050
+        sniHosts:
+          - o0-hlf-ord
+      route:
+      - destination:
+          host: o0-hlf-ord.n0.svc.cluster.local
+          port:
+            number: 7050
   http:
-  - match:
-    - port: 80
-    route:
+  - route:
     - destination:
         host: o0-hlf-ord.n0.svc.cluster.local
-        port:
-          number: 8443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -37,26 +35,26 @@ metadata:
 spec:
   hosts:
     - orderer1.org0.com
+    - o1-hlf-ord
   gateways:
-    -  o1
+    -  orderer1-gw
   tls:
     - match:
-        - port: 443
+        - port: 15443
           sniHosts:
             - orderer1.org0.com
+        - port: 7050
+          sniHosts:
+            - o1-hlf-ord
       route:
         - destination:
             host: o1-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
   http:
-    - match:
-        - port: 80
-      route:
+    - route:
         - destination:
             host: o1-hlf-ord.n0.svc.cluster.local
-            port:
-              number: 8443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -66,26 +64,26 @@ metadata:
 spec:
   hosts:
     - orderer2.org0.com
+    - o2-hlf-ord
   gateways:
-    -  o2
+    -  orderer2-gw
   tls:
     - match:
-        - port: 443
+        - port: 15443
           sniHosts:
             - orderer2.org0.com
+        - port: 7050
+          sniHosts:
+            - o2-hlf-ord
       route:
         - destination:
             host: o2-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
   http:
-    - match:
-        - port: 80
-      route:
+    - route:
         - destination:
             host: o2-hlf-ord.n0.svc.cluster.local
-            port:
-              number: 8443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -95,26 +93,26 @@ metadata:
 spec:
   hosts:
     - orderer3.org0.com
+    - o3-hlf-ord
   gateways:
-    -  o3
+    -  orderer3-gw
   tls:
     - match:
-        - port: 443
+        - port: 15443
           sniHosts:
             - orderer3.org0.com
+        - port: 7050
+          sniHosts:
+            - o3-hlf-ord
       route:
         - destination:
             host: o3-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
   http:
-    - match:
-        - port: 80
-      route:
+    - route:
         - destination:
             host: o3-hlf-ord.n0.svc.cluster.local
-            port:
-              number: 8443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -124,24 +122,24 @@ metadata:
 spec:
   hosts:
     - orderer4.org0.com
+    - o4-hlf-ord
   gateways:
-    -  o4
+    -  orderer4-gw
   tls:
     - match:
-        - port: 443
+        - port: 15443
           sniHosts:
             - orderer4.org0.com
+        - port: 7050
+          sniHosts:
+            - o4-hlf-ord
       route:
         - destination:
             host: o4-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
   http:
-    - match:
-        - port: 80
-      route:
+    - route:
         - destination:
             host: o4-hlf-ord.n0.svc.cluster.local
-            port:
-              number: 8443
 ---
