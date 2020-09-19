@@ -1,90 +1,89 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: o0
+  name: orderer0-gw
   namespace: n0
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-o0
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - orderer0.org0.com
+        - "orderer0.org0.com"
       tls:
         mode: PASSTHROUGH
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: o1
+  name: orderer1-gw
   namespace: n0
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-o1
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - orderer1.org0.com
+        - "orderer1.org0.com"
       tls:
         mode: PASSTHROUGH
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: o2
+  name: orderer2-gw
   namespace: n0
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-o2
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - orderer2.org0.com
+        - "orderer2.org0.com"
       tls:
         mode: PASSTHROUGH
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: o3
+  name: orderer3-gw
   namespace: n0
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-o3
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - orderer3.org0.com
+        - "orderer3.org0.com"
       tls:
         mode: PASSTHROUGH
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: o4
+  name: orderer4-gw
   namespace: n0
 spec:
   selector:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-o4
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - orderer4.org0.com
+        - "orderer4.org0.com"
       tls:
         mode: PASSTHROUGH
----

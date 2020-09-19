@@ -11,7 +11,7 @@ spec:
       targetPort: 7050
       protocol: TCP
       name: tls-request
-    - port: 8443
+    - port: 80
       targetPort: 8443
       protocol: TCP
       name: http-metrics

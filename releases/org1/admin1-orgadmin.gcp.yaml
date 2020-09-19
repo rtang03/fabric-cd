@@ -22,9 +22,9 @@ hostAlias:
   enabled: true
   hostnames:
     - hostname: peer0.org1.net
-      ip: 34.121.12.3
+      ip: 35.202.107.80
     - hostname: orderer0.org0.com
-      ip: 34.121.12.3
+      ip: 35.202.107.80
 
 peer:
   enabled: true
@@ -53,6 +53,14 @@ postgresql-0:
   #   CREATE DATABASE "tls_ca_db";
   #   CREATE DATABASE "rca_db";
   postgresqlPassword: password
+  master:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
+  slave:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
   service:
     type: NodePort
     nodePort: 31433

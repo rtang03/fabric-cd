@@ -21,7 +21,7 @@ config:
     target: p0o1-hlf-peer # peer0.org1.net
   orderer:
     #Provide the address for orderer
-    address: o0-hlf-ord:7050 # orderer0.org0.com:443
+    address: orderer0.org0.com:15443
 
 #######################
 ### Param for bootstrap
@@ -30,18 +30,9 @@ bootstrap:
   enabled: true
   hostAlias:
     - hostnames:
-        - o0-hlf-ord
-        - o1-hlf-ord
-        - o2-hlf-ord
-        - o3-hlf-ord
-        - o4-hlf-ord
-#        - orderer0.org0.com
-#        - orderer1.org0.com
-#        - orderer2.org0.com
-#        - orderer3.org0.com
-#        - orderer4.org0.com
-#        - peer0.org1.net
-      ip: 34.121.12.3
+        - peer0.org1.net
+        - orderer0.org0.com
+      ip: 35.202.107.80
   pvcName: pvc-org1
   secret:
     tlscacert: org0-tls-ca-cert
@@ -76,22 +67,24 @@ bootstrap:
     commit_chaincode:
       enabled: true
       targets:
-        - peerAddress: p0o1-hlf-peer:7051
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
+#        - peerAddress: p0o1-hlf-peer:7051
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+#          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
     querycommitted:
       enabled: true
       targets:
-        - peerAddress: p0o1-hlf-peer:7051
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     init_chaincode:
       enabled: true
       targets:
-        - peerAddress: p0o1-hlf-peer:7051
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     dev_invoke:
       enabled: true
       targets:
-        - peerAddress: p0o1-hlf-peer:7051
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     dev_query:
       enabled: true

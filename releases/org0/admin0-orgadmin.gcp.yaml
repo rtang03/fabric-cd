@@ -46,10 +46,16 @@ postgresql-0:
   service:
     type: NodePort
     nodePort: 31432
-#  master:
+  master:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
 #    podAnnotations:
 #      sidecar.istio.io/inject: "false"
-#  slave:
+  slave:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
 #    podAnnotations:
 #      sidecar.istio.io/inject: "false"
   persistence:

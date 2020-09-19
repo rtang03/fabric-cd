@@ -19,16 +19,16 @@ spec:
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
-      # {{- if .Values.peer.hostAlias }}
-      # hostAliases:
-      #   {{- range .Values.peer.hostAlias }}
-      #   - hostnames:
-      #       {{- range .hostnames }}
-      #       - {{ . }}
-      #     {{- end }}
-      #     ip: {{ .ip }}
-      # {{- end }}
-      # {{- end }}
+      {{- if .Values.peer.hostAlias }}
+      hostAliases:
+        {{- range .Values.peer.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+          {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
       volumes:
         - name: data
         {{- if .Values.persistence.enabled }}
@@ -126,6 +126,9 @@ spec:
           ports:
             - name: tls-request
               containerPort: 7051
+              protocol: TCP
+            - name: tls-chaincode
+              containerPort: 7052
               protocol: TCP
             - name: tls-event
               containerPort: 7053

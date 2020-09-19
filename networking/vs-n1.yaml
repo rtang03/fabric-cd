@@ -11,20 +11,18 @@ spec:
     -  p0o1-gateway
   tls:
     - match:
-        - port: 443
+        - port: 15443
           sniHosts:
             - peer0.org1.net
+        - port: 7051
+          sniHosts:
             - p0o1-hlf-peer
       route:
         - destination:
             host: p0o1-hlf-peer.n1.svc.cluster.local
             port:
               number: 7051
-#  http:
-#    - match:
-#        - port: 80
-#      route:
-#        - destination:
-#            host: p0o1-hlf-peer.n1.svc.cluster.local
-#            port:
-#              number: 8443
+  http:
+    - route:
+        - destination:
+            host: p0o1-hlf-peer.n1.svc.cluster.local

@@ -5,7 +5,7 @@ metadata:
   labels:
 {{ include "labels.standard" . | indent 4 }}
 data:
-  CORE_PEER_ADDRESSAUTODETECT: "false"
+  CORE_PEER_ADDRESSAUTODETECT: "true"
   CORE_PEER_ID: {{ include "hlf-peer.fullname" . }}
   CORE_PEER_NETWORKID: nid1
   # If we have an ingress, we set hostname to it
@@ -40,7 +40,7 @@ data:
   # Gossip #
   ##########
   CORE_PEER_GOSSIP_BOOTSTRAP: {{ .Values.peer.gossip.bootstrap | quote }}
-  # CORE_PEER_GOSSIP_ENDPOINT: {{ .Values.peer.gossip.endpoint | quote }}
+  CORE_PEER_GOSSIP_ENDPOINT: {{ .Values.peer.gossip.endpoint | quote }}
   CORE_PEER_GOSSIP_EXTERNALENDPOINT: {{ .Values.peer.gossip.externalEndpoint | quote }}
   CORE_PEER_GOSSIP_ORGLEADER: {{ .Values.peer.gossip.orgLeader | quote }}
   CORE_PEER_GOSSIP_USELEADERELECTION: {{ .Values.peer.gossip.useLeaderElection | quote }}

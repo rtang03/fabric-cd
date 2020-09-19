@@ -6,16 +6,11 @@ metadata:
   namespace: n0
 spec:
   hosts:
-    - p0o1-hlf-peer
+    - peer0.org1.net
   location: MESH_EXTERNAL
   ports:
-    - number: 7051
+    - number: 15443
       name: https
       protocol: TLS
-  resolution: DNS
-  subjectAltNames:
-    - peer0.org1.net
-  endpoints:
-    - address: 34.121.12.3
-      ports:
-        https: 443
+  resolution: NONE
+

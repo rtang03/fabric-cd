@@ -8,11 +8,11 @@ spec:
     istio: ingressgateway # use istio default controller
   servers:
     - port:
-        number: 443
-        name: tls-p0o1
-        protocol: HTTPS
+        number: 15443
+        name: tls
+        protocol: TLS
       hosts:
-        - peer0.org1.net
+        - "peer0.org1.net"
       tls:
         mode: PASSTHROUGH
 ---

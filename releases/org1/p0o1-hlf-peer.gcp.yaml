@@ -61,13 +61,12 @@ logging:
 peer:
   hostAlias:
     - hostnames:
-        - o0-hlf-ord
-        - o1-hlf-ord
-        - o2-hlf-ord
-        - o3-hlf-ord
-        - o4-hlf-ord
-#        - peer0.org1.net
-      ip: 34.121.12.3
+        - orderer0.org0.com
+        - orderer1.org0.com
+        - orderer2.org0.com
+        - orderer3.org0.com
+        - orderer4.org0.com
+      ip: 35.202.107.80
   ledgerPath: /var/hyperledger/production
   peerName: peer0
   # orgPath: /var/hyperledger/crypto-config/Org1MSP
@@ -83,7 +82,7 @@ peer:
   gossip:
     bootstrap: "p0o1-hlf-peer:7051"
     endpoint: "p0o1-hlf-peer:7051"
-    externalEndpoint: "p0o1-hlf-peer:7051"
+    externalEndpoint: "peer0.org1.net:15443"
     orgLeader: "true"
     useLeaderElection: "false"
   tls:
