@@ -64,3 +64,12 @@ ${BIN}/peer lifecycle chaincode commit \
 --peerAddresses peer0.org1.net:15443 \
 --tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem \
 --waitForEvent
+
+${BIN}/peer chaincode invoke --isInit \
+-o ${ORDERER_URL} -C ${CHANNEL_NAME} \
+--tls --cafile ${ORDERER_CA} \
+--name eventstore \
+-c "{\"Args\":[\"Init\"]}" \
+--peerAddresses p0o1-hlf-peer:7051 \
+--tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
+--waitForEvent

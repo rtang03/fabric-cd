@@ -22,6 +22,15 @@ spec:
             host: p0o1-hlf-peer.n1.svc.cluster.local
             port:
               number: 7051
+    - match:
+        - port: 7052
+          sniHosts:
+            - p0o1-hlf-peer
+      route:
+        - destination:
+            host: p0o1-hlf-peer.n1.svc.cluster.local
+            port:
+              number: 7052
   http:
     - route:
         - destination:

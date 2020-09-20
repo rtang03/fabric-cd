@@ -11,6 +11,10 @@ spec:
       targetPort: 7051
       protocol: TCP
       name: tls-request
+    - port: 7052
+      targetPort: 7052
+      protocol: TCP
+      name: tls-chaincode
     - port: {{ .Values.service.portEvent }}
       targetPort: 7053
       protocol: TCP
