@@ -186,7 +186,7 @@ export POD_CLI1=$(kubectl get pods --namespace n1 -l "app=orgadmin,release=admin
 preventEmptyValue "pod unavailable" $POD_CLI1
 
 set -x
-kubectl -n n1 cp ./chaincode $POD_CLI1:./channel-artifacts
+kubectl -n n1 cp ./chaincode/marbles $POD_CLI1:./channel-artifacts
 res=$?
 set +x
 printMessage "copy chaincode" $res

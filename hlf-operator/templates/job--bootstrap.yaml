@@ -157,6 +157,7 @@ spec:
               set +x
               printMessage "send update_envelope proposal" $res
               cat $DIR/log-updateanchorpeer.txt
+              sleep 4h
           {{- end }}
           {{- if .Values.bootstrap.tasks.package_chaincode.enabled }}
               printHeader "package chaincode"

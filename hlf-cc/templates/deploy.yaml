@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hlf-cc.fullname" . }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "hlf-cc.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+{{ include "labels.standard" . | indent 8 }}
+    spec:
+      containers:
+        - image: chaincode/marbles:1.0
+          name: chaincode-marbles-org1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7052
+          env:
+            - name: CHAINCODE_CCID
+              value: {{ .Values.ccid }}
+            - name: CHAINCODE_ADDRESS
+              value: "0.0.0.0:7052"

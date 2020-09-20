@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hlf-cc.fullname" . }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: gprc
+      port: 7052
+      protocol: TCP
+      targetPort: 7052
+  selector:
+    app: {{ include "hlf-cc.name" . }}
+    release: {{ .Release.Name }}

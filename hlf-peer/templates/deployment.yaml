@@ -10,7 +10,6 @@ spec:
     matchLabels:
       app: {{ include "hlf-peer.name" . }}
       release: {{ .Release.Name }}
-  # Ensure we allow our pod to be unavailable, so we can upgrade
   strategy:
     rollingUpdate:
       maxUnavailable: 1
@@ -48,6 +47,33 @@ spec:
               - key: .dockerconfigjson
                 path: config.json
         {{- end }}
+        - name: core-yaml
+          configMap:
+            name: {{ include "hlf-peer.fullname" . }}--ccbin
+            items:
+              - key: core.yaml
+                path: core.yaml
+        - name: external-builder-detect
+          configMap:
+            name: {{ include "hlf-peer.fullname" . }}--ccbin
+            items:
+              - key: detect
+                path: detect
+                mode: 0544
+        - name: external-builder-build
+          configMap:
+            name: {{ include "hlf-peer.fullname" . }}--ccbin
+            items:
+              - key: build
+                path: build
+                mode: 0544
+        - name: external-builder-release
+          configMap:
+            name: {{ include "hlf-peer.fullname" . }}--ccbin
+            items:
+              - key: release
+                path: release
+                mode: 0544
         {{- if .Values.secrets.peer.cert }}
         - name: id-cert
           secret:
@@ -170,12 +196,12 @@ spec:
                 sleep 60
               done
 
-              if [ ! -d ${FABRIC_CFG_PATH} ]
-              then
-                mkdir -p ${FABRIC_CFG_PATH}
-                cp -r /etc/hyperledger/fabric/core.yaml ${FABRIC_CFG_PATH}
-                ls ${FABRIC_CFG_PATH}
-              fi
+              # if [ ! -d ${FABRIC_CFG_PATH} ]
+              # then
+              #   mkdir -p ${FABRIC_CFG_PATH}
+              #   cp -r /etc/hyperledger/fabric/core.yaml ${FABRIC_CFG_PATH}
+              #   ls ${FABRIC_CFG_PATH}
+              # fi
 
               if [ $CORE_PEER_TLS_CLIENTAUTHREQUIRED ]
               then
@@ -200,6 +226,18 @@ spec:
             - name: docker-config
               mountPath: {{ .Values.dockerConfigMountPath }}
             {{ end }}
+            - mountPath: /etc/hyperledger/fabric/core.yaml
+              name: core-yaml
+              subPath: core.yaml
+            - mountPath: /builders/external/bin/detect
+              name: external-builder-detect
+              subPath: detect
+            - mountPath: /builders/external/bin/build
+              name: external-builder-build
+              subPath: build
+            - mountPath: /builders/external/bin/release
+              name: external-builder-release
+              subPath: release
             {{- if .Values.secrets.peer.cert }}
             - mountPath: {{ include "hlf-peer.home" . }}/msp/signcerts
               name: id-cert
