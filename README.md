@@ -74,9 +74,10 @@ ${BIN}/peer chaincode invoke --isInit \
 marbles:3640833b936bbb810e95c12f24adda9e359e92ef597ab574d95d0ed26f6812a3
 marbles:de64932abe3333bb07079bc6e4011c38fc81b0bfec28edc53cf7cf9d4f12e6a0
 marbles:2941de82bc0eeea939175773112f3063e46ea33a6a4b6b72ee1993cc26272d32
+marbles:b0a0e61cd96359dc9ae21f6a219a9bd118c5e3ed35ae4ae690f48f3a74c15d29
 
 $BIN/peer lifecycle chaincode approveformyorg -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \
- --package-id marbles:2941de82bc0eeea939175773112f3063e46ea33a6a4b6b72ee1993cc26272d32 --sequence 1 \
+ --package-id marbles:b0a0e61cd96359dc9ae21f6a219a9bd118c5e3ed35ae4ae690f48f3a74c15d29 --sequence 1 \
  -o ${ORDERER_URL} --tls --cafile $ORDERER_CA
 
 $BIN/peer lifecycle chaincode checkcommitreadiness -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \

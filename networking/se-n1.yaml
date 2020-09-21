@@ -12,13 +12,6 @@ spec:
       name: https
       protocol: TLS
   resolution: NONE
-#  subjectAltNames:
-#    - orderer0.org0.com
-#    - o0-hlf-ord
-#  endpoints:
-#    - address: 34.123.134.89
-#      ports:
-#        https: 15443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry

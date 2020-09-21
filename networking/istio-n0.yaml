@@ -1,31 +1,136 @@
 apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: orderer0-gw
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      hosts:
+        - "orderer0.org0.com"
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: orderer1-gw
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      hosts:
+        - "orderer1.org0.com"
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: orderer2-gw
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      hosts:
+        - "orderer2.org0.com"
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: orderer3-gw
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      hosts:
+        - "orderer3.org0.com"
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: orderer4-gw
+  namespace: n0
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      hosts:
+        - "orderer4.org0.com"
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: p0o1-hlf-peer
+  namespace: n0
+spec:
+  hosts:
+    - peer0.org1.net
+  location: MESH_EXTERNAL
+  ports:
+    - number: 15443
+      name: https
+      protocol: TLS
+  resolution: NONE
+---
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: o0-hlf-ord
   namespace: n0
 spec:
   hosts:
-  - orderer0.org0.com
-  - o0-hlf-ord
+    - orderer0.org0.com
+    - o0-hlf-ord
   gateways:
     -  orderer0-gw
   tls:
     - match:
-      - port: 15443
-        sniHosts:
-          - orderer0.org0.com
-      - port: 7050
-        sniHosts:
-          - o0-hlf-ord
+        - port: 15443
+          sniHosts:
+            - orderer0.org0.com
+        - port: 7050
+          sniHosts:
+            - o0-hlf-ord
       route:
-      - destination:
-          host: o0-hlf-ord.n0.svc.cluster.local
-          port:
-            number: 7050
+        - destination:
+            host: o0-hlf-ord.n0.svc.cluster.local
+            port:
+              number: 7050
   http:
-  - route:
-    - destination:
-        host: o0-hlf-ord.n0.svc.cluster.local
+    - route:
+        - destination:
+            host: o0-hlf-ord.n0.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

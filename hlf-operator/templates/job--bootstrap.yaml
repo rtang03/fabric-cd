@@ -52,7 +52,7 @@ spec:
               . /script/setup.sh
               apk update
               apk upgrade
-              apk --no-cache add libc6-compat libstdc++ jq
+              apk --no-cache add libc6-compat libstdc++ jq tzdata
               ./bin/peer version
               export DIR={{ .Values.global.workingDir }}/crypto-config/channel-artifacts
           {{- if .Values.bootstrap.tasks.create_channel.enabled}}
@@ -162,8 +162,8 @@ spec:
               cd /var/hyperledger/crypto-config/channel-artifacts/marbles/packaging
               tar cfz code.tar.gz connection.json
               tar cfz marbles-org1.tgz code.tar.gz metadata.json
-              sleep 5h
               printHeader "package chaincode"
+              sleep 3h
               set -x
               ${BIN}/peer lifecycle chaincode package $DIR/{{ .Values.bootstrap.chaincode.id }}.tar.gz --path $DIR/chaincode --lang {{ .Values.bootstrap.chaincode.lang }} --label {{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}
               res=$?

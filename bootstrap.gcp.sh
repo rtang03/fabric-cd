@@ -164,15 +164,15 @@ res=$?
 set +x
 printMessage "deployment/o0-hlf-ord" $res
 
-helm install p0o1db -n n1 -f ./releases/org1/p0o1db-hlf-couchdb.gcp.yaml ./hlf-couchdb
-
-sleep 5
-
-set -x
-kubectl wait --for=condition=Available --timeout 600s deployment/p0o1db-hlf-couchdb -n n1
-res=$?
-set +x
-printMessage "deployment/p0o1db-hlf-couchdb" $res
+#helm install p0o1db -n n1 -f ./releases/org1/p0o1db-hlf-couchdb.gcp.yaml ./hlf-couchdb
+#
+#sleep 5
+#
+#set -x
+#kubectl wait --for=condition=Available --timeout 600s deployment/p0o1db-hlf-couchdb -n n1
+#res=$?
+#set +x
+#printMessage "deployment/p0o1db-hlf-couchdb" $res
 
 helm install p0o1 -n n1 -f ./releases/org1/p0o1-hlf-peer.gcp.yaml ./hlf-peer
 
@@ -191,7 +191,7 @@ res=$?
 set +x
 printMessage "copy chaincode" $res
 
-helm install marbles1 -n n1 ./hlf-cc
+#helm install marbles1 -n n1 ./hlf-cc
 
 # helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
 
