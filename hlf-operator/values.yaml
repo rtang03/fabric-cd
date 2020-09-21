@@ -1,4 +1,5 @@
 global:
+  TZ: Asia/Hong_Kong
   logging: info
   workingDir: /var/hyperledger
   mspId: Org1MSP

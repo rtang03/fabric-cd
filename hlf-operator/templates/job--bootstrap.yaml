@@ -157,9 +157,12 @@ spec:
               set +x
               printMessage "send update_envelope proposal" $res
               cat $DIR/log-updateanchorpeer.txt
-              sleep 4h
           {{- end }}
           {{- if .Values.bootstrap.tasks.package_chaincode.enabled }}
+              cd /var/hyperledger/crypto-config/channel-artifacts/marbles/packaging
+              tar cfz code.tar.gz connection.json
+              tar cfz marbles-org1.tgz code.tar.gz metadata.json
+              sleep 5h
               printHeader "package chaincode"
               set -x
               ${BIN}/peer lifecycle chaincode package $DIR/{{ .Values.bootstrap.chaincode.id }}.tar.gz --path $DIR/chaincode --lang {{ .Values.bootstrap.chaincode.lang }} --label {{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}
@@ -171,7 +174,8 @@ spec:
               printHeader "install chaincode"
               set -x
               echo "installation will take a few minutes"
-              ${BIN}/peer lifecycle chaincode install $DIR/{{ .Values.bootstrap.chaincode.id }}.tar.gz >& $DIR/log-install.txt
+              $BIN/peer lifecycle chaincode install /var/hyperledger/crypto-config/channel-artifacts/marbles/packaging/marbles-org1.tgz
+              # ${BIN}/peer lifecycle chaincode install $DIR/{{ .Values.bootstrap.chaincode.id }}.tar.gz >& $DIR/log-install.txt
               res=$?
               set +x
               printMessage "install chaincode" $?

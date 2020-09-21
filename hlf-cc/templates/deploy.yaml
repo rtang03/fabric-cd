@@ -18,13 +18,15 @@ spec:
 {{ include "labels.standard" . | indent 8 }}
     spec:
       containers:
-        - image: chaincode/marbles:1.0
-          name: chaincode-marbles-org1
+        - image: ghcr.io/rtang03/marbles:0.0.1
+          name: chaincode
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 7052
           env:
             - name: CHAINCODE_CCID
-              value: {{ .Values.ccid }}
+              value: {{ .Values.ccid | quote}}
             - name: CHAINCODE_ADDRESS
               value: "0.0.0.0:7052"
+            - name: TZ
+              value: {{ .Values.global.TZ | quote }}

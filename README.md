@@ -70,6 +70,43 @@ ${BIN}/peer chaincode invoke --isInit \
 --tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
 --waitForEvent
 
-Error: endorsement failure during invoke. response: status:500 message:"error in simulation: failed to execute transaction 1935a23afa2322177aa955bffab42f70c0c0ea689e9edce625b1239afcbe1a42: invalid invocation: could not get 'initialized' key: error unmarshalling json data: unexpected end of JSON input"
-
+---------
 marbles:3640833b936bbb810e95c12f24adda9e359e92ef597ab574d95d0ed26f6812a3
+marbles:de64932abe3333bb07079bc6e4011c38fc81b0bfec28edc53cf7cf9d4f12e6a0
+marbles:2941de82bc0eeea939175773112f3063e46ea33a6a4b6b72ee1993cc26272d32
+
+$BIN/peer lifecycle chaincode approveformyorg -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \
+ --package-id marbles:2941de82bc0eeea939175773112f3063e46ea33a6a4b6b72ee1993cc26272d32 --sequence 1 \
+ -o ${ORDERER_URL} --tls --cafile $ORDERER_CA
+
+$BIN/peer lifecycle chaincode checkcommitreadiness -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \
+ --sequence 1 -o ${ORDERER_URL} --tls --cafile $ORDERER_CA
+
+${BIN}/peer lifecycle chaincode commit \
+-o ${ORDERER_URL} -C ${CHANNEL_NAME} \
+--tls --cafile ${ORDERER_CA} \
+--name marbles \
+--version 1.0 \
+--init-required \
+--sequence 1 \
+--peerAddresses peer0.org1.net:15443 \
+--tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
+--waitForEvent
+
+${BIN}/peer chaincode invoke --isInit \
+-o ${ORDERER_URL} -C ${CHANNEL_NAME} \
+--tls --cafile ${ORDERER_CA} \
+--name marbles \
+-c '{"Args":["initMarble","marble1","blue","35","tom"]}' \
+--peerAddresses peer0.org1.net:15443 \
+--tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
+--waitForEvent
+
+${BIN}/peer chaincode invoke \
+-o ${ORDERER_URL} -C ${CHANNEL_NAME} \
+--tls --cafile ${ORDERER_CA} \
+--name marbles \
+-c '{"Args":["initMarble","marble4","blue","36","tom"]}' \
+--peerAddresses peer0.org1.net:15443 \
+--tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
+--waitForEvent

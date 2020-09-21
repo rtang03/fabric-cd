@@ -1,5 +1,5 @@
 {
-  "address": "marbles1-hlf-cc.n1:7052",
+  "address": "marbles1-hlf-cc:7052",
   "dial_timeout": "10s",
   "tls_required": false,
   "client_auth_required": false,

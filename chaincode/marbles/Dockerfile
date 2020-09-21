@@ -1,6 +1,6 @@
 # This image is a microservice in golang for the Degree chaincode
 FROM golang:1.14.6-alpine AS build
-
+LABEL org.opencontainers.image.source https://github.com/rtang03/fabric-cd
 COPY ./ /go/src/github.com/marbles
 WORKDIR /go/src/github.com/marbles
 

@@ -191,11 +191,13 @@ res=$?
 set +x
 printMessage "copy chaincode" $res
 
+helm install marbles1 -n n1 ./hlf-cc
+
 # helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
 
 #sleep 60
 #
-# helm install bootstrap -n n1 -f ./releases/org1/bootstrap-hlf-operator.gcp.yaml ./hlf-operator
+# helm install b1 -n n1 -f ./releases/org1/bootstrap-hlf-operator.gcp.yaml ./hlf-operator
 #
 #set -x
 #kubectl wait --for=condition=complete --timeout 600s job/bootstrap-hlf-operator--bootstrap -n n1

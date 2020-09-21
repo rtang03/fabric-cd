@@ -5,6 +5,7 @@ metadata:
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 data:
+  TZ: {{ .Values.global.TZ | quote }}
   CHANNEL_NAME: {{ $.Values.global.channel.name }}
   FABRIC_LOGGING_SPEC: {{ $.Values.global.logging }}
   CORE_PEER_ID: {{ .Values.config.peer.id }}

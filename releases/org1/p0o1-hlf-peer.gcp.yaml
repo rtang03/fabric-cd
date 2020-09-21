@@ -1,5 +1,5 @@
 global:
-#  TZ: Asia/Hong_Kong
+  TZ: Asia/Hong_Kong
 #  workingDir: /var/hyperledger/crypto-config
   mspId: Org1MSP
   domain: org1.net
@@ -52,7 +52,7 @@ peer:
   peerName: peer0
   # orgPath: /var/hyperledger/crypto-config/Org1MSP
   # Type of database ("goleveldb" or "CouchDB"):
-  databaseType: CouchDB
+  databaseType: goleveldb # CouchDB
   # If CouchDB is used, which chart holds it
   couchdbInstance: p0o1db
   ## Database username
