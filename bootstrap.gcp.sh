@@ -191,7 +191,7 @@ preventEmptyValue "pod unavailable" $POD_CLI1
 #set +x
 #printMessage "copy chaincode" $res
 
-# helm install fabric-es -n n1 ./hlf-cc
+# helm install eventstore -n n1 ./hlf-cc
 
 # helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
 

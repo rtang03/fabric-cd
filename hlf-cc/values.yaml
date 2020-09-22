@@ -1,5 +1,5 @@
 global:
   TZ: Asia/Hong_Kong
 
-image: "ghcr.io/rtang03/fabric-es:0.0.2"
+image: "ghcr.io/rtang03/fabric-es:0.0.3"
 ccid: "eventstorev1:1690e452d040fce92201149e0a384f465791d279b9cfb75961d131e42b6194ca"

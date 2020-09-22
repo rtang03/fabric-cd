@@ -1,75 +1,15 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: o0-hlf-ord
-  namespace: n1
-spec:
-  hosts:
-    - orderer0.org0.com
-  location: MESH_EXTERNAL
-  ports:
-    - number: 15443
-      name: https
-      protocol: TLS
-  resolution: NONE
 ---
 apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
+kind: VirtualService
 metadata:
-  name: o1-hlf-ord
+  name: marbles1-hlf-cc
   namespace: n1
 spec:
   hosts:
-    - orderer1.org0.com
-  location: MESH_EXTERNAL
-  ports:
-    - number: 15443
-      name: https
-      protocol: TLS
-  resolution: NONE
----
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: o2-hlf-ord
-  namespace: n1
-spec:
-  hosts:
-    - orderer2.org0.com
-  location: MESH_EXTERNAL
-  ports:
-    - number: 15443
-      name: https
-      protocol: TLS
-  resolution: NONE
----
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: o3-hlf-ord
-  namespace: n1
-spec:
-  hosts:
-    - orderer3.org0.com
-  location: MESH_EXTERNAL
-  ports:
-    - number: 15443
-      name: https
-      protocol: TLS
-  resolution: NONE
----
-apiVersion: networking.istio.io/v1alpha3
-kind: ServiceEntry
-metadata:
-  name: o4-hlf-ord
-  namespace: n1
-spec:
-  hosts:
-    - orderer4.org0.com
-  location: MESH_EXTERNAL
-  ports:
-    - number: 15443
-      name: https
-      protocol: TLS
-  resolution: NONE
-
+    - eventstore-hlf-cc
+  http:
+    - route:
+        - destination:
+            host: eventstore-hlf-cc.n1.svc.cluster.local
+            port:
+              number: 7052
