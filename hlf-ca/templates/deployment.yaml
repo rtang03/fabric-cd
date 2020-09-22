@@ -128,27 +128,20 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 10
-          # readinessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 10
-          #startupProbe:
-          #  httpGet:
-          #    scheme: HTTP
-          #    path: /cainfo
-          #    port: 7054
-          #  initialDelaySeconds: 30
-          #  periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 10
           volumeMounts:
             - name: data
               mountPath: /var/hyperledger

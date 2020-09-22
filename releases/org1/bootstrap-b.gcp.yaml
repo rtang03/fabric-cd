@@ -1,0 +1,88 @@
+global:
+  logging: info
+  workingDir: /var/hyperledger
+  mspId: Org1MSP
+  config:
+    setupsh: admin1-orgadmin--setupsh
+    coreyaml: admin1-orgadmin--core
+  guploadImage: ghcr.io/rtang03/gupload:0.0.7
+  channel:
+    name: loanapp
+
+config:
+  peer:
+    #Provide the name of the peer as per deployment yaml.
+    #Eg. name: peer0
+    id: p0o1-hlf-peer
+    peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
+    #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
+    #Eg. address: peer0.org1-example-com:7051
+    address: p0o1-hlf-peer:7051
+    target: p0o1-hlf-peer # peer0.org1.net
+  orderer:
+    #Provide the address for orderer
+    address: orderer0.org0.com:15443
+
+#######################
+### Param for bootstrap
+#######################
+bootstrap:
+  enabled: true
+  hostAlias:
+    - hostnames:
+        - peer0.org1.net
+        - orderer0.org0.com
+      ip: 35.202.107.80
+  pvcName: pvc-org1
+  secret:
+    tlscacert: org0-tls-ca-cert
+    channeltx: channeltx
+  chaincode:
+    id: eventstore
+    contract: eventstore
+    version: 1
+    lang: node
+  tasks:
+    create_channel:
+      enabled: false
+    join_channel:
+      enabled: false
+    getchannnelinfo:
+      enabled: false
+    update_anchor_peer:
+      enabled: false
+    package_chaincode:
+      enabled: false
+    install_chaincode:
+      enabled: false
+    queryinstalled:
+      enabled: false
+    approve_chaincode:
+      enabled: true
+      sequence: 1
+    queryapproved:
+      enabled: true
+    checkcommitreadiness:
+      enabled: true
+    commit_chaincode:
+      enabled: true
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+    querycommitted:
+      enabled: true
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+    init_chaincode:
+      enabled: true
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+    dev_invoke:
+      enabled: true
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+    dev_query:
+      enabled: true

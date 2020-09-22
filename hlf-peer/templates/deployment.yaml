@@ -162,19 +162,20 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
-{{/*          livenessProbe:*/}}
-{{/*            httpGet:*/}}
-{{/*              scheme: HTTP*/}}
-{{/*              port: 9443*/}}
-{{/*              path: /healthz*/}}
-{{/*            initialDelaySeconds: 5*/}}
-{{/*            periodSeconds: 5*/}}
-{{/*          readinessProbe:*/}}
-{{/*            httpGet:*/}}
-{{/*              scheme: HTTP*/}}
-{{/*              port: 9443*/}}
-{{/*              path: /healthz*/}}
-{{/*            initialDelaySeconds: 15*/}}
+          livenessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 5
           command:
             - sh
             - -c
@@ -195,14 +196,6 @@ spec:
                 echo "\033[0;31m ${CORE_PEER_MSPCONFIGPATH}/signcerts directory must exist \033[0m"
                 sleep 60
               done
-
-              # if [ ! -d ${FABRIC_CFG_PATH} ]
-              # then
-              #   mkdir -p ${FABRIC_CFG_PATH}
-              #   cp -r /etc/hyperledger/fabric/core.yaml ${FABRIC_CFG_PATH}
-              #   ls ${FABRIC_CFG_PATH}
-              # fi
-
               if [ $CORE_PEER_TLS_CLIENTAUTHREQUIRED ]
               then
                 export CORE_PEER_TLS_CLIENTROOTCAS_FILES=$(ls -d $CORE_PEER_TLS_CLIENTROOTCAS_FILES)

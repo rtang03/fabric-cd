@@ -58,31 +58,18 @@ bootstrap:
     queryinstalled:
       enabled: true
     approve_chaincode:
-      enabled: true
-      sequence: 1
+      enabled: false
     queryapproved:
-      enabled: true
+      enabled: false
     checkcommitreadiness:
-      enabled: true
+      enabled: false
     commit_chaincode:
-      enabled: true
-      targets:
-        - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+      enabled: false
     querycommitted:
-      enabled: true
-      targets:
-        - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+      enabled: false
     init_chaincode:
-      enabled: true
-      targets:
-        - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+      enabled: false
     dev_invoke:
-      enabled: true
-      targets:
-        - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+      enabled: false
     dev_query:
-      enabled: true
+      enabled: false

@@ -159,10 +159,11 @@ sleep 3
 helm install o0 -f ./releases/org0/o0-hlf-ord.gcp.yaml -n n0 ./hlf-ord
 
 set -x
-kubectl wait --for=condition=Available --timeout 600s deployment/o0-hlf-ord -n n0
+export POD_O0=$(kubectl get pods -n n0 -l "app=hlf-ord,release=o0" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_O0 -n n0
 res=$?
 set +x
-printMessage "deployment/o0-hlf-ord" $res
+printMessage "pod/o0-hlf-ord" $res
 
 #helm install p0o1db -n n1 -f ./releases/org1/p0o1db-hlf-couchdb.gcp.yaml ./hlf-couchdb
 #
@@ -170,40 +171,58 @@ printMessage "deployment/o0-hlf-ord" $res
 #
 #set -x
 #kubectl wait --for=condition=Available --timeout 600s deployment/p0o1db-hlf-couchdb -n n1
+#export POD_P0O1DB=$(kubectl get pods -n n1 -l "app=hlf-couchdb,release=p0o1db" -o jsonpath="{.items[0].metadata.name}")
+#kubectl wait --for=condition=Ready --timeout 180s pod/$POD_P0O1DB -n n1
 #res=$?
 #set +x
-#printMessage "deployment/p0o1db-hlf-couchdb" $res
+#printMessage "pod/p0o1db-hlf-couchdb" $res
 
 helm install p0o1 -n n1 -f ./releases/org1/p0o1-hlf-peer.gcp.yaml ./hlf-peer
 
 set -x
-kubectl wait --for=condition=Available --timeout 600s deployment/p0o1-hlf-peer -n n1
+export POD_P0O1=$(kubectl get pods -n n1 -l "app=hlf-peer,release=p0o1" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_P0O1 -n n1
 res=$?
 set +x
 printMessage "deployment/p0o1-hlf-peer" $res
 
+helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
+
+
 export POD_CLI1=$(kubectl get pods --namespace n1 -l "app=orgadmin,release=admin1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI1
 
-#set -x
-#kubectl -n n1 cp ./chaincode/fabric-es $POD_CLI1:./channel-artifacts
-#res=$?
-#set +x
-#printMessage "copy chaincode" $res
+sleep 10s
 
-# helm install eventstore -n n1 ./hlf-cc
+helm install b1 -n n1 -f ./releases/org1/bootstrap-a.gcp.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 300s job/b1-hlf-operator--bootstrap -n n1
+res=$?
+set +x
+printMessage "job/bootstrap part1" $res
 
-# helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
+set -x
+export CCID=$(kubectl -n n1 exec $POD_CLI1 -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
+res=$?
+set +x
+printMessage "retrieve CCID" $res
 
-#sleep 60
-#
-# helm install b1 -n n1 -f ./releases/org1/bootstrap-hlf-operator.gcp.yaml ./hlf-operator
-#
-#set -x
-#kubectl wait --for=condition=complete --timeout 600s job/bootstrap-hlf-operator--bootstrap -n n1
-#res=$?
-#set +x
-#printMessage "job/bootstrap" $res
+helm install eventstore -n n1 --set ccid=$CCID -f ./releases/org1/eventstore-hlf-cc.gcp.yaml ./hlf-cc
+set -x
+export POD_CC1=$(kubectl get pods -n n1 -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_CC1 -n n1
+res=$?
+set +x
+printMessage "pod/eventstore chaincode" $res
+
+sleep 10s
+
+helm install b2 -n n1 -f ./releases/org1/bootstrap-b.gcp.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 300s job/b2-hlf-operator--bootstrap -n n1
+res=$?
+set +x
+printMessage "job/bootstrap part2" $res
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

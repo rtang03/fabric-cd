@@ -99,20 +99,20 @@ spec:
             - name: http-metrics
               containerPort: 8443
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     port: 8443
-          #     scheme: HTTP
-          #     path: /healthz
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 5
-          # readinessProbe:
-          #   httpGet:
-          #     port: 8443
-          #     scheme: HTTP
-          #     path: /healthz
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - ls
+                - /var/hyperledger
+            initialDelaySeconds: 10
+            periodSeconds: 10
           command:
             - sh
             - -c

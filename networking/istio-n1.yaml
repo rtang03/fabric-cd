@@ -124,10 +124,14 @@ spec:
             host: p0o1-hlf-peer.n1.svc.cluster.local
             port:
               number: 7052
-  http:
-    - route:
-        - destination:
-            host: p0o1-hlf-peer.n1.svc.cluster.local
+#  http:
+#    - match:
+#        - port: 9443
+#      route:
+#        - destination:
+#            host: p0o1-hlf-peer.n1.svc.cluster.local
+#            port:
+#              number: 9443
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

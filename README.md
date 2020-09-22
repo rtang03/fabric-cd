@@ -1,113 +1,122 @@
-# fabric-cd
-continuous deployment
+## Continuous Deployment
+Continuous deployment for fabric-es
 
-### Getting Started
+### Pre-requisite
+- GKE 1.16.13-gke.401/regular channel
+- n1-standard-4: 4 vcpu/15GB x 1 node
+- Istio v1.4.10
+- installation of gcloud cli, kubectl and istioctl
+- helm charts v3
+- Fabric v2.2.0
+
+*Installation of istioctl*
+Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
+istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6).
+
 ```shell script
-gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
+# client installation of istioctl v1.4.10
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
+```
+
+### Preparation Step
+```shell script
+# gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
+# Step 0: after GKE is created, update local machine credentials
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 
+# Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
 kubectl create namespace n0
 kubectl create namespace n1
+kubectl create namespace n2
 kubectl label namespace n0 istio-injection=enabled
 kubectl label namespace n1 istio-injection=enabled
+kubectl label namespace n2 istio-injection=enabled
+
+# Step 2: Create persistence volume claim for org0 and org1
+# Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
+# requirement. Also, different cloud provider has different offering.
+# In GCP, here assumes to use "standard" storageClass.
+scripts/recreate-pvc.org01.gcp.sh
+```
+
+### Initial Setup
+```shell script
+# Install istio for org0 and org1
+kubectl -n n0 apply -f networking/istio-n0.yaml
+kubectl -n n1 apply -f networking/istio-n1.yaml
+
+# Install
+bootstrap.gcp.sh
+```
+
+### Releases
+All releases' custom configuration is at `releases` directory, in form of helm charts value files.
+
+### Cleanup
+```shell script
+# uninstall helm charts for org0 and org1
+scripts/helm-uninstall.org01.sh
+
+# and then, delete/recreate ALL pvc
+scripts/recreate-pvc.org01.gcp.sh
+
+# remove istio objects
+# if you want to re-run installation of the same cluster, you are not necessarily removing istio object
+kubectl -n n0 delete -f networking/istio-n0.yaml
+kubectl -n n1 delete -f networking/istio-n1.yaml
 ```
 
 *Useful Command*
 ```shell script
+# show streaming logs
+kubectl -n n0 logs -f [ORDERER_POD_ID] -c orderer
+kubectl -n n1 logs -f [PEER_POD_ID] -c peer
+
+# For orderer debugging when orderering is actively running; you may tty into it, and alter the logging mode
+# kubectl -n [Namespace] exec -it [ORDERER_POD_ID] -c orderer
+
+# install curl inside orderer or peer
+# apk add curl
+# e.g: {"spec":"debug"} {"spec":"grpc=debug:debug"} {"spec":"info"}
 curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
-curl -d '{"spec":"debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
+
+# Similarly, for peer debugging, the port is changed to :9443
+# kubectl -n [Namespace] exec -it [PEER_POD_ID] -c peer
 ```
 
+### External chaincode container
+To remove the shortcoming of DockerInDocker chaincode, here uses the external chaincode, which requires v2.0+.
+See [Fabric Documentation](https://hyperledger-fabric.readthedocs.io/en/latest/cc_launcher.html)
+
+The chaincode `dist` is located at `chaincode/fabric-es`. It will be made a docker image via Github Action, by adding a new tag.
+```shell script
+git tag v0.0.3
+git push origin v0.0.3
+```
+
+The new image publishes to [my Github container registry](https://github.com/users/rtang03/packages/container/package/eventstore).
+Every organization should use this common chaincode.
+
+Similarly, I publish the `gupload` grpc upload server/client to Github container registry.
+
+### Helm charts
+Availble app:
+- gupload
+- hlf-ca
+- hlf-couchdb
+- hlf-ord
+- hlf-peer
+- hlf-cc
+- hlf-operator
+- orgadmin
+
+### GCP Networking
+
+### Naming convention
+*Helm chart value file*
+[release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml
+
 ### Reference Info
-https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523
-https://github.com/vanitas92/fabric-external-chaincodes
-https://istio.io/latest/docs/setup/platform-setup/gke/
-
-
-${BIN}/peer channel create -o ${ORDERER_URL} -c ${CHANNEL_NAME} -f $DIR/channeltx/channel.tx --outputBlock $DIR/${CHANNEL_NAME}.block --tls --cafile ${ORDERER_CA}
-
-${BIN}/peer channel fetch 0 -c ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} -o orderer0.org0.com:15443 $DIR/${CHANNEL_NAME}.block
-
-${BIN}/peer lifecycle chaincode commit \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name eventstore \
---version 1 \
---init-required \
---sequence 1 \
---peerAddresses "peer0.org1.net:15443" \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---waitForEvent
-
-${BIN}/peer lifecycle chaincode querycommitted \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---peerAddresses "peer0.org1.net:15443"  \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---name eventstore
-
-panic: Failed validating bootstrap block: initializing channelconfig failed: could not create channel Consortiums sub-group config: setting up the MSP manager failed: administrators must be declared when no admin ou classification is set
-
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
-
-${BIN}/peer lifecycle chaincode commit \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name eventstore \
---version 1 \
---init-required \
---sequence 1 \
---peerAddresses peer0.org1.net:15443 \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem \
---waitForEvent
-
-${BIN}/peer chaincode invoke --isInit \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name eventstore \
--c "{\"Args\":[\"Init\"]}" \
---peerAddresses p0o1-hlf-peer:7051 \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---waitForEvent
-
----------
-marbles:3640833b936bbb810e95c12f24adda9e359e92ef597ab574d95d0ed26f6812a3
-marbles:de64932abe3333bb07079bc6e4011c38fc81b0bfec28edc53cf7cf9d4f12e6a0
-marbles:2941de82bc0eeea939175773112f3063e46ea33a6a4b6b72ee1993cc26272d32
-marbles:b0a0e61cd96359dc9ae21f6a219a9bd118c5e3ed35ae4ae690f48f3a74c15d29
-
-$BIN/peer lifecycle chaincode approveformyorg -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \
- --package-id marbles:b0a0e61cd96359dc9ae21f6a219a9bd118c5e3ed35ae4ae690f48f3a74c15d29 --sequence 1 \
- -o ${ORDERER_URL} --tls --cafile $ORDERER_CA
-
-$BIN/peer lifecycle chaincode checkcommitreadiness -C ${CHANNEL_NAME} --name marbles --version 1.0 --init-required \
- --sequence 1 -o ${ORDERER_URL} --tls --cafile $ORDERER_CA
-
-${BIN}/peer lifecycle chaincode commit \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name marbles \
---version 1.0 \
---init-required \
---sequence 1 \
---peerAddresses peer0.org1.net:15443 \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---waitForEvent
-
-${BIN}/peer chaincode invoke --isInit \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name marbles \
--c '{"Args":["initMarble","marble1","blue","35","tom"]}' \
---peerAddresses peer0.org1.net:15443 \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---waitForEvent
-
-${BIN}/peer chaincode invoke \
--o ${ORDERER_URL} -C ${CHANNEL_NAME} \
---tls --cafile ${ORDERER_CA} \
---name marbles \
--c '{"Args":["initMarble","marble4","blue","36","tom"]}' \
---peerAddresses peer0.org1.net:15443 \
---tlsRootCertFiles /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem \
---waitForEvent
+[External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
+[External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
+[install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)

@@ -14,7 +14,7 @@ on:
   pull_request:
 
 env:
-  IMAGE_NAME: fabric-es
+  IMAGE_NAME: eventstore
 
 jobs:
   # Run tests.
