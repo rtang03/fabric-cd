@@ -185,13 +185,13 @@ printMessage "deployment/p0o1-hlf-peer" $res
 export POD_CLI1=$(kubectl get pods --namespace n1 -l "app=orgadmin,release=admin1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI1
 
-set -x
-kubectl -n n1 cp ./chaincode/marbles $POD_CLI1:./channel-artifacts
-res=$?
-set +x
-printMessage "copy chaincode" $res
+#set -x
+#kubectl -n n1 cp ./chaincode/fabric-es $POD_CLI1:./channel-artifacts
+#res=$?
+#set +x
+#printMessage "copy chaincode" $res
 
-#helm install marbles1 -n n1 ./hlf-cc
+# helm install fabric-es -n n1 ./hlf-cc
 
 # helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
 

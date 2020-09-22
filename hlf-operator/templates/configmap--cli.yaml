@@ -19,3 +19,15 @@ data:
   FABRIC_CFG_PATH: /etc/hyperledger
   BIN: /var/hyperledger/bin
   GODEBUG: "netdns=go"
+  connection.json: |
+    {
+      "address": "eventstore-hlf-cc:7052",
+      "dial_timeout": "10s",
+      "tls_required": false,
+      "client_auth_required": false,
+      "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+      "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+      "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+    }
+  metadata.json: |
+    {"path":"","type":"external","label":"eventstorev1"}

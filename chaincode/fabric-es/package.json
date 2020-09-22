@@ -21,7 +21,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "start": "fabric-chaincode-node server",
+    "start": "fabric-chaincode-node server --chaincode-address $CHAINCODE_ADDRESS --chaincode-id $CHAINCODE_CCID",
     "build": "rimraf dist && tsc",
     "build:prod": "rimraf dist && tsc -p ./tsconfig.prod.json",
     "prepublishOnly": "npm run build",

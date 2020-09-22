@@ -1,4 +1,5 @@
 global:
   TZ: Asia/Hong_Kong
 
-ccid: "marbles:b0a0e61cd96359dc9ae21f6a219a9bd118c5e3ed35ae4ae690f48f3a74c15d29"
+image: "ghcr.io/rtang03/fabric-es:0.0.2"
+ccid: "eventstorev1:1690e452d040fce92201149e0a384f465791d279b9cfb75961d131e42b6194ca"

@@ -18,7 +18,7 @@ spec:
 {{ include "labels.standard" . | indent 8 }}
     spec:
       containers:
-        - image: ghcr.io/rtang03/marbles:0.0.1
+        - image: {{ .Values.image }}
           name: chaincode
           imagePullPolicy: IfNotPresent
           ports:

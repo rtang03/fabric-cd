@@ -44,17 +44,17 @@ bootstrap:
     lang: node
   tasks:
     create_channel:
-      enabled: true
+      enabled: false
     join_channel:
-      enabled: true
+      enabled: false
     getchannnelinfo:
-      enabled: true
+      enabled: false
     update_anchor_peer:
-      enabled: true
+      enabled: false
     package_chaincode:
-      enabled: true
+      enabled: false
     install_chaincode:
-      enabled: true
+      enabled: false
     queryinstalled:
       enabled: true
     approve_chaincode:
@@ -75,7 +75,7 @@ bootstrap:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     init_chaincode:
-      enabled: true
+      enabled: false
       targets:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
