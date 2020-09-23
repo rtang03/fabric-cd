@@ -82,6 +82,24 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 
 # Similarly, for peer debugging, the port is changed to :9443
 # kubectl -n [Namespace] exec -it [PEER_POD_ID] -c peer
+
+# after postgresql is installed, you can valiate it; by decoding the secret
+export POSTGRES_PASSWORD=$(kubectl get secret --namespace default psql-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
+
+# you can launch a port-forward, so that the psql client in host system can access it
+kubectl port-forward --namespace default svc/psql-postgresql 5433:5432
+
+# login with psql
+PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5433
+
+# debug helm chart with --dry-run --debug
+helm install rca0 -f ./hlf-ca/values-rca0.yaml -n n0 --dry-run --debug ./hlf-ca
+
+# optionaly, create alias for kubectl and istioctl, and add to your shell's e.g. ./zshrc
+# alias k0="kubectl -n n0"
+# alias k1="kubectl -n n1"
+# alias i0="istioctl -n n0"
+# alias i1="istioctl -n n1"
 ```
 
 ### External chaincode container
@@ -110,7 +128,22 @@ Availble app:
 - hlf-operator
 - orgadmin
 
-### GCP Networking
+### Helm
+```shell script
+# search public helm repository
+helm search repo stable
+
+# when there is external helm dependency in Chart.yaml
+# helm dep update will add postgresql dependency in orgadmin
+cd orgadmin
+helm dep update
+
+# if you want to install a standsalone postgres to defautl namespace, for standalone testing purpose
+# helm install psql --set postgresqlPassword=hello bitnami/postgresql
+```
+
+### Networking
+Here uses Istio Service Mesh, and istio CRD is located `networking` directory.
 
 ### Naming convention
 *Helm chart value file*

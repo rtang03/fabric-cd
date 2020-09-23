@@ -19,7 +19,7 @@ helm uninstall -n n1 g1
 helm uninstall -n n1 rca1
 helm uninstall -n n1 tlsca1
 helm uninstall -n n1 admin1
-helm uninstall -n n1 p0o1db
+# helm uninstall -n n1 p0o1db
 helm uninstall -n n1 p0o1
 helm uninstall -n n1 upch1
 helm uninstall -n n1 eventstore

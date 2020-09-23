@@ -4,16 +4,14 @@ global:
   caServerHome: /var/hyperledger/crypto-config/Org1MSP/tls/server
   caClientHome: /var/hyperledger/crypto-config/Org1MSP/tls/admin
   domain: org1.net
+  # name of configMap [release-name]-[app]-setupsh
   setupsh: admin1-orgadmin--setupsh
 
 caAdmin: tlsca1-admin
 caAdminPW: tlsca1-adminPW
+# k8s service name
 endpoint: tlsca1-hlf-ca:7054
-#endpoint: tlsca1-hlf-ca.n1.svc.cluster.local:7054
 tlsCaCert: /var/hyperledger/crypto-config/Org1MSP/tls/admin/msp/cacerts/tlsca1-hlf-ca-7054.pem
-# tlsCaCert: /var/hyperledger/crypto-config/Org1MSP/tls/admin/msp/cacerts/tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
-
-#fabricCaClientTlsCertfiles: /var/hyperledger/crypto-config/Org0MSP/tls/server/ca-cert.pem
 orgAdmin:
   enabled: false
 

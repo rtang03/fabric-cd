@@ -9,9 +9,9 @@ global:
 
 cli:
   ### Default
-  # fabricBinary: "2.2.0"
+  fabricBinary: "2.2.0"
   ### Default
-  # fabricCABinary: "1.4.7"
+  fabricCABinary: "1.4.7"
   # It provides org0 with org1's certs, for creation of genesis.block
   firstOrgDir: /var/hyperledger/crypto-config/Org1MSP
 

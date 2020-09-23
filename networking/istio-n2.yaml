@@ -1,19 +1,19 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: p0o1-gateway
-  namespace: n1
+  name: p0o2-gateway
+  namespace: n2
 spec:
   selector:
-    istio: ingressgateway # use istio default controller
+    istio: ingressgateway
   servers:
     - port:
         number: 15443
         name: tls
         protocol: TLS
       hosts:
-        - "peer0.org1.net"
-        - "gupload.org1.net"
+        - "peer0.org2.net"
+        - "gupload.org2.net"
       tls:
         mode: PASSTHROUGH
 ---
@@ -21,7 +21,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: o0-hlf-ord
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - orderer0.org0.com
@@ -36,7 +36,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: o1-hlf-ord
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - orderer1.org0.com
@@ -51,7 +51,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: o2-hlf-ord
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - orderer2.org0.com
@@ -66,7 +66,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: o3-hlf-ord
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - orderer3.org0.com
@@ -81,7 +81,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: o4-hlf-ord
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - orderer4.org0.com
@@ -95,34 +95,34 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: p0o1-hlf-peer
-  namespace: n1
+  name: p0o2-hlf-peer
+  namespace: n2
 spec:
   hosts:
-    - peer0.org1.net
-    - p0o1-hlf-peer
+    - peer0.org2.net
+    - p0o2-hlf-peer
   gateways:
-    -  p0o1-gateway
+    -  p0o2-gateway
   tls:
     - match:
         - port: 15443
           sniHosts:
-            - peer0.org1.net
+            - peer0.org2.net
         - port: 7051
           sniHosts:
-            - p0o1-hlf-peer
+            - p0o2-hlf-peer
       route:
         - destination:
-            host: p0o1-hlf-peer.n1.svc.cluster.local
+            host: p0o2-hlf-peer.n2.svc.cluster.local
             port:
               number: 7051
     - match:
         - port: 7052
           sniHosts:
-            - p0o1-hlf-peer
+            - p0o2-hlf-peer
       route:
         - destination:
-            host: p0o1-hlf-peer.n1.svc.cluster.local
+            host: p0o1-hlf-peer.n2.svc.cluster.local
             port:
               number: 7052
 ---
@@ -130,34 +130,35 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: eventstore-hlf-cc
-  namespace: n1
+  namespace: n2
 spec:
   hosts:
     - eventstore-hlf-cc
   http:
     - route:
         - destination:
-            host: eventstore-hlf-cc.n1.svc.cluster.local
+            host: eventstore-hlf-cc.n2.svc.cluster.local
             port:
               number: 7052
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: g1-gupload
-  namespace: n1
+  name: g2-gupload
+  namespace: n2
 spec:
   hosts:
-    - gupload.org1.net
+    - gupload.org2.net
   gateways:
-    - p0o1-gateway
+    - p0o2-gateway
   tls:
     - match:
         - port: 15443
           sniHosts:
-            - gupload.org1.net
+            - gupload.org2.net
       route:
         - destination:
-            host: g1-gupload.n1.svc.cluster.local
+            host: g2-gupload.n2.svc.cluster.local
             port:
               number: 1313
+

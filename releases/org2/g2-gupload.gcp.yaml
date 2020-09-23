@@ -1,0 +1,10 @@
+global:
+  fabricBinary: 2.2.0
+
+persistence:
+  enabled: true
+  pvcName: pvc-gupload2
+
+secrets:
+  peer:
+    tls: peer0.org2.net-tls

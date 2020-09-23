@@ -24,6 +24,7 @@ service:
 
 config:
   type: tls
+# can remove
 #  caServerHome: /var/hyperledger/crypto-config/Org1MSP/tls/server
 #  caClientHome: /var/hyperledger/crypto-config/Org1MSP/tls/admin
 #  caClientTlsCertfiles: /var/hyperledger/crypto-config/Org1MSP/tls/server/ca-cert.pem
@@ -43,14 +44,6 @@ config:
   #     url: parent-ca.example.com
   #     port: 7054
   ## Affiliations used in ca Server configuration file
-
-ingress:
-  enabled: false
-  annotations: {}
-  path: /
-  hosts:
-    - tlsca1
-  tls: []
 
 persistence:
   ### Default

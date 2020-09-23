@@ -43,4 +43,5 @@ heritage: {{ .Release.Service | quote }}
 release: {{ .Release.Name | quote }}
 chart: {{ include "gupload.chart" . }}
 namespace: {{ .Release.Namespace }}
+version: {{ .Chart.AppVersion }}
 {{- end -}}

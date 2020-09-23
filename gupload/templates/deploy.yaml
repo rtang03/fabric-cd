@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ include "gupload.fullname" . }}
   labels:
@@ -27,12 +27,10 @@ spec:
             - sh
             - -c
             - |
-              apk update
-              apk upgrade
-              apk --no-cache add curl libc6-compat libstdc++
-              cp /var/gupload/gupload /var/gupload/uploaded
               echo "### Starting gupload ###"
-              ./gupload serve --key ./cert/tls.key --certificate ./cert/tls.crt
+              set -x
+              cp /var/gupload/gupload /var/gupload/uploaded
+              /var/gupload/gupload serve --key ./cert/tls.key --certificate ./cert/tls.crt
           volumeMounts:
             - mountPath: /var/gupload/cert
               name: tls

@@ -10,7 +10,7 @@ spec:
     - port: 1313
       targetPort: 1313
       protocol: TCP
-      name: request
+      name: tls-request
   selector:
     app: {{ include "gupload.name" . }}
     release: {{ .Release.Name }}

@@ -45,7 +45,7 @@ res=$?
 set +x
 printMessage "pod/$POD_RCA1" $res
 
-sleep 60
+sleep 30
 
 helm install crypto-tlsca1 -n n1 -f ./releases/org1/tlsca1-cryptogen.gcp.yaml ./cryptogen
 printMessage "install crypto-tlsca1" $?
@@ -170,7 +170,6 @@ printMessage "pod/o0-hlf-ord" $res
 #sleep 5
 #
 #set -x
-#kubectl wait --for=condition=Available --timeout 600s deployment/p0o1db-hlf-couchdb -n n1
 #export POD_P0O1DB=$(kubectl get pods -n n1 -l "app=hlf-couchdb,release=p0o1db" -o jsonpath="{.items[0].metadata.name}")
 #kubectl wait --for=condition=Ready --timeout 180s pod/$POD_P0O1DB -n n1
 #res=$?
@@ -184,7 +183,7 @@ export POD_P0O1=$(kubectl get pods -n n1 -l "app=hlf-peer,release=p0o1" -o jsonp
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_P0O1 -n n1
 res=$?
 set +x
-printMessage "deployment/p0o1-hlf-peer" $res
+printMessage "pod/p0o1-hlf-peer" $res
 
 helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
 

@@ -9,11 +9,8 @@ global:
 caAdmin: rca1-admin
 caAdminPW: rca1-adminPW
 endpoint: rca1-hlf-ca:7054
-#endpoint: rca1-hlf-ca.n1.svc.cluster.local:7054
 
-#fabricCaClientTlsCertfiles: /var/hyperledger/crypto-config/Org0MSP/ca/server/ca-cert.pem
 orgCaCert: /var/hyperledger/crypto-config/Org1MSP/ca/admin/msp/cacerts/rca1-hlf-ca-7054.pem
-# orgCaCert: /var/hyperledger/crypto-config/Org1MSP/ca/admin/msp/cacerts/rca1-hlf-ca-n1-svc-cluster-local-7054.pem
 adminCert: /var/hyperledger/crypto-config/Org1MSP/admin/msp/signcerts/cert.pem
 
 orgAdmin:
