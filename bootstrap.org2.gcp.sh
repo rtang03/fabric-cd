@@ -181,10 +181,10 @@ sleep 10
 
 ### MULTIPLE ORGS WORKFLOW
 ## org1 admin tasks
-helm install fetch1 -n n1 -f ./releases/org1/fetchsend-hlf-operator.gcp.yaml ./hlf-operator
+helm install fetch1 -n n1 -f ./releases/org1/fetchsend-hlf-operator.yaml ./hlf-operator
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/fetch1-hlf-operator -n n1
+kubectl wait --for=condition=complete --timeout 120s job/fetch1-hlf-operator--fetch-send -n n1
 res=$?
 set +x
 printMessage "job/fetch1-hlf-operator" $res
@@ -192,7 +192,7 @@ printMessage "job/fetch1-hlf-operator" $res
 sleep 10
 
 ## org2 admin tasks
-helm install neworg2 -n n2 -f ./releases/org2/neworgsend-hlf-operator.gcp.yaml ./hlf-operator
+helm install neworg2 -n n2 -f ./releases/org2/neworgsend-hlf-operator.yaml ./hlf-operator
 
 set -x
 kubectl wait --for=condition=complete --timeout 120s job/neworg2-hlf-operator--neworg-send -n n2
@@ -203,7 +203,7 @@ printMessage "job/neworg2-hlf-operator" $res
 sleep 10
 
 ## org1 admin tasks
-helm install upch1 -n n1 -f ./releases/org1/upch1-hlf-operator.gcp.yaml ./hlf-operator
+helm install upch1 -n n1 -f ./releases/org1/upch1-hlf-operator.yaml ./hlf-operator
 
 set -x
 kubectl wait --for=condition=complete --timeout 120s job/upch1-hlf-operator--updatechannel -n n1
@@ -214,7 +214,7 @@ printMessage "job/upch1-hlf-operator" $res
 sleep 10
 
 ## org2 admin tasks
-helm install joinch2 -n n2 -f ./releases/org2/joinch2-hlf-operator.gcp.yaml ./hlf-operator
+helm install joinch2 -n n2 -f ./releases/org2/joinch2-hlf-operator.yaml ./hlf-operator
 
 set -x
 kubectl wait --for=condition=complete --timeout 120s job/joinch2-hlf-operator--joinchannel -n n2

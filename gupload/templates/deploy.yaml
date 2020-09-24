@@ -22,7 +22,7 @@ spec:
           ports:
             - containerPort: 1313
               protocol: TCP
-              name: request
+              name: tls-request
           command:
             - sh
             - -c

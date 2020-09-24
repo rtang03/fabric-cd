@@ -95,6 +95,10 @@ PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p
 # debug helm chart with --dry-run --debug
 helm install rca0 -f ./hlf-ca/values-rca0.yaml -n n0 --dry-run --debug ./hlf-ca
 
+# debug grpc transport
+# login the container and turn on grpc debug
+# export GODEBUG=http2debug=2
+
 # optionaly, create alias for kubectl and istioctl, and add to your shell's e.g. ./zshrc
 # alias k0="kubectl -n n0"
 # alias k1="kubectl -n n1"

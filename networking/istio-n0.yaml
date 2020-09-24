@@ -127,10 +127,6 @@ spec:
             host: o0-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
-  http:
-    - route:
-        - destination:
-            host: o0-hlf-ord.n0.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -156,10 +152,6 @@ spec:
             host: o1-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
-  http:
-    - route:
-        - destination:
-            host: o1-hlf-ord.n0.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -185,10 +177,6 @@ spec:
             host: o2-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
-  http:
-    - route:
-        - destination:
-            host: o2-hlf-ord.n0.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -214,10 +202,6 @@ spec:
             host: o3-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
-  http:
-    - route:
-        - destination:
-            host: o3-hlf-ord.n0.svc.cluster.local
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -243,8 +227,4 @@ spec:
             host: o4-hlf-ord.n0.svc.cluster.local
             port:
               number: 7050
-  http:
-    - route:
-        - destination:
-            host: o4-hlf-ord.n0.svc.cluster.local
 ---

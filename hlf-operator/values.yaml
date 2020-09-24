@@ -137,7 +137,8 @@ neworgSend:
     peerTlscacert: peer0.org1.net-tls
   configtx:
     mspId: Org2MSP
-    anchorPeer: p0o2-hlf-peer
+    anchorPeer: peer0.org2.net
+    anchorPeerPort: 15443
   label: o2_neworg_update
   address:
     url: gupload.org1.net

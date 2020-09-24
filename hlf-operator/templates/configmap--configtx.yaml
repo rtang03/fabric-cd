@@ -36,6 +36,6 @@ data:
           # AnchorPeers defines the location of peers which can be used
           # for cross org gossip communication.  Note, this value is only
           # encoded in the genesis block in the Application section context
-          - Host: peer0.org2.net # {{ .Values.neworgSend.configtx.anchorPeer }}
-            Port: 443 # 7051
+          - Host: {{ .Values.neworgSend.configtx.anchorPeer }}
+            Port: {{ .Values.neworgSend.configtx.anchorPeerPort }}
 {{- end }}

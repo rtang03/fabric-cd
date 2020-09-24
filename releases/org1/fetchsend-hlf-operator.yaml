@@ -20,7 +20,7 @@ config:
     target: peer0.org1.net
   orderer:
     #Provide the address for orderer
-    address: orderer0.org0.com:443
+    address: orderer0.org0.com:15443
 
 
 #######################
@@ -32,10 +32,10 @@ fetchSend:
     - hostnames:
         - orderer0.org0.com
         - peer0.org1.net
-      ip: 34.68.246.23
+      ip: 35.202.107.80
     - hostnames:
         - gupload.org2.net
-      ip: 34.68.246.23
+      ip: 35.202.107.80
   orgadmin:
     pvcName: pvc-org1
   gupload:
@@ -46,5 +46,5 @@ fetchSend:
   label: o1_channel_config
   address:
     url: gupload.org2.net
-    port: 443
+    port: 15443
 

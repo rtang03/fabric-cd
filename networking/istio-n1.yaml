@@ -5,7 +5,7 @@ metadata:
   namespace: n1
 spec:
   selector:
-    istio: ingressgateway # use istio default controller
+    istio: ingressgateway
   servers:
     - port:
         number: 15443
@@ -149,6 +149,7 @@ metadata:
 spec:
   hosts:
     - gupload.org1.net
+    - g1-gupload
   gateways:
     - p0o1-gateway
   tls:
@@ -156,6 +157,9 @@ spec:
         - port: 15443
           sniHosts:
             - gupload.org1.net
+        - port: 1313
+          sniHosts:
+            - g1-gupload
       route:
         - destination:
             host: g1-gupload.n1.svc.cluster.local
