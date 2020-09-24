@@ -21,7 +21,7 @@ config:
     target: peer0.org1.net
   orderer:
     #Provide the address for orderer
-    address: orderer0.org0.com:443
+    address: orderer0.org0.com:15443
 
 #######################
 ### Param for update channel
@@ -32,7 +32,7 @@ updateChannel:
     - hostnames:
         - orderer0.org0.com
         - peer0.org1.net
-      ip: 34.68.246.23
+      ip: 35.202.107.80
   updateChannelEnvelop: o2_neworg_update--config_update_in_envelope.pb
   orgadmin:
     pvcName: pvc-org1

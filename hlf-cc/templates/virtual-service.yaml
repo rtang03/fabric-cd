@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "hlf-cc.fullname" . }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ include "hlf-cc.fullname" . }}
+  http:
+    - route:
+        - destination:
+            host: {{ include "hlf-cc.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 7052

@@ -3,6 +3,8 @@ global:
   workingDir: /var/hyperledger/crypto-config
   mspId: Org1MSP
   domain: org1.net
+  istiogateway: p0o1-gateway
+  istiogatewayPort: 15443
 
 image:
   repository: hyperledger/fabric-peer

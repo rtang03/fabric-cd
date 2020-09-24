@@ -1,5 +1,8 @@
 global:
   fabricBinary: 2.2.0
+  istiogateway: p0o1-gateway
+  istiogatewayPort: 15443
+  domain: org1.net
 
 persistence:
   enabled: true

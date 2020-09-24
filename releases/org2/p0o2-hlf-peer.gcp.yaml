@@ -3,6 +3,8 @@ global:
 #  workingDir: /var/hyperledger/crypto-config
   mspId: Org2MSP
   domain: org2.net
+  istiogateway: p0o2-gateway
+  istiogatewayPort: 15443
 
 #image:
 #  repository: hyperledger/fabric-peer
@@ -47,6 +49,7 @@ peer:
         - orderer2.org0.com
         - orderer3.org0.com
         - orderer4.org0.com
+        - peer0.org1.net
       ip: 35.202.107.80
   ledgerPath: /var/hyperledger/production
   peerName: peer0

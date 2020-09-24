@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "gupload.fullname" . }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - gupload.{{ .Values.global.domain }}
+    - {{ include "gupload.fullname" . }}
+  gateways:
+    - {{ .Values.global.istiogateway }}
+  tls:
+    - match:
+        - port: {{ .Values.global.istiogatewayPort }}
+          sniHosts:
+            - gupload.{{ .Values.global.domain }}
+        - port: 1313
+          sniHosts:
+            - {{ include "gupload.fullname" . }}
+      route:
+        - destination:
+            host: {{ include "gupload.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 1313

@@ -1,43 +1,24 @@
-#global:
-### Default
-# TZ: Asia/Hong_Kong
-### Default
-# workingDir: /var/hyperledger/crypto-config
-# https://hyperledger-fabric.readthedocs.io/en/release-2.0/logging-control.html
-# "info" or "debug" or "grpc=debug:debug" or "grpc=debug:info"
-### Default
-# logging: info
-### Default
-# mspId: Org0MSP
-### Default
-# domain: org0.com
+global:
+  ### Default
+  TZ: Asia/Hong_Kong
+  ### Default
+  workingDir: /var/hyperledger/crypto-config
+  # https://hyperledger-fabric.readthedocs.io/en/release-2.0/logging-control.html
+  # "info" or "debug" or "grpc=debug:debug" or "grpc=debug:info"
+  ### Default
+  # logging: info
+  ### Default
+  mspId: Org0MSP
+  ### Default
+  domain: org0.com
+  istiogateway: orderer2-gw
+  istiogatewayPort: 15443
 
 ### Default
 #image:
 #  repository: hyperledger/fabric-orderer
 #  tag: 2.2.0
 #  pullPolicy: IfNotPresent
-
-### Default
-#service:
-#  # Cluster IP or LoadBalancer
-#  type: ClusterIP
-#  port: 7050
-
-ingress:
-  enabled: false
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "GRPCS"
-  path: /
-  hosts:
-    - orderer2.org0.com
-  tls:
-    - hosts:
-        - orderer2.org0.com
-      secretName: orderer2.org0.com-tls
 
 persistence:
   ### Default

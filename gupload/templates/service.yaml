@@ -5,7 +5,7 @@ metadata:
   labels:
 {{ include "labels.standard" . | indent 4 }}
 spec:
-  type: {{ .Values.ingress.type }}
+  type: ClusterIP
   ports:
     - port: 1313
       targetPort: 1313

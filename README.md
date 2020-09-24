@@ -149,6 +149,16 @@ helm dep update
 ### Networking
 Here uses Istio Service Mesh, and istio CRD is located `networking` directory.
 
+Note that k8s will reply on DNS in host network. I find that "org0.com" is public domain. We need to create private zone
+in GCP Cloud DNS, with A record, of "orderer0.org0.com", equal to ip address of istiogateway.
+
+Currently, I have no idea why the peer requires hostAlias for endpoint ip resolution. If no hostAlias, peer fails to send
+gossips. It seems running peer rely on /etc/hosts, instead of DNS resolutions. On the other hand, when running installation
+job, the "peer" cli will only rely on DNS resolutions.
+
+Before understanding how it works, currently will use both hostAlias and private DNS. And, all peers and orderers shall
+work as expected.
+
 ### Naming convention
 *Helm chart value file*
 [release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml

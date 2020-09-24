@@ -165,10 +165,10 @@ res=$?
 set +x
 printMessage "pod/o0-hlf-ord" $res
 
+# Currently, it seems that META-INFO is missing, and it will fail to init chaincode; if using couchdb
+# while there is no real need for coudchdb, will fall back to goleveldb.
 #helm install p0o1db -n n1 -f ./releases/org1/p0o1db-hlf-couchdb.gcp.yaml ./hlf-couchdb
-#
 #sleep 5
-#
 #set -x
 #export POD_P0O1DB=$(kubectl get pods -n n1 -l "app=hlf-couchdb,release=p0o1db" -o jsonpath="{.items[0].metadata.name}")
 #kubectl wait --for=condition=Ready --timeout 180s pod/$POD_P0O1DB -n n1

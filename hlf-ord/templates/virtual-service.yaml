@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "hlf-ord.fullname" . }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - {{ .Values.ord.ordName }}.{{ .Values.global.domain }}
+    - {{ include "hlf-ord.fullname" . }}
+  gateways:
+    -  {{ .Values.global.istiogateway }}
+  tls:
+    - match:
+        - port: {{ .Values.global.istiogatewayPort }}
+          sniHosts:
+            - {{ .Values.ord.ordName }}.{{ .Values.global.domain }}
+        - port: 7050
+          sniHosts:
+            - {{ include "hlf-ord.fullname" . }}
+      route:
+        - destination:
+            host: {{ include "hlf-ord.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 7050

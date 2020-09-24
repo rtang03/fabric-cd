@@ -30,7 +30,7 @@ printMessage "pod/$POD_PSQL1" $res
 
 sleep 30
 
-helm install tlsca2 -n n2 -f ./releases/org2/tlsca2-hlf-ca.gcp.yaml --dry-run --debug ./hlf-ca
+helm install tlsca2 -n n2 -f ./releases/org2/tlsca2-hlf-ca.gcp.yaml ./hlf-ca
 printMessage "install tlsca2" $?
 
 set -x

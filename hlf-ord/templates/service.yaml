@@ -5,9 +5,9 @@ metadata:
   labels:
 {{ include "labels.standard" . | indent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.service.port }}
+    - port: 7050
       targetPort: 7050
       protocol: TCP
       name: tls-request

@@ -6,16 +6,13 @@ global:
   logging: info
   mspId: Org0MSP
   domain: org0.com
+  istiogateway: orderer0-gw
+  istiogatewayPort: 15443
 
 image:
   repository: hyperledger/fabric-orderer
   tag: 2.2.0
   pullPolicy: IfNotPresent
-
-service:
-  # Cluster IP or LoadBalancer
-  type: ClusterIP
-  port: 7050
 
 ingress:
   enabled: false
