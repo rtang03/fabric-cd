@@ -38,7 +38,8 @@ bootstrap:
   pvcName: pvc-org1
   secret:
     tlscacert: org0-tls-ca-cert
-    channeltx: channeltx
+    # Default should be no channelTx
+    # channeltx: channeltx
   chaincode:
     id: eventstore
     contract: eventstore
@@ -53,6 +54,9 @@ bootstrap:
       enabled: false
     update_anchor_peer:
       enabled: false
+      mspId: Org1MSP
+      host: peer0.org1.net
+      port: 15443
     package_chaincode:
       enabled: false
     install_chaincode:

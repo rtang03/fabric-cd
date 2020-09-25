@@ -1,4 +1,3 @@
-
 #!/bin/bash
 . ./scripts/setup.sh
 
@@ -6,11 +5,6 @@ SECONDS=0
 
 ./scripts/rm-secret.n2.sh
 rm ./download/*.crt
-
-# Note: Manually deploy PV
-#kubectl -n n2 create -f ../releases/org2/volumes/pvc-org2.gcp.yaml
-#kubectl -n n2 create -f ../releases/org2/volumes/pvc-p0o2.gcp.yaml
-# printMessage "create pv/pvc for org2" $?
 
 helm install admin2 -n n2 -f ./releases/org2/admin2-orgadmin.gcp.yaml ./orgadmin
 printMessage "install admin2" $?
@@ -221,6 +215,39 @@ kubectl wait --for=condition=complete --timeout 120s job/joinch2-hlf-operator--j
 res=$?
 set +x
 printMessage "job/joinch2-hlf-operator" $res
+
+export POD_CLI2=$(kubectl get pods --namespace n2 -l "app=orgadmin,release=admin2" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_CLI1
+
+helm install installcc2a2 -n n2 -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 300s job/installcc2a2-hlf-operator--bootstrap -n n2
+res=$?
+set +x
+printMessage "job/install chaincode part1" $res
+
+set -x
+export CCID=$(kubectl -n n2 exec $POD_CLI2 -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
+res=$?
+set +x
+printMessage "retrieve CCID" $res
+
+helm install eventstore -n n2 --set ccid=$CCID -f ./releases/org2/eventstore-hlf-cc.gcp.yaml ./hlf-cc
+set -x
+export POD_CC2=$(kubectl get pods -n n2 -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_CC2 -n n2
+res=$?
+set +x
+printMessage "pod/eventstore chaincode" $res
+
+sleep 10
+
+helm install installcc2b -n n2 -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 300s job/installcc2b-hlf-operator--bootstrap -n n2
+res=$?
+set +x
+printMessage "job/install chaincode part2" $res
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
