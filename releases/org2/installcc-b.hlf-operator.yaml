@@ -30,6 +30,7 @@ bootstrap:
   enabled: true
   hostAlias:
     - hostnames:
+        - peer0.org1.net
         - peer0.org2.net
         - orderer0.org0.com
       ip: 35.202.107.80
@@ -57,31 +58,26 @@ bootstrap:
     queryinstalled:
       enabled: false
     approve_chaincode:
-      enabled: false # true
+      enabled: true
       sequence: 1
     queryapproved:
-      enabled: false # true
+      enabled: true
     checkcommitreadiness:
-      enabled: false # true
+      enabled: false
     commit_chaincode:
-      enabled: false # true
-      targets:
-        - peerAddress: peer0.org2.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org2.net/tls-msp/tlscacerts/tls-tlsca2-hlf-ca-7054.pem
+      enabled: false
     querycommitted:
-      enabled: false # true
-      targets:
-        - peerAddress: peer0.org2.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org2.net/tls-msp/tlscacerts/tls-tlsca2-hlf-ca-7054.pem
+      enabled: false
     init_chaincode:
-      enabled: false # true
-      targets:
-        - peerAddress: peer0.org2.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/tlscacerts/tls-tlsca2-hlf-ca-7054.pem
+      enabled: false
     dev_invoke:
       enabled: true
       targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1-tls-ca-cert/tls.crt
+          name: org1-tls-ca-cert
         - peerAddress: peer0.org2.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/tlscacerts/tls-tlsca2-hlf-ca-7054.pem
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org2-tls-ca-cert/tls.crt
+          name: org2-tls-ca-cert
     dev_query:
       enabled: true

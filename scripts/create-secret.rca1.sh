@@ -108,3 +108,15 @@ preventEmptyValue "./Org1MSP/ca/server/msp/keystore/key.pem" $KEY
 
 kubectl -n n1 create secret generic rcaorg1-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
 printMessage "create secret rcaorg1-tls" $?
+
+echo "######## 12. Create secret org1-tls-ca-cert for smoke test devinvoke during bootstrap"
+set -x
+kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1tlscacert.crt
+res=$?
+set +x
+printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
+set -x
+kubectl -n n1 create secret generic org1-tls-ca-cert --from-file=tls.crt=./download/org1tlscacert.crt
+res=$?
+set +x
+printMessage "create secret org1-tls-ca-cert for n1" $res

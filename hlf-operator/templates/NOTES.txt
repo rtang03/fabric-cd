@@ -1,4 +1,16 @@
 Job will perform:
+{{-if .Values.fetchSend.enabled }}
+  - fetch current channel config, and send config.json to other org
+{{- end }}
+{{-if .Values.neworgSend.enabled }}
+  - create new org update, and send to other org
+{{- end }}
+{{-if .Values.updateChannel.enabled }}
+  - update channel
+{{- end }}
+{{-if .Values.joinChannel.enabled }}
+  - join channel
+{{- end }}
 {{- if .Values.bootstrap.tasks.create_channel.enabled }}
   - create channel
 {{- end }}

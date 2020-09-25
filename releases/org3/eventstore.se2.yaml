@@ -1,0 +1,29 @@
+#apiVersion: networking.istio.io/v1alpha3
+#kind: VirtualService
+#metadata:
+#  name: eventstore-hlf-cc
+#  namespace: n2
+#spec:
+#  hosts:
+#    - eventstore-hlf-cc
+#  http:
+#    - route:
+#        - destination:
+#            host: eventstore-hlf-cc.n1.svc.cluster.local
+#            port:
+#              number: 443
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: eventstore-hlf-cc
+  namespace: n2
+spec:
+  hosts:
+    - chaincode.org1.net
+  location: MESH_EXTERNAL
+  ports:
+    - number: 15443
+      name: https
+      protocol: TLS
+  resolution: NONE

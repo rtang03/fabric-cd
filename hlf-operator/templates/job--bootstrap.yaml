@@ -39,6 +39,13 @@ spec:
         - name: org0-tls-ca-cert
           secret:
             secretName: {{ .Values.bootstrap.secret.tlscacert }}
+        {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+        {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .name }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.bootstrap.secret.channeltx }}
         - name: channel-tx
           secret:
@@ -229,6 +236,9 @@ spec:
                 -o ${ORDERER_URL} -C ${CHANNEL_NAME} \
                 --tls --cafile ${ORDERER_CA} \
                 --name {{ .Values.bootstrap.chaincode.id }} \
+                {{- if .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }}
+                --signature-policy {{ .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }} \
+                {{- end }}
                 --version {{ .Values.bootstrap.chaincode.version }} \
                 --package-id $(sed -n "/{{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" $DIR/log-installed.txt) \
                 --init-required \
@@ -362,6 +372,12 @@ spec:
             {{- end }}
             - name: org0-tls-ca-cert
               mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0-tls-ca-cert
+            {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+            {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+            - name: {{ .name }}
+              mountPath: {{ $.Values.global.workingDir }}/crypto-config/channel-artifacts/{{ .name }}
+            {{- end }}
+            {{- end }}
             - name: collection-json
               mountPath: /builders/packaging/connection.json
               subPath: connection.json

@@ -60,6 +60,7 @@ bootstrap:
     approve_chaincode:
       enabled: true
       sequence: 1
+      # signaturePolicy: "AND(\"Org1MSP.member\")"
     queryapproved:
       enabled: true
     checkcommitreadiness:
@@ -83,6 +84,7 @@ bootstrap:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1-tls-ca-cert/tls.crt
+          name: org1-tls-ca-cert
     dev_query:
       enabled: true
