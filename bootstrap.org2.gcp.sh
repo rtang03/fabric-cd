@@ -20,7 +20,7 @@ export POD_PSQL2=$(kubectl get pods -n n2 -l "app.kubernetes.io/name=postgresql-
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_PSQL2 -n n2
 res=$?
 set +x
-printMessage "pod/$POD_PSQL1" $res
+printMessage "pod/$POD_PSQL2" $res
 
 sleep 30
 
@@ -107,17 +107,17 @@ echo "# ORG2: Out-of-band process: Manually send p0o2.crt from org1 to org2"
 export POD_RCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_RCA1
 
-set -x
-kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem > ./download/p0o1.crt
-res=$?
-set +x
-printMessage "download Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem from n1" $res
-
-set -x
-kubectl -n n2 create secret generic peer0.org1.net-tls --from-file=tls.crt=./download/p0o1.crt
-res=$?
-set +x
-printMessage "create secret peer0.org1.net-tls for n2" $res
+#set -x
+#kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem > ./download/p0o1.crt
+#res=$?
+#set +x
+#printMessage "download Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem from n1" $res
+#
+#set -x
+#kubectl -n n2 create secret generic peer0.org1.net-tls --from-file=tls.crt=./download/p0o1.crt
+#res=$?
+#set +x
+#printMessage "create secret peer0.org1.net-tls for n2" $res
 
 export POD_RCA0=$(kubectl get pods -n n0 -l "app=hlf-ca,release=rca0" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_RCA0
@@ -157,6 +157,18 @@ kubectl -n n2 create secret generic org0-tls-ca-cert --from-file=tlscacert.pem=.
 res=$?
 set +x
 printMessage "create secret org0-tls-ca-cert for n2" $res
+
+set -x
+kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1tlscacert.crt
+res=$?
+set +x
+printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
+
+set -x
+kubectl -n n2 create secret generic org1-tls-ca-cert --from-file=tlscacert.pem=./download/org1tlscacert.crt
+res=$?
+set +x
+printMessage "create secret org1-tls-ca-cert for n2" $res
 #####################################################################
 ### END: OUT OF BAND
 #####################################################################
@@ -219,9 +231,9 @@ printMessage "job/joinch2-hlf-operator" $res
 export POD_CLI2=$(kubectl get pods --namespace n2 -l "app=orgadmin,release=admin2" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI1
 
-helm install installcc2a2 -n n2 -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
+helm install installcc2a -n n2 -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 300s job/installcc2a2-hlf-operator--bootstrap -n n2
+kubectl wait --for=condition=complete --timeout 300s job/installcc2a-hlf-operator--bootstrap -n n2
 res=$?
 set +x
 printMessage "job/install chaincode part1" $res
@@ -244,7 +256,7 @@ sleep 10
 
 helm install installcc2b -n n2 -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 300s job/installcc2b-hlf-operator--bootstrap -n n2
+kubectl wait --for=condition=complete --timeout 180s job/installcc2b-hlf-operator--bootstrap -n n2
 res=$?
 set +x
 printMessage "job/install chaincode part2" $res
