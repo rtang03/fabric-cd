@@ -1,18 +1,6 @@
 #!/bin/bash
 . ./scripts/setup.sh
-######## post-install notes for rca0/hlf-ca
-######## Objective: These steps, create secret
-######## - orderer0.org0.com-cert orderer0.org0.com-key
-######## - orderer0.org0.com-cacert orderer0.org0.com-tls orderer0.org0.com-tlsrootcert orderer0.org0.com-admincert
-######## - orderer1.org0.com-cert orderer1.org0.com-key
-######## - orderer1.org0.com-cacert orderer1.org0.com-tls orderer1.org0.com-tlsrootcert orderer1.org0.com-admincert
-######## - orderer2.org0.com-cert orderer2.org0.com-key
-######## - orderer2.org0.com-cacert orderer2.org0.com-tls orderer2.org0.com-tlsrootcert orderer2.org0.com-admincert
-######## - orderer3.org0.com-cert orderer3.org0.com-key
-######## - orderer3.org0.com-cacert orderer3.org0.com-tls orderer3.org0.com-tlsrootcert orderer3.org0.com-admincert
-######## - orderer4.org0.com-cert orderer4.org0.com-key
-######## - orderer4.org0.com-cacert orderer4.org0.com-tls orderer4.org0.com-tlsrootcert orderer4.org0.com-admincert
-########
+
 ######## 1. secret: rca0-hlf-ca--ca is already set by secret manifest. Below command retrieves it.
 # export CA_ADMIN=$(kubectl -n n0 get secret rca0-hlf-ca--ca -o jsonpath=".data.CA_ADMIN" | base64)
 # export CA_PASSWORD=$(kubectl -n n0 get secret rca0-hlf-ca--ca -o jsonpath=".data.CA_PASSWORD" | base64)

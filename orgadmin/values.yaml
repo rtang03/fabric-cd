@@ -64,7 +64,7 @@ postgresql-0:
       CREATE DATABASE "rca_db";
   service:
     type: NodePort
-    nodePort: 30432
+    # nodePort: 30432
   persistence:
     enabled: true
     existingClaim: pvc-org0

@@ -86,5 +86,6 @@ preventEmptyValue "./Org2MSP/ca/server/ca-cert.pem" $CERT
 export KEY=$(kubectl -n n2 exec ${POD_RCA} -c ca -- cat ./Org2MSP/ca/server/msp/keystore/key.pem)
 preventEmptyValue "./Org2MSP/ca/server/msp/keystore/key.pem" $KEY
 
+# TODO this key name is wrong convention
 kubectl -n n2 create secret generic rcaorg2-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
 printMessage "create secret rcaorg2-tls" $?

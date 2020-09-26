@@ -5,7 +5,7 @@ metadata:
   name: pvc-p0o2
   labels:
     app: hlf-peer
-    release: "p0o1"
+    release: "p0o2"
     namespace: n1
 spec:
   accessModes:

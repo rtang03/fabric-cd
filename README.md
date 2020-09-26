@@ -28,9 +28,11 @@ gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 kubectl create namespace n0
 kubectl create namespace n1
 kubectl create namespace n2
+kubectl create namespace n3
 kubectl label namespace n0 istio-injection=enabled
 kubectl label namespace n1 istio-injection=enabled
 kubectl label namespace n2 istio-injection=enabled
+kubectl label namespace n3 istio-injection=enabled
 
 # Step 2: Create persistence volume claim for org0 and org1
 # Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
@@ -123,14 +125,14 @@ Similarly, I publish the `gupload` grpc upload server/client to Github container
 
 ### Helm charts
 Availble app:
-- gupload
-- hlf-ca
-- hlf-couchdb
-- hlf-ord
-- hlf-peer
-- hlf-cc
-- hlf-operator
-- orgadmin
+- gupload: grpc file uploader
+- hlf-ca: Hyperledger Fabric Certificate Authority
+- hlf-couchdb: CouchDB
+- hlf-ord: Hyperledger Fabric Orderer
+- hlf-peer: Hyperledger Fabric Peer
+- hlf-cc: Hyperledger Fabric Chaincode
+- hlf-operator: administrative tasks via k8s jobs
+- orgadmin: administrative cli
 
 ### Helm
 ```shell script
@@ -164,6 +166,6 @@ work as expected.
 [release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml
 
 ### Reference Info
-[External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
-[External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
-[install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)
+- [External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
+- [External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
+- [install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)

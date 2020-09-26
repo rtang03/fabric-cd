@@ -1,0 +1,60 @@
+global:
+  mspId: Org3MSP
+  ### Default
+  # TZ: Asia/Hong_Kong
+  ### Default
+  # workingDir: /var/hyperledger/crypto-config
+  ### Default
+  # logging: info
+
+cli:
+  ### Default
+  fabricBinary: "2.2.0"
+  ### Default
+  fabricCABinary: "1.4.7"
+
+hostAlias:
+  enabled: true
+  hostnames:
+    # istio ingress gateway
+    - hostname: peer0.org3.net
+      ip: 35.202.107.80
+    - hostname: orderer0.org0.com
+      ip: 35.202.107.80
+
+peer:
+  enabled: true
+  ### configmap
+  config:
+    # peerAddress is [Release-name]-hlf-peer:7051
+    peerAddress: "p0o3-hlf-peer:7051"
+    # Todo: double check if the right cert to use
+    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org3MSP/peer0.org3.net/tls-msp/signcerts/cert.pem
+  ### certs provider by org0, to peer
+  secret:
+    ordTlsSignCert: orderer0.org0.com-tlssigncert
+    ordTlsCaCert: org0-tls-ca-cert
+
+persistence:
+  pvcName: pvc-org3
+
+postgresql-0:
+  ### Default
+  # initdbScripts:
+  #   1-createdb.sql: |
+  #   CREATE DATABASE "tls_ca_db";
+  #   CREATE DATABASE "rca_db";
+  postgresqlPassword: password
+  master:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
+  slave:
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
+  service:
+    type: NodePort
+  persistence:
+    enabled: true
+    existingClaim: pvc-org3
