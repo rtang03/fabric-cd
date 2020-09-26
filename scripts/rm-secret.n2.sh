@@ -13,3 +13,5 @@ kubectl -n n2 delete secret orderer0.org0.com-tlssigncert
 kubectl -n n2 delete secret org0-tls-ca-cert
 ## created via out-of-band process
 kubectl -n n2 delete secret peer0.org1.net-tls
+kubectl -n n2 delete secret org1-tls-ca-cert
+kubectl -n n2 delete secret org2-tls-ca-cert

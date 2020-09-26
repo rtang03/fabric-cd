@@ -40,7 +40,7 @@ neworgSend:
     pvcName: pvc-gupload2
   secret:
     tlscacert: org0-tls-ca-cert
-    peerTlscacert: peer0.org1.net-tls
+    peerTlscacert: org1-tls-ca-cert # peer0.org1.net-tls
   configtx:
     mspId: Org2MSP
     anchorPeer: peer0.org2.net

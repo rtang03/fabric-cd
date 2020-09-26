@@ -10,3 +10,6 @@ helm uninstall -n n2 p0o2
 #helm uninstall -n n2 p0o2db
 helm uninstall -n n2 rca2
 helm uninstall -n n2 tlsca2
+helm uninstall -n n2 installcc2a
+helm uninstall -n n2 installcc2b
+helm uninstall -n n2 eventstore

@@ -42,7 +42,8 @@ fetchSend:
     pvcName: pvc-gupload1
   secret:
     org0tlscacert: org0-tls-ca-cert
-    peerTlscacert: peer0.org2.net-tls
+    peerTlscacert: org2-tls-ca-cert
+#    peerTlscacert: peer0.org2.net-tls
   label: o1_channel_config
   address:
     url: gupload.org2.net

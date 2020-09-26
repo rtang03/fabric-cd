@@ -39,9 +39,18 @@ spec:
         - name: org0-tls-ca-cert
           secret:
             secretName: {{ .Values.bootstrap.secret.tlscacert }}
+        {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+        {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .name }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.bootstrap.secret.channeltx }}
         - name: channel-tx
           secret:
             secretName: {{ .Values.bootstrap.secret.channeltx }}
+        {{- end }}
         - name: collection-json
           configMap:
             name: {{ include "hlf-operator.fullname" . }}--cli
@@ -129,7 +138,7 @@ spec:
               set +x
               printMessage "cp block" $res
               set -x
-              jq ".channel_group.groups.Application.groups.Org1MSP.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"peer0.org1.net\",\"port\":15443}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
+              jq ".channel_group.groups.Application.groups.{{ .Values.bootstrap.tasks.update_anchor_peer.mspId }}.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"{{ .Values.bootstrap.tasks.update_anchor_peer.host }}\",\"port\":{{ .Values.bootstrap.tasks.update_anchor_peer.port }}}]},\"version\":\"0\"}}" $DIR/config_copy.json > $DIR/modified_config.json
               res=$?
               set +x
               printMessage "jq add anchorpeer" $res
@@ -227,6 +236,9 @@ spec:
                 -o ${ORDERER_URL} -C ${CHANNEL_NAME} \
                 --tls --cafile ${ORDERER_CA} \
                 --name {{ .Values.bootstrap.chaincode.id }} \
+                {{- if .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }}
+                --signature-policy {{ .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }} \
+                {{- end }}
                 --version {{ .Values.bootstrap.chaincode.version }} \
                 --package-id $(sed -n "/{{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" $DIR/log-installed.txt) \
                 --init-required \
@@ -354,10 +366,18 @@ spec:
             - name: setup-script
               mountPath: /script/setup.sh
               subPath: setup.sh
+            {{- if .Values.bootstrap.secret.channeltx }}
             - name: channel-tx
               mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/channeltx
+            {{- end }}
             - name: org0-tls-ca-cert
               mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0-tls-ca-cert
+            {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+            {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+            - name: {{ .name }}
+              mountPath: {{ $.Values.global.workingDir }}/crypto-config/channel-artifacts/{{ .name }}
+            {{- end }}
+            {{- end }}
             - name: collection-json
               mountPath: /builders/packaging/connection.json
               subPath: connection.json

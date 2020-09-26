@@ -38,7 +38,8 @@ bootstrap:
   pvcName: pvc-org1
   secret:
     tlscacert: org0-tls-ca-cert
-    channeltx: channeltx
+    # Default should be no channelTx
+    # channeltx: channeltx
   chaincode:
     id: eventstore
     contract: eventstore
@@ -53,6 +54,9 @@ bootstrap:
       enabled: false
     update_anchor_peer:
       enabled: false
+      mspId: Org1MSP
+      host: peer0.org1.net
+      port: 15443
     package_chaincode:
       enabled: false
     install_chaincode:
@@ -84,8 +88,9 @@ bootstrap:
     dev_invoke:
       enabled: false
       targets:
-        - peerAddress: p0o1-hlf-peer:7051
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-n1-svc-cluster-local-7054.pem
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+          name: org1-tls-ca-cert
     dev_query:
       enabled: false
 
@@ -185,8 +190,3 @@ joinChannel:
 signSend:
   enabled: false
 
-#######################
-### Param for package chaincode and send to other org
-#######################
-packageccSend:
-  enabled: false

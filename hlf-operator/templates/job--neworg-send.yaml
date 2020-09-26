@@ -148,7 +148,6 @@ spec:
               ########
               # Step 9: gupload to obtain signature
               ########
-              sleep 3h
               printHeader "Gupload to remote server"
               set -x
               /var/gupload/gupload upload --cacert /var/gupload/cert/tls.crt --label {{ .Values.neworgSend.label }} --file $TMP/config_update_in_envelope.pb --filename config_update_in_envelope.pb \

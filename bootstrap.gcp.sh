@@ -167,6 +167,7 @@ printMessage "pod/o0-hlf-ord" $res
 
 # Currently, it seems that META-INFO is missing, and it will fail to init chaincode; if using couchdb
 # while there is no real need for coudchdb, will fall back to goleveldb.
+# DISABLED; CANNOT REMOVE
 #helm install p0o1db -n n1 -f ./releases/org1/p0o1db-hlf-couchdb.gcp.yaml ./hlf-couchdb
 #sleep 5
 #set -x
@@ -186,7 +187,6 @@ set +x
 printMessage "pod/p0o1-hlf-peer" $res
 
 helm install g1 -n n1 -f ./releases/org1/g1-gupload.gcp.yaml ./gupload
-
 
 export POD_CLI1=$(kubectl get pods --namespace n1 -l "app=orgadmin,release=admin1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI1
