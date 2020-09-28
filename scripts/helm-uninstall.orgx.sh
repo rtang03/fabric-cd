@@ -1,7 +1,7 @@
 #!/bin/bash
-. ./scripts/env.sh
+. ./env.sh
 
-helm uninstall -n $NS REL_ORGADMIN
+helm uninstall -n $NS $REL_ORGADMIN
 helm uninstall -n $NS crypto-$REL_RCA
 helm uninstall -n $NS crypto-$REL_TLSCA
 helm uninstall -n $NS $REL_GUPLOAD

@@ -35,7 +35,7 @@ bootstrap:
       ip: 35.202.107.80
   pvcName: pvc-org1
   secret:
-    tlscacert: org0-tls-ca-cert
+    tlscacert: org0.com-tlscacert
     channeltx: channeltx
   chaincode:
     id: eventstore
@@ -60,7 +60,6 @@ bootstrap:
     approve_chaincode:
       enabled: true
       sequence: 1
-      # signaturePolicy: "AND(\"Org1MSP.member\")"
     queryapproved:
       enabled: true
     checkcommitreadiness:
@@ -84,7 +83,9 @@ bootstrap:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1-tls-ca-cert/tls.crt
-          name: org1-tls-ca-cert
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1-net-tlscacert/tls.crt
+          # name below is used in volume mounted, cannnot contain "dot"
+          name: org1-net-tlscacert
+          secret: org1.net-tlscacert
     dev_query:
       enabled: true

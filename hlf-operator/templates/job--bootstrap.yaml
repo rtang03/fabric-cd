@@ -43,7 +43,7 @@ spec:
         {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
         - name: {{ .name }}
           secret:
-            secretName: {{ .name }}
+            secretName: {{ .secret }}
         {{- end }}
         {{- end }}
         {{- if .Values.bootstrap.secret.channeltx }}

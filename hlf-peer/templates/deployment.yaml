@@ -136,11 +136,11 @@ spec:
           secret:
             secretName: {{ .Values.secrets.ordTlsRootCert }}
         {{- end }}
-        {{- if .Values.secrets.ordTlsSignCert }}
-        - name: ord-tlssigncert
-          secret:
-            secretName: {{ .Values.secrets.ordTlsSignCert }}
-        {{- end }}
+        # {{- if .Values.secrets.ordTlsSignCert }}
+        # - name: ord-tlssigncert
+        #   secret:
+        #     secretName: {{ .Values.secrets.ordTlsSignCert }}
+        # {{- end }}
         - name: org0-tls-ca-cert
           secret:
             secretName: {{ .Values.secrets.ordOrg0Tlscacert }}
@@ -271,10 +271,10 @@ spec:
             - mountPath: {{ include "hlf-peer.home" . }}/ord/tls-msp/tlscacerts
               name: ord-tlsrootcert
             {{- end }}
-            {{- if .Values.secrets.ordTlsSignCert }}
-            - mountPath: {{ include "hlf-peer.home" . }}/ord/tls-msp/signcerts
-              name: ord-tlssigncert
-            {{- end }}
+            # {{- if .Values.secrets.ordTlsSignCert }}
+            # - mountPath: {{ include "hlf-peer.home" . }}/ord/tls-msp/signcerts
+            #   name: ord-tlssigncert
+            # {{- end }}
             {{- if .Values.secrets.channels }}
             {{- range .Values.secrets.channels }}
             - mountPath: /var/hyperledger/crypto-config/{{ $.Values.global.mspId }}/{{ . }}

@@ -35,7 +35,7 @@ bootstrap:
       ip: 35.202.107.80
   pvcName: pvc-org1
   secret:
-    tlscacert: org0-tls-ca-cert
+    tlscacert: org0.com-tlscacert
     channeltx: channeltx
   chaincode:
     id: eventstore

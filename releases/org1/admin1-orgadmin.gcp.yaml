@@ -34,8 +34,8 @@ peer:
     peerTlsRootcertFile: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
   ### certs provider by org0, to peer
   secret:
-    ordTlsSignCert: orderer0.org0.com-tlssigncert
-    ordTlsCaCert: org0-tls-ca-cert
+#    ordTlsSignCert: orderer0.org0.com-tlssigncert
+    ordTlsCaCert: org0.com-tlscacert
 
 persistence:
   ### Default

@@ -39,4 +39,4 @@ updateChannel:
   gupload:
     pvcName: pvc-gupload1
   secret:
-    tlscacert: org0-tls-ca-cert
+    tlscacert: org0.com-tlscacert

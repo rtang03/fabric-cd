@@ -90,7 +90,8 @@ bootstrap:
       targets:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
-          name: org1-tls-ca-cert
+          name: org1-net-tlscacert
+          secret: org1.net-tlscacert
     dev_query:
       enabled: false
 

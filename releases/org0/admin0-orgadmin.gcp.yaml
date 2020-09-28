@@ -18,9 +18,9 @@ cli:
 orderer:
   enabled: true
   secret:
-    org1cacert: org1-cacerts
-    org1admincerts: org1-admincerts
-    org1tlscacerts: org1-tlscacerts
+    org1cacert: org1.net-cacert
+    org1admincerts: org1.net-admincert
+    org1tlscacerts: org1.net-tlscacert
   channels:
     - channeltx
 

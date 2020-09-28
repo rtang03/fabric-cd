@@ -9,9 +9,7 @@ global:
 caAdmin: tlsca0-admin
 caAdminPW: tlsca0-adminPW
 endpoint: tlsca0-hlf-ca:7054
-#endpoint: tlsca0-hlf-ca.n0.svc.cluster.local:7054
 tlsCaCert: /var/hyperledger/crypto-config/Org0MSP/tls/admin/msp/cacerts/tlsca0-hlf-ca-7054.pem
-#tlsCaCert: /var/hyperledger/crypto-config/Org0MSP/tls/admin/msp/cacerts/tlsca0-hlf-ca-n0-svc-cluster-local-7054.pem
 
 orgAdmin:
   enabled: false
