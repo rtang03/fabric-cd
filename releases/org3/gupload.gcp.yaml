@@ -1,0 +1,15 @@
+global:
+  fabricBinary: 2.2.0
+  # istio ingress gateway
+  istiogateway: p0o3-gateway
+  istiogatewayPort: 15443
+  domain: org3.net
+
+persistence:
+  enabled: true
+  pvcName: pvc-gupload3
+
+secrets:
+  peer:
+    # [DOMAIN]-tls
+    tls: peer0.org3.net-tls

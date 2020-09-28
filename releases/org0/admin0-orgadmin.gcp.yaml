@@ -50,14 +50,16 @@ postgresql-0:
     podLabels:
       version: "0.6.3"
       app: "orgadmin"
-#    podAnnotations:
-#      sidecar.istio.io/inject: "false"
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPULimit: "50m"
   slave:
     podLabels:
       version: "0.6.3"
       app: "orgadmin"
-#    podAnnotations:
-#      sidecar.istio.io/inject: "false"
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPULimit: "50m"
   persistence:
     enabled: true
     existingClaim: pvc-org0

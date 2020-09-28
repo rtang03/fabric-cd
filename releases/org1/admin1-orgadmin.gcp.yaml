@@ -54,10 +54,16 @@ postgresql-0:
   #   CREATE DATABASE "rca_db";
   postgresqlPassword: password
   master:
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPULimit: "50m"
     podLabels:
       version: "0.6.3"
       app: "orgadmin"
   slave:
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPULimit: "50m"
     podLabels:
       version: "0.6.3"
       app: "orgadmin"

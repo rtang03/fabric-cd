@@ -18,10 +18,14 @@ istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual contr
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
 ```
 
+### Update Private DNS
+
 ### Preparation Step
+
+**Step 0: after GKE is created, update local machine credentials**
+
 ```shell script
 # gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
-# Step 0: after GKE is created, update local machine credentials
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 
 # Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
@@ -41,13 +45,30 @@ kubectl label namespace n3 istio-injection=enabled
 scripts/recreate-pvc.org01.gcp.sh
 ```
 
+**Goto GKE, obtain the IP for Istio Ingress Gateway**
+Update ip address for hlf-peer.gcp.yaml
+
+```yaml
+peer:
+  hostAlias:
+    - hostnames:
+        - orderer0.org0.com
+        - orderer1.org0.com
+        - orderer2.org0.com
+        - orderer3.org0.com
+        - orderer4.org0.com
+        - peer0.org1.net
+      ip: 35.xxx.xxx.xxx
+```
+
 ### Initial Setup
 ```shell script
 # Install istio for org0 and org1
 kubectl -n n0 apply -f networking/istio-n0.yaml
 kubectl -n n1 apply -f networking/istio-n1.yaml
+kubectl -n n1 apply -f networking/istio-n2.yaml
+kubectl -n n1 apply -f networking/istio-n3.yaml
 
-# Install
 bootstrap.gcp.sh
 ```
 
