@@ -150,7 +150,6 @@ secrets:
   ## This should include the Orderer TLS 'cacert.pem'
   # ordTlsRootCert: hlf--ord-tlsrootcert
   ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
-  # ordTlsSignCert: "orderer0.org0.com-tlssigncert"
   ordOrg0Tlscacert: "org0-tls-ca-cert"
 
 resources: {}

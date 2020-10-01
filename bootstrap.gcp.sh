@@ -285,5 +285,48 @@ res=$?
 set +x
 printMessage "job/bootstrap part2" $res
 
+echo "#################################"
+echo "### Step 19: Upload org1 - tls root certs"
+echo "#################################"
+export POD_CLI1=$(kubectl get pods --namespace n1 -l "app=orgadmin,release=admin1" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_CLI1
+
+# download org1 root cert
+set -x
+kubectl -n n1 exec $POD_CLI1 -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1.net--tlscacert.pem
+res=$?
+set +x
+printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
+
+export POD_G1=$(kubectl get pods --namespace n1 -l "app=gupload,release=g1" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_G1
+
+# send org1 root cert to 'public' folder of gupload
+set -x
+kubectl -n n1 cp ./download/org1.net--tlscacert.pem $POD_G1:/var/gupload/fileserver/public -c gupload
+res=$?
+set +x
+printMessage "cp org1.net-tlscacert.pem to g1-gupload" $res
+
+echo "#################################"
+echo "### Step 20: Upload org0 - tls root certs"
+echo "#################################"
+export POD_CLI0=$(kubectl get pods --namespace n0 -l "app=orgadmin,release=admin0" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_CLI1
+
+# download org0 root cert
+set -x
+kubectl -n n0 exec $POD_CLI0 -- cat ./Org0MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org0.com--tlscacert.pem
+res=$?
+set +x
+printMessage "download Org0MSP/msp/tlscacerts/tls-ca-cert.pem from n0" $res
+
+# send org1 root cert to 'public' folder of gupload
+set -x
+kubectl -n n1 cp ./download/org0.com--tlscacert.pem $POD_G1:/var/gupload/fileserver/public -c gupload
+res=$?
+set +x
+printMessage "cp org0.com-tlscacert.pem to g1-gupload" $res
+
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

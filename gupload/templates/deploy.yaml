@@ -31,13 +31,14 @@ spec:
             - -c
             - |
               echo "### Starting gupload ###"
+              /var/gupload/gupload --version
               set -x
-              cp /var/gupload/gupload /var/gupload/uploaded
+              cp /var/gupload/gupload /var/gupload/fileserver
               /var/gupload/gupload serve --key ./cert/tls.key --certificate ./cert/tls.crt
           volumeMounts:
             - mountPath: /var/gupload/cert
               name: tls
-            - mountPath: /var/gupload/uploaded
+            - mountPath: /var/gupload/fileserver
               name: files
           resources:
 {{ toYaml .Values.resources | indent 12 }}

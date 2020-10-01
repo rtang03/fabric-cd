@@ -151,7 +151,7 @@ preventEmptyValue "pod unavailable" $POD_CLI
 export POD_RCA0=$(kubectl get pods -n $NS0 -l "app=hlf-ca,release=$REL_RCA0" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_RCA0
 
-echo "########  1. create $ORDERER_URL-tlssigncert for n2"
+echo "########  1. create $ORDERER_URL-tlssigncert for $NS"
 set -x
 kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem > ./download/orderer0.crt
 res=$?
