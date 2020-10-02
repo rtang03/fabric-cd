@@ -17,13 +17,6 @@ service:
   portRequest: 7051
   portEvent: 7053
 
-# Path of the docker socket on the host
-dockerSocketPath: /var/run/docker.sock
-# Docker config to be used to pull the images (base64'd)
-dockerConfig: null
-# Docker config mount path
-dockerConfigMountPath: /root/.docker
-
 persistence:
   annotations: {}
   accessMode: ReadWriteOnce
@@ -148,9 +141,8 @@ secrets:
   # adminKey: hlf--peer-adminkey
   adminKey: "peer0.org1.net-adminkey"
   ## This should include the Orderer TLS 'cacert.pem'
-  # ordTlsRootCert: hlf--ord-tlsrootcert
-  ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
-  ordOrg0Tlscacert: "org0-tls-ca-cert"
+  # ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
+  # ordOrg0Tlscacert: "org0.com--tlscacert" # "org0-tls-ca-cert"
 
 resources: {}
   ## We usually recommend not to specify default resources and to leave this as a conscious

@@ -27,5 +27,6 @@ export JOB_INSTALL_CHAINCODE_B=installcc3b
 ## Use for Out-of-band process
 # Namespace for orderers
 export NS0=n0
+export NS1=n1
 export REL_RCA0=rca0
 export REL_TLSCA0=tlsca0

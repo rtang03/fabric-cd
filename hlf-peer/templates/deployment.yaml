@@ -38,15 +38,7 @@ spec:
         {{- end }}
         - name: dockersocket
           hostPath:
-            path: {{ .Values.dockerSocketPath }}
-        {{- if .Values.dockerConfig }}
-        - name: docker-config
-          secret:
-            secretName: {{ include "hlf-peer.fullname" . }}-dockerconfigjson
-            items:
-              - key: .dockerconfigjson
-                path: config.json
-        {{- end }}
+            path: /var/run/docker.sock
         - name: core-yaml
           configMap:
             name: {{ include "hlf-peer.fullname" . }}--ccbin

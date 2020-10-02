@@ -3,13 +3,18 @@
 . ./scripts/env.org2.sh
 
 ORDERER_URL=orderer0.org0.com
-MSPID=Org0MSP
+MSPID_0=Org0MSP
+MSPID_1=Org1MSP
+G1_URL=gupload.org1.net:15443
+TLSCACERT_0=org0.com--tlscacert
+TLSCACERT_1=org1.net--tlscacert
+TLSCACERT_2=org2.net--tlscacert
 
 SECONDS=0
 
 ./scripts/rm-secret.n2.sh
 mkdir -p ./download
-rm ./download/*.crt
+rm ./download/*.pem
 
 echo "#################################"
 echo "### Step 1: Install $REL_ORGADMIN"
@@ -95,97 +100,96 @@ set +x
 printMessage "pod/$REL_GUPLOAD" $res
 
 
-# Out of band process may be replaced by other manual arrangement, instead of using kubectl commands
-# Below steps require kubectl commands to access corresponding orgs'.
 echo "#################################"
 echo "### Step 8: Out-of-band process"
 echo "#################################"
-# Sub-step 1 to 3 below are common to newly added orgs:
-# org0.com-tlscacert, ord-tlsrootcert are required to connect to orderer0
-# Step 4 an 5 are only required for join channel, install/approve cc.
+# Below step may be replaced by manual step, to obtain org1 root cert
+echo "######## 0. obtain $TLSCACERT_1.pem from out-of-band process for $NS"
+export POD_RCA1=$(kubectl get pods -n $NS1 -l "app=hlf-ca,release=$REL_RCA1" -o jsonpath="{.items[0].metadata.name}")
+set -x
+kubectl -n $NS1 exec $POD_RCA1 -c ca -- cat ./$MSPID_1/msp/tlscacerts/tls-ca-cert.pem > ./download/$TLSCACERT_1.pem
+res=$?
+set +x
+printMessage "download $TLSCACERT_1.pem from n1" $res
 
-export POD_CLI=$(kubectl get pods -n $NS -l "app=orgadmin,release=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_CLI
+# org1 root cert is used to connect to G1 with "gupload" cli in sequent steps
+echo "######## 1. cp $TLSCACERT_0.pem to $REL_GUPLOAD of $NS"
+set -x
+kubectl -n $NS cp ./download/$TLSCACERT_1.pem $POD_GUPLOAD:/var/gupload/fileserver -c gupload
+res=$?
+set +x
+printMessage "cp $TLSCACERT_1.pem to $REL_GUPLOAD" $res
 
-# IMPORTANT NOTE: require kubectl connect to $NS0. If not, need to do it offline, for sub-step 1 - 3.
-export POD_RCA0=$(kubectl get pods -n $NS0 -l "app=hlf-ca,release=$REL_RCA0" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA0
+echo "######## 2. create secret $TLSCACERT_1 $NS"
+set -x
+# origin
+#kubectl -n $NS create secret generic org1-tls-ca-cert --from-file=tls.crt=./download/org1tlscacert.pem
+# new
+kubectl -n $NS create secret generic $TLSCACERT_1 --from-file=tlscacert.pem=./download/$TLSCACERT_1.pem
+res=$?
+set +x
+printMessage "create secret $TLSCACERT_1 for $NS" $res
+
+# $TLSCACERT_0 will be saved in 'fileserver' directory of pvc-gupload2
+echo "######## 3. obtain $TLSCACERT_0.pem using Gupload for $NS"
+set -x
+kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "/var/gupload/gupload download --cacert fileserver/$TLSCACERT_1.pem --file $TLSCACERT_0.pem --address $G1_URL"
+res=$?
+set +x
+printMessage "obtain $TLSCACERT_0.pem using Gupload" $res
+
+echo "######## 4. create secret $TLSCACERT_0 $NS"
+CONTENT=$(kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cat /var/gupload/fileserver/$TLSCACERT_0.pem")
+preventEmptyValue "$TLSCACERT_0" $CONTENT
+set -x
+kubectl -n $NS create secret generic $TLSCACERT_0 --from-literal=tlscacert.pem="$CONTENT"
+res=$?
+set +x
+printMessage "create secret $TLSCACERT_0 for $NS" $res
+
+# Below step cp $TLSCACERT_2 to 'fileserver/public' directory pvc-gupload2 for later sharing
+echo "######## 4. cp $TLSCACERT_2 to $REL_GUPLOAD $NS"
+POD_RCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_RCA" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_RCA
+set -x
+kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/msp/tlscacerts/tls-ca-cert.pem > ./download/$TLSCACERT_2.pem
+res=$?
+set +x
+printMessage "download $TLSCACERT_2.pem from $NS" $res
+set -x
+kubectl -n $NS cp ./download/$TLSCACERT_2.pem $POD_GUPLOAD:/var/gupload/fileserver/public -c gupload
+res=$?
+set +x
+printMessage "cp $TLSCACERT_2.pem to $REL_GUPLOAD" $res
+
+# Below step gupload $TLSCACERT_2 to 'fileserver/public' directory pvc-gupload1 for later sharing
+echo "######## 5. gupload $TLSCACERT_2 to $G1_URL"
+set -x
+kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "/var/gupload/gupload upload --cacert fileserver/$TLSCACERT_1.pem --infile fileserver/public/$TLSCACERT_2.pem --public=true --outfile $TLSCACERT_2.pem  --address $G1_URL"
+res=$?
+set +x
+printMessage "gupload $TLSCACERT_2 to $G1_URL" $res
+
+echo "######## 6. create secret $TLSCACERT_2 $NS"
+set -x
+kubectl -n $NS create secret generic $TLSCACERT_2 --from-file=tlscacert.pem=./download/$TLSCACERT_2.pem
+res=$?
+set +x
+printMessage "create secret $TLSCACERT_2 for $NS" $res
 
 # TODO: This may not require. Double check it.
-echo "########  1. create $ORDERER_URL-tlssigncert for $NS"
-set -x
-kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./$MSPID/$ORDERER_URL/tls-msp/signcerts/cert.pem > ./download/$ORDERER_URL-tlssigncert.crt
-res=$?
-set +x
-printMessage "download Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem from $NS0" $res
-set -x
-kubectl -n $NS create secret generic "$ORDERER_URL-tlssigncert" --from-file=cert.pem=./download/$ORDERER_URL-tlssigncert.crt
-res=$?
-set +x
-printMessage "create secret $ORDERER_URL-tlssigncert for $NS" $res
+#echo "########  1. create $ORDERER_URL-tlssigncert for $NS"
+#set -x
+#kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./$MSPID_0/$ORDERER_URL/tls-msp/signcerts/cert.pem > ./download/$ORDERER_URL-tlssigncert.pem
+#res=$?
+#set +x
+#printMessage "download Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem from $NS0" $res
+#set -x
+#kubectl -n $NS create secret generic "$ORDERER_URL-tlssigncert" --from-file=cert.pem=./download/$ORDERER_URL-tlssigncert.pem
+#res=$?
+#set +x
+#printMessage "create secret $ORDERER_URL-tlssigncert for $NS" $res
 
-echo "########  2. create $ORDERER_URL-tlsrootcert for $NS"
-set -x
-kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./$MSPID/$ORDERER_URL/tls-msp/tlscacerts/tls-$REL_TLSCA0-hlf-ca-7054.pem > ./download/$ORDERER_URL-tlsrootcert.crt
-res=$?
-set +x
-printMessage "download $MSPID/$ORDERER_URL/tls-msp/tlscacerts/tls-$REL_TLSCA0-hlf-ca-7054.pem from $NS" $res
-set -x
-kubectl -n $NS create secret generic "$ORDERER_URL-tlsrootcert" --from-file=tlscacert.pem=./download/$ORDERER_URL-tlsrootcert.crt
-res=$?
-set +x
-printMessage "create secret $ORDERER_URL-tlsrootcert for $NS" $res
-
-echo "######## 3. create secret org0.com-tlscacert for $NS"
-set -x
-kubectl -n $NS0 exec $POD_RCA0 -c ca -- sh -c "cat ./$MSPID/msp/tlscacerts/tls-ca-cert.pem" > ./download/org0tlscacert.crt
-res=$?
-set +x
-printMessage "download $MSPID/msp/tlscacerts/tls-ca-cert.pem from $NS0" $res
-set -x
-kubectl -n $NS create secret generic org0.com-tlscacert --from-file=tlscacert.pem=./download/org0tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org0.com-tlscacert for $NS" $res
-
-####### RESUME FROM HERE
-
-# IMPORTANT NOTE: require kubectl connect to all org's. If not, need to do it offline, for sub-step 4 - 5.
-echo "# ORG1: Out-of-band process: Manually send p0o1.crt from org2 to org1"
-export POD_RCA2=$(kubectl get pods -n n2 -l "app=hlf-ca,release=rca2" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA2
-echo "# ORG2: Out-of-band process: Manually send p0o2.crt from org1 to org2"
-export POD_RCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA1
-
-echo "######## 4. create org1.net-tlscacert for $NS"
-set -x
-kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1tlscacert.crt
-res=$?
-set +x
-printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
-set -x
-kubectl -n $NS create secret generic org1-tls-ca-cert --from-file=tls.crt=./download/org1tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org1-tls-ca-cert for n2" $res
-
-echo "######## 5. create org2-tls-ca-cert for n2"
-set -x
-kubectl -n n2 exec $POD_RCA2 -c ca -- cat ./Org2MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "download Org2MSP/msp/tlscacerts/tls-ca-cert.pem from n2" $res
-set -x
-kubectl -n n1 create secret generic org2-tls-ca-cert --from-file=tls.crt=./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org2-tls-ca-cert for n1" $res
-set -x
-kubectl -n n2 create secret generic org2-tls-ca-cert --from-file=tls.crt=./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org2-tls-ca-cert for n2" $res
 echo "#####################################################################"
 echo "### END: OUT OF BAND"
 echo "#####################################################################"
