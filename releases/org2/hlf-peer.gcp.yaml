@@ -80,39 +80,29 @@ secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
   peer:
     ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-    # cred: hlf--peer1-cred
     cred: "rcaorg2-tls"
     ## Certificate, saved under key 'cert.pem'
-    # cert: hlf--peer1-idcert
     cert: "peer0.org2.net-cert"
     ## Key, saved under 'key.pem'
-    # key: hlf--peer1-idkey
     key: "peer0.org2.net-key"
     ## CA Cert, saved under 'cacert.pem'
-    # caCert: hlf--peer1-cacert
     caCert: "peer0.org2.net-cacert"
     ## Intermediate CA Cert (optional), saved under 'intermediatecacert.pem'
-    # intCaCert: hlf--peer1-caintcert
     ## TLS secret, saved under keys 'tls.crt' and 'tls.key' (to conform with K8S nomenclature)
-    # tls: hlf--peer1-tls
     tls: "peer0.org2.net-tls"
     ## TLS root CA certificate saved under key 'cert.pem'
-    # tlsRootCert: hlf--peer-tlsrootcert
     tlsRootCert: "peer0.org2.net-tlsrootcert"
     ## TLS client root CA certificates saved under any names (as there may be multiple)
-    # tlsClient: hlf--peer1-tls
     ## TLS client root CA certificates saved under any names (as there may be multiple)
-    # tlsClientRootCerts: hlf--ord-tlsrootcert
   ## This should contain the Certificate of the Peer Organisation admin
   ## This is necessary to successfully run the peer
   # adminCert: hlf--peer-admincert
   adminCert: "peer0.org2.net-admincert"
   ## This should contain the Private Key of the Peer Organisation admin
   ## This is necessary to successfully join a channel
-  # adminKey: hlf--peer-adminkey
   adminKey: "peer0.org2.net-adminkey"
   ## This should include the Orderer TLS 'cacert.pem'
   # ordTlsSignCert: "orderer0.org0.com-tlssigncert"
   # Duplicated
   # ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
-  ordOrg0Tlscacert: "org0.com--tlscacert" # "org0-tls-ca-cert"
+  ordOrg0Tlscacert: "org0.com-tlscacert"

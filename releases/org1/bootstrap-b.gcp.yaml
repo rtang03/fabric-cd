@@ -83,7 +83,7 @@ bootstrap:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1-net-tlscacert/tls.crt
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
           # name below is used in volume mounted, cannnot contain "dot"
           name: org1-net-tlscacert
           secret: org1.net-tlscacert

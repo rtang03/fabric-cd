@@ -371,11 +371,11 @@ spec:
               mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/channeltx
             {{- end }}
             - name: org0-tls-ca-cert
-              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0-tls-ca-cert
+              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0.com-tlscacert
             {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
             {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
             - name: {{ .name }}
-              mountPath: {{ $.Values.global.workingDir }}/crypto-config/channel-artifacts/{{ .name }}
+              mountPath: {{ $.Values.global.workingDir }}/crypto-config/channel-artifacts/{{ .secret }}
             {{- end }}
             {{- end }}
             - name: collection-json

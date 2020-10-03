@@ -5,7 +5,7 @@ global:
   config:
     setupsh: admin1-orgadmin--setupsh
     coreyaml: admin1-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.3
+  guploadImage: ghcr.io/rtang03/gupload:0.1.5
   channel:
     name: loanapp
 
@@ -14,7 +14,8 @@ config:
     #Provide the name of the peer as per deployment yaml.
     #Eg. name: peer0
     id: cli
-    peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tls.crt
+#    peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tls.crt
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     address: p0o1-hlf-peer:7051
     target: peer0.org1.net
@@ -40,11 +41,12 @@ fetchSend:
     pvcName: pvc-org1
   gupload:
     pvcName: pvc-gupload1
+    uploadedFilename: "o1_channel_config--config.json"
   secret:
     org0tlscacert: org0.com-tlscacert
+    org1tlscacert: org1.net-tlscacert
+    org2tlscacert: org2.net-tlscacert
     peerTlscacert: org2.net-tlscacert
-#    peerTlscacert: peer0.org2.net-tls
-  label: o1_channel_config
   address:
     url: gupload.org2.net
     port: 15443

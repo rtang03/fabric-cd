@@ -29,4 +29,5 @@ export JOB_INSTALL_CHAINCODE_B=installcc3b
 export NS0=n0
 export NS1=n1
 export REL_RCA0=rca0
+export REL_RCA1=rca1
 export REL_TLSCA0=tlsca0

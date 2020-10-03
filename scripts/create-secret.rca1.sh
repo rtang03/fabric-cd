@@ -103,12 +103,12 @@ printMessage "create secret rca1-tls" $?
 
 echo "######## 13. Create secret org1.net-tlscacert for smoke test devinvoke during bootstrap"
 set -x
-kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1tlscacert.crt
+kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1.net-tlscacert.pem
 res=$?
 set +x
 printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
 set -x
-kubectl -n n1 create secret generic org1.net-tlscacert --from-file=tls.crt=./download/org1tlscacert.crt
+kubectl -n n1 create secret generic org1.net-tlscacert --from-file=tlscacert.pem=./download/org1.net-tlscacert.pem
 res=$?
 set +x
 printMessage "create secret org1.net-tlscacert for n1" $res

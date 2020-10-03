@@ -34,7 +34,9 @@ spec:
               /var/gupload/gupload --version
               set -x
               cp /var/gupload/gupload /var/gupload/fileserver
-              /var/gupload/gupload serve --key ./cert/tls.key --certificate ./cert/tls.crt
+              mkdir -p /var/gupload/fileserver/public
+              ls /var/gupload/fileserver/public > /var/gupload/fileserver/public/index.txt
+              /var/gupload/gupload serve --key /var/gupload/cert/tls.key --certificate /var/gupload/cert/tls.crt
           volumeMounts:
             - mountPath: /var/gupload/cert
               name: tls

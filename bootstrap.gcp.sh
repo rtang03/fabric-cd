@@ -1,4 +1,7 @@
 . ./scripts/setup.sh
+# Dear Maintainer,
+# All steps are experimental, any change may break. It works, but I don't know why it works.
+# Take your own risk.
 
 SECONDS=0
 
@@ -293,7 +296,7 @@ preventEmptyValue "pod unavailable" $POD_CLI1
 
 # download org1 root cert
 set -x
-kubectl -n n1 exec $POD_CLI1 -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1.net--tlscacert.pem
+kubectl -n n1 exec $POD_CLI1 -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1.net-tlscacert.pem
 res=$?
 set +x
 printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
@@ -303,7 +306,7 @@ preventEmptyValue "pod unavailable" $POD_G1
 
 # send org1 root cert to 'public' folder of gupload
 set -x
-kubectl -n n1 cp ./download/org1.net--tlscacert.pem $POD_G1:/var/gupload/fileserver/public -c gupload
+kubectl -n n1 cp ./download/org1.net-tlscacert.pem $POD_G1:/var/gupload/fileserver/public/ -c gupload
 res=$?
 set +x
 printMessage "cp org1.net-tlscacert.pem to g1-gupload" $res
@@ -316,14 +319,14 @@ preventEmptyValue "pod unavailable" $POD_CLI1
 
 # download org0 root cert
 set -x
-kubectl -n n0 exec $POD_CLI0 -- cat ./Org0MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org0.com--tlscacert.pem
+kubectl -n n0 exec $POD_CLI0 -- cat ./Org0MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org0.com-tlscacert.pem
 res=$?
 set +x
 printMessage "download Org0MSP/msp/tlscacerts/tls-ca-cert.pem from n0" $res
 
 # send org1 root cert to 'public' folder of gupload
 set -x
-kubectl -n n1 cp ./download/org0.com--tlscacert.pem $POD_G1:/var/gupload/fileserver/public -c gupload
+kubectl -n n1 cp ./download/org0.com-tlscacert.pem $POD_G1:/var/gupload/fileserver/public/ -c gupload
 res=$?
 set +x
 printMessage "cp org0.com-tlscacert.pem to g1-gupload" $res

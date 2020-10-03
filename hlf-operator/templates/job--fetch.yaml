@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "hlf-operator.fullname" . }}--fetch-send
+  name: {{ include "hlf-operator.fullname" . }}--fetch
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 spec:
@@ -42,6 +42,9 @@ spec:
         - name: org0-tls-ca-cert
           secret:
             secretName: {{ .Values.fetchSend.secret.org0tlscacert }}
+        - name: org1-tls-ca-cert
+          secret:
+            secretName: {{ .Values.fetchSend.secret.org1tlscacert }}
         - name: send-target-tls
           secret:
             secretName: {{ .Values.fetchSend.secret.peerTlscacert }}
@@ -77,26 +80,34 @@ spec:
               ### Gupload
               printHeader "Gupload to remote server"
               set -x
-              /var/gupload/gupload upload --cacert /var/gupload/cert/tls.crt --label {{ .Values.fetchSend.label }} --file $TMP/config.json --filename config.json \
-                --address "{{ .Values.fetchSend.address.url }}:{{ .Values.fetchSend.address.port }}"
+              /var/gupload/gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile $TMP/config.json --outfile {{ .Values.fetchSend.gupload.uploadedFilename }} --address "{{ .Values.fetchSend.address.url }}:{{ .Values.fetchSend.address.port }}"
               res=$?
               set +x
               printMessage "gupload to {{ .Values.fetchSend.address.url }}:{{ .Values.fetchSend.address.port }}" $res
           envFrom:
+            # common configMap
             - configMapRef:
                 name: {{ include "hlf-operator.fullname" . }}--cli
           volumeMounts:
+            # this mount will share the configtxlator binary
             - mountPath: /var/hyperledger
               name: fabricfiles
+            # this job will also mount the gupload pvc, under /var/hyperledger/uploaded
             - mountPath: {{ .Values.global.workingDir }}/uploaded
               name: upload
+            # this will enable "peer" cli to run
             - mountPath: /etc/hyperledger
               name: core-yaml
             - name: setup-script
               mountPath: /script/setup.sh
               subPath: setup.sh
+            # this cert is for tls authentication of target, when using "gupload upload"
             - name: send-target-tls
               mountPath: /var/gupload/cert
+            # this cert is for configMap ORDERER_CA
             - name: org0-tls-ca-cert
-              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0-tls-ca-cert
+              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0.com-tlscacert
+            # this cert is configMap CORE_PEER_TLS_ROOTCERT_FILE
+            - name: org1-tls-ca-cert
+              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org1.com-tlscacert
 {{- end }}
