@@ -2,6 +2,7 @@ global:
   logging: info
   workingDir: /var/hyperledger
   mspId: Org2MSP
+  # configMap
   config:
     setupsh: admin2-orgadmin--setupsh
     coreyaml: admin2-orgadmin--core
@@ -10,12 +11,10 @@ global:
 
 config:
   peer:
-    #Provide the name of the peer as per deployment yaml.
-    #Eg. name: peer0
     id: cli
-    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
+#    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.com-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    #Eg. address: peer0.org1-example-com:7051
     address: p0o2-hlf-peer:7051
     target: peer0.org2.net
   orderer:
@@ -33,4 +32,6 @@ joinChannel:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    tlscacert: org0-tls-ca-cert
+    # used to connect orderer
+    org0tlscacert: org0.com-tlscacert
+    org2tlscacert: org2.net-tlscacert

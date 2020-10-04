@@ -47,7 +47,7 @@ spec:
             secretName: {{ .Values.fetchSend.secret.org1tlscacert }}
         - name: send-target-tls
           secret:
-            secretName: {{ .Values.fetchSend.secret.peerTlscacert }}
+            secretName: {{ .Values.fetchSend.secret.guploadTlscacert }}
       containers:
         - name: job
           image: {{ .Values.global.guploadImage | quote }}
@@ -66,11 +66,11 @@ spec:
               set -x
               rm -r $TMP
               mkdir -p $TMP
-              $BIN/peer channel fetch config $TMP/config_block.pb -o ${ORDERER_URL} -c ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} >& $TMP/log-fetchconfig.txt
+              $BIN/peer channel fetch config $TMP/config_block.pb -o ${ORDERER_URL} -c ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} >& $TMP/fetchconfig.log
               res=$?
               set +x
               printMessage "fetch channel config: config_block.pb" $res
-              cat $TMP/log-fetchconfig.txt
+              cat $TMP/fetchconfig.log
               printHeader "Decoding config block to JSON and isolating config"
               set -x
               $BIN/configtxlator proto_decode --input $TMP/config_block.pb --type common.Block | jq .data.data[0].payload.data.config > $TMP/config.json

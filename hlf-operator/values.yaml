@@ -15,13 +15,11 @@ config:
     #Provide the name of the peer as per deployment yaml.
     #Eg. name: peer0
     id: cli
-    # tls ca cert for CLI
+    # used for CORE_PEER_TLS_ROOTCERT_FILE
     # peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
     peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    #Eg. address: peer0.org1-example-com:7051
-    # address: p0o1-hlf-peer:7051
-    address: peer0.org1.net:443
+    address: p0o1-hlf-peer:7051
     target: peer0.org1.net
   orderer:
     #Provide the address for orderer
@@ -118,8 +116,7 @@ fetchSend:
   secret:
     org0tlscacert: org0.com-tlscacert
     org1tlscacert: org1.net-tlscacert
-    org2tlscacert: org2.net-tlscacert
-    peerTlscacert: peer0.org2.net-tls
+    guploadTlscacert: org2.net-tlscacert
   address:
     url: gupload.org2.net
     port: 15443
@@ -143,16 +140,14 @@ neworgSend:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    tlscacert: org0-tls-ca-cert
-    peerTlscacert: peer0.org1.net-tls
+    guploadTlscacert: org1.net-tlscacert
   configtx:
     mspId: Org2MSP
     anchorPeer: peer0.org2.net
     anchorPeerPort: 15443
-  label: o2_neworg_update
   address:
     url: gupload.org1.net
-    port: 443
+    port: 15443
 
 #######################
 ### Param for update channel
@@ -170,7 +165,8 @@ updateChannel:
   gupload:
     pvcName: pvc-gupload1
   secret:
-    tlscacert: org0-tls-ca-cert
+    org0tlscacert: org0.com-tlscacert
+    org1tlscacert: org1.net-tlscacert
 
 #######################
 ### Param for join channel
@@ -187,7 +183,9 @@ joinChannel:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    tlscacert: org0-tls-ca-cert
+    org0tlscacert: org0.com-tlscacert
+    org2tlscacert: org2.net-tlscacert
+#    tlscacert: org0-tls-ca-cert
 
 #######################
 ### Param for add signature and forward

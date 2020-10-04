@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "hlf-operator.fullname" . }}--neworg-send
+  name: {{ include "hlf-operator.fullname" . }}--neworg
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 spec:
@@ -38,7 +38,7 @@ spec:
             defaultMode: 0777
         - name: send-target-tls
           secret:
-            secretName: {{ .Values.neworgSend.secret.peerTlscacert }}
+            secretName: {{ .Values.neworgSend.secret.guploadTlscacert }}
         - name: configtx-yaml
           configMap:
             name: {{ include "hlf-operator.fullname" . }}--configtx
@@ -150,24 +150,29 @@ spec:
               ########
               printHeader "Gupload to remote server"
               set -x
-              /var/gupload/gupload upload --cacert /var/gupload/cert/tls.crt --label {{ .Values.neworgSend.label }} --file $TMP/config_update_in_envelope.pb --filename config_update_in_envelope.pb \
+              /var/gupload/gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile $TMP/config_update_in_envelope.pb --outfile o2_neworg_update--config_update_in_envelope.pb \
                 --address "{{ .Values.neworgSend.address.url }}:{{ .Values.neworgSend.address.port }}"
               res=$?
               set +x
               printMessage "gupload to {{ .Values.neworgSend.address.url }}:{{ .Values.neworgSend.address.port }}" $res
           envFrom:
+            # common configMap
             - configMapRef:
                 name: {{ include "hlf-operator.fullname" . }}--cli
           volumeMounts:
+            # this mount will share the configtxlator binary
             - mountPath: /var/hyperledger
               name: fabricfiles
+            # this job will also mount the gupload pvc, under /var/hyperledger/uploaded
             - mountPath: {{ .Values.global.workingDir }}/uploaded
               name: upload
             - name: setup-script
               mountPath: /script/setup.sh
               subPath: setup.sh
+            # this will create new org's configtx.ayml
             - name: configtx-yaml
               mountPath: /configtx
+            # this cert is for tls authentication of target, when using "gupload upload"
             - name: send-target-tls
               mountPath: /var/gupload/cert
 {{- end }}

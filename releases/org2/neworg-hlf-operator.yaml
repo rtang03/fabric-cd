@@ -2,21 +2,20 @@ global:
   logging: info
   workingDir: /var/hyperledger
   mspId: Org2MSP
+  # configMap
   config:
     setupsh: admin2-orgadmin--setupsh
     coreyaml: admin2-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.3
+  guploadImage: ghcr.io/rtang03/gupload:0.1.5
   channel:
     name: loanapp
 
 config:
   peer:
-    #Provide the name of the peer as per deployment yaml.
-    #Eg. name: peer0
     id: cli
-    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
+#    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    #Eg. address: peer0.org1-example-com:7051
     address: p0o2-hlf-peer:7051
     target: peer0.org2.net
   orderer:
@@ -33,19 +32,21 @@ neworgSend:
     - hostnames:
         - gupload.org1.net
       ip: 35.202.107.80
+  # latest channel block (block 0), uploaded by "fetch1"
   channelConfg: o1_channel_config--config.json
   orgadmin:
     pvcName: pvc-org2
   gupload:
     pvcName: pvc-gupload2
   secret:
-    tlscacert: org0-tls-ca-cert
-    peerTlscacert: org1-tls-ca-cert # peer0.org1.net-tls
+    # gupload tlscacert
+    guploadTlscacert: org1.net-tlscacert # org1-tls-ca-cert # peer0.org1.net-tls
+  # used by configMap configtx.yaml
   configtx:
     mspId: Org2MSP
     anchorPeer: peer0.org2.net
     anchorPeerPort: 15443
-  label: o2_neworg_update
+  # dial address of gupload
   address:
     url: gupload.org1.net
     port: 15443

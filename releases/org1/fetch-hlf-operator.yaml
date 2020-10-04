@@ -43,10 +43,11 @@ fetchSend:
     pvcName: pvc-gupload1
     uploadedFilename: "o1_channel_config--config.json"
   secret:
+    # used to connect orderer
     org0tlscacert: org0.com-tlscacert
+    # used for peer1 cli
     org1tlscacert: org1.net-tlscacert
-    org2tlscacert: org2.net-tlscacert
-    peerTlscacert: org2.net-tlscacert
+    guploadTlscacert: org2.net-tlscacert
   address:
     url: gupload.org2.net
     port: 15443

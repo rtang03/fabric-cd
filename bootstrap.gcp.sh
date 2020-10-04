@@ -1,7 +1,4 @@
 . ./scripts/setup.sh
-# Dear Maintainer,
-# All steps are experimental, any change may break. It works, but I don't know why it works.
-# Take your own risk.
 
 SECONDS=0
 

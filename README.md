@@ -1,6 +1,12 @@
 ## Continuous Deployment
 Continuous deployment for fabric-es
 
+```text
+Dear Sir,
+All steps are not future-proved, any change may break. It works, maybe I don't know how it works.
+Take your own risk.
+```
+
 ### Pre-requisite
 - GKE 1.16.13-gke.401/regular channel
 - n1-standard-4: 4 vcpu/15GB x 1 node
