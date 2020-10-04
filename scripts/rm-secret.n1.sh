@@ -23,14 +23,7 @@ kubectl -n n1 delete secret channeltx
 kubectl -n n1 delete secret org0.com-tlscacert
 
 # this secret is used by smoke-test invoke
-# org1.net-tlscacert is same as peer0.org1.net-tlsrootcert
-# but this duplicated secret is made for sake of consistent naming convention
 kubectl -n n1 delete secret org1.net-tlscacert
-
-# Created By create-secret.rca1.sh
-#kubectl -n n0 delete secret org1.net-admincert
-#kubectl -n n0 delete secret org1.net-tlscacert
-#kubectl -n n0 delete secret org1.net-cacert
 
 ## Optional
 ## When additional org join the network, it shall later add more tls certs.
