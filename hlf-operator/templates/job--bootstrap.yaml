@@ -36,20 +36,15 @@ spec:
         - name: core-yaml
           configMap:
             name: {{ .Values.global.config.coreyaml }}
-        - name: org0-tls-ca-cert
-          secret:
-            secretName: {{ .Values.bootstrap.secret.tlscacert }}
-        {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
-        {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+        {{- range .Values.bootstrap.secret }}
         - name: {{ .name }}
           secret:
             secretName: {{ .secret }}
         {{- end }}
-        {{- end }}
-        {{- if .Values.bootstrap.secret.channeltx }}
+        {{- if .Values.bootstrap.channeltx }}
         - name: channel-tx
           secret:
-            secretName: {{ .Values.bootstrap.secret.channeltx }}
+            secretName: {{ .Values.bootstrap.channeltx }}
         {{- end }}
         - name: collection-json
           configMap:
@@ -366,17 +361,13 @@ spec:
             - name: setup-script
               mountPath: /script/setup.sh
               subPath: setup.sh
-            {{- if .Values.bootstrap.secret.channeltx }}
+            {{- if .Values.bootstrap.channeltx }}
             - name: channel-tx
               mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/channeltx
             {{- end }}
-            - name: org0-tls-ca-cert
-              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0.com-tlscacert
-            {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
-            {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+            {{- range .Values.bootstrap.secret }}
             - name: {{ .name }}
               mountPath: {{ $.Values.global.workingDir }}/crypto-config/channel-artifacts/{{ .secret }}
-            {{- end }}
             {{- end }}
             - name: collection-json
               mountPath: /builders/packaging/connection.json

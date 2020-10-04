@@ -12,10 +12,8 @@ global:
 config:
   peer:
     id: p0o2-hlf-peer
-#    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
-    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.com-tlscacert/tlscacert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    #Eg. address: peer0.org1-example-com:7051
     address: p0o2-hlf-peer:7051
     target: p0o2-hlf-peer
   orderer:
@@ -31,11 +29,19 @@ bootstrap:
     - hostnames:
         - peer0.org2.net
         - orderer0.org0.com
+        - orderer1.org0.com
+        - orderer2.org0.com
+        - orderer3.org0.com
+        - orderer4.org0.com
       ip: 35.202.107.80
   pvcName: pvc-org2
   secret:
-#    tlscacert: org0-tls-ca-cert
-    tlscacert: org2.net-tlscacert
+    - name: org0tlscacert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org2tlscacert
+      secret: org2.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
   chaincode:
     id: eventstore
     contract: eventstore

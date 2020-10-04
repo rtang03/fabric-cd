@@ -12,7 +12,7 @@ global:
 config:
   peer:
     id: cli
-    peerTlsCaCert:   /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
+    peerTlsCaCert:   /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     address: p0o1-hlf-peer:7051
     target: peer0.org1.net
@@ -36,5 +36,9 @@ updateChannel:
   gupload:
     pvcName: pvc-gupload1
   secret:
-    org0tlscacert: org0.com-tlscacert
-    org1tlscacert: org1.net-tlscacert
+    - name: org0tlscacert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org1tlscacert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"

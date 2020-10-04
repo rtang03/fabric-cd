@@ -39,7 +39,3 @@ kubectl -n n0 delete secret genesis
 kubectl -n n0 delete secret org1.net-admincert
 kubectl -n n0 delete secret org1.net-tlscacert
 kubectl -n n0 delete secret org1.net-cacert
-
-kubectl -n n0 delete secret org2.net-cacert
-kubectl -n n0 delete secret org2.net-admincert
-kubectl -n n0 delete secret org2.net-tlscacert

@@ -216,21 +216,23 @@ printMessage "create secret orderer0.org0.com-tlssigncert" $?
 
 export CONTENT=$(kubectl -n n0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/orderer1.org0.com/tls-msp/signcerts/cert.pem)
 preventEmptyValue "./Org0MSP/orderer1.org0.com/tls-msp/signcerts/cert.pem" $CONTENT
-
 kubectl -n n1 create secret generic orderer1.org0.com-tlssigncert --from-literal=cert.pem="$CONTENT"
 printMessage "create secret orderer1.org0.com-tlssigncert" $?
+
 export CONTENT=$(kubectl -n n0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/orderer2.org0.com/tls-msp/signcerts/cert.pem)
 preventEmptyValue "./Org0MSP/orderer2.org0.com/tls-msp/signcerts/cert.pem" $CONTENT
-
 kubectl -n n1 create secret generic orderer2.org0.com-tlssigncert --from-literal=cert.pem="$CONTENT"
 printMessage "create secret orderer2.org0.com-tlssigncert" $?
+
 export CONTENT=$(kubectl -n n0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/orderer3.org0.com/tls-msp/signcerts/cert.pem)
 preventEmptyValue "./Org0MSP/orderer3.org0.com/tls-msp/signcerts/cert.pem" $CONTENT
-
 kubectl -n n1 create secret generic orderer3.org0.com-tlssigncert --from-literal=cert.pem="$CONTENT"
 printMessage "create secret orderer3.org0.com-tlssigncert" $?
+
 export CONTENT=$(kubectl -n n0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/orderer4.org0.com/tls-msp/signcerts/cert.pem)
 preventEmptyValue "./Org0MSP/orderer4.org0.com/tls-msp/signcerts/cert.pem" $CONTENT
+kubectl -n n1 create secret generic orderer4.org0.com-tlssigncert --from-literal=cert.pem="$CONTENT"
+printMessage "create secret orderer4.org0.com-tlssigncert" $?
 
 echo "######## 8. create secret for org0.com-tlscacert"
 export CONTENT=$(kubectl -n n0 exec $POD_RCA0 -c ca -- sh -c "cat ./Org0MSP/msp/tlscacerts/tls-ca-cert.pem")

@@ -5,7 +5,7 @@ global:
   config:
     setupsh: admin1-orgadmin--setupsh
     coreyaml: admin1-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.3
+  guploadImage: ghcr.io/rtang03/gupload:0.1.5
   channel:
     name: loanapp
 
@@ -14,7 +14,8 @@ config:
     #Provide the name of the peer as per deployment yaml.
     #Eg. name: peer0
     id: p0o1-hlf-peer
-    peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+    # peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     #Eg. address: peer0.org1-example-com:7051
     address: p0o1-hlf-peer:7051
@@ -35,8 +36,13 @@ bootstrap:
       ip: 35.202.107.80
   pvcName: pvc-org1
   secret:
-    tlscacert: org0.com-tlscacert
-    channeltx: channeltx
+    - name: org0-tls-ca-cert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org1-tls-ca-cert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+  channeltx: channeltx
   chaincode:
     id: eventstore
     contract: eventstore
@@ -68,24 +74,24 @@ bootstrap:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+#          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     querycommitted:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+#          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     init_chaincode:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
-          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+#          tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
     dev_invoke:
       enabled: true
       targets:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
-          # name below is used in volume mounted, cannnot contain "dot"
-          name: org1-net-tlscacert
-          secret: org1.net-tlscacert
     dev_query:
       enabled: true

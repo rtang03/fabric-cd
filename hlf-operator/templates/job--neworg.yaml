@@ -36,12 +36,14 @@ spec:
           configMap:
             name: {{ .Values.global.config.setupsh }}
             defaultMode: 0777
-        - name: send-target-tls
-          secret:
-            secretName: {{ .Values.neworgSend.secret.guploadTlscacert }}
         - name: configtx-yaml
           configMap:
             name: {{ include "hlf-operator.fullname" . }}--configtx
+        {{- range .Values.neworgSend.secret }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secret }}
+        {{- end }}
       containers:
         - name: neworg-send
           image: {{ .Values.global.guploadImage | quote }}
@@ -172,7 +174,8 @@ spec:
             # this will create new org's configtx.ayml
             - name: configtx-yaml
               mountPath: /configtx
-            # this cert is for tls authentication of target, when using "gupload upload"
-            - name: send-target-tls
-              mountPath: /var/gupload/cert
+            {{- range .Values.neworgSend.secret }}
+            - name: {{ .name }}
+              mountPath: {{ .path }}
+            {{- end }}
 {{- end }}

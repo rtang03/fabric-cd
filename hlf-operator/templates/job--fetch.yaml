@@ -39,15 +39,11 @@ spec:
         - name: core-yaml
           configMap:
             name: {{ .Values.global.config.coreyaml }}
-        - name: org0-tls-ca-cert
+        {{- range .Values.fetchSend.secret }}
+        - name: {{ .name }}
           secret:
-            secretName: {{ .Values.fetchSend.secret.org0tlscacert }}
-        - name: org1-tls-ca-cert
-          secret:
-            secretName: {{ .Values.fetchSend.secret.org1tlscacert }}
-        - name: send-target-tls
-          secret:
-            secretName: {{ .Values.fetchSend.secret.guploadTlscacert }}
+            secretName: {{ .secret }}
+        {{- end }}
       containers:
         - name: job
           image: {{ .Values.global.guploadImage | quote }}
@@ -101,13 +97,8 @@ spec:
             - name: setup-script
               mountPath: /script/setup.sh
               subPath: setup.sh
-            # this cert is for tls authentication of target, when using "gupload upload"
-            - name: send-target-tls
-              mountPath: /var/gupload/cert
-            # this cert is for configMap ORDERER_CA
-            - name: org0-tls-ca-cert
-              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org0.com-tlscacert
-            # this cert is configMap CORE_PEER_TLS_ROOTCERT_FILE
-            - name: org1-tls-ca-cert
-              mountPath: {{ .Values.global.workingDir }}/crypto-config/channel-artifacts/org1.com-tlscacert
+            {{- range .Values.fetchSend.secret }}
+            - name: {{ .name }}
+              mountPath: {{ .path }}
+            {{- end }}
 {{- end }}

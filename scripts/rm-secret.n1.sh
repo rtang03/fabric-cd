@@ -34,6 +34,4 @@ kubectl -n n0 delete secret org1.net-cacert
 
 ## Optional
 ## When additional org join the network, it shall later add more tls certs.
-# TODO: below should remove
-kubectl -n n1 delete secret	peer0.org2.net-tls
 kubectl -n n1 delete secret org2.net-tlscacert

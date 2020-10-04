@@ -196,19 +196,6 @@ res=$?
 set +x
 printMessage "create secret $TLSCACERT_2 for $NS1" $res
 
-# TODO: This may not require. Double check it.
-#echo "########  1. create $ORDERER_URL-tlssigncert for $NS"
-#set -x
-#kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./$MSPID_0/$ORDERER_URL/tls-msp/signcerts/cert.pem > ./download/$ORDERER_URL-tlssigncert.pem
-#res=$?
-#set +x
-#printMessage "download Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem from $NS0" $res
-#set -x
-#kubectl -n $NS create secret generic "$ORDERER_URL-tlssigncert" --from-file=cert.pem=./download/$ORDERER_URL-tlssigncert.pem
-#res=$?
-#set +x
-#printMessage "create secret $ORDERER_URL-tlssigncert for $NS" $res
-
 echo "#####################################################################"
 echo "### END: OUT OF BAND"
 echo "#####################################################################"
@@ -272,38 +259,43 @@ printMessage "job/joinch2-hlf-operator" $res
 export POD_CLI=$(kubectl get pods --namespace $NS -l "app=orgadmin,release=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI
 
-echo "### Update anchor peer; package & install chaincode"
-helm install installcc2a -n $NS -f ./releases/org2/installcc-a.hlf-operator.yaml --dry-run --debug ./hlf-operator
+sleep 10
+
+echo "######## [Org2] ==> Update anchor peer; package & install chaincode"
+helm install installcc2a -n $NS -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
 set -x
 kubectl wait --for=condition=complete --timeout 300s job/installcc2a-hlf-operator--bootstrap -n $NS
 res=$?
 set +x
 printMessage "job/install chaincode part1" $res
 
-#set -x
-#export CCID=$(kubectl -n n2 exec $POD_CLI2 -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
-#res=$?
-#set +x
-#printMessage "retrieve CCID" $res
-#
-#echo "### Launch chaincode container"
-#helm install eventstore -n n2 --set ccid=$CCID -f ./releases/org2/eventstore-hlf-cc.gcp.yaml ./hlf-cc
-#set -x
-#export POD_CC2=$(kubectl get pods -n n2 -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
-#kubectl wait --for=condition=Ready --timeout 180s po d/$POD_CC2 -n n2
-#res=$?
-#set +x
-#printMessage "pod/eventstore chaincode" $res
-#
-#sleep 10
-#
-#echo "### Approach chaincode and run smoke test"
-#helm install installcc2b -n n2 -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
-#set -x
-#kubectl wait --for=condition=complete --timeout 180s job/installcc2b-hlf-operator--bootstrap -n n2
-#res=$?
-#set +x
-#printMessage "job/install chaincode part2" $res
+sleep 10
+
+set -x
+export CCID=$(kubectl -n $NS exec $POD_CLI -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
+res=$?
+set +x
+printMessage "retrieve CCID" $res
+preventEmptyValue "chaincodeId" $CCID
+
+echo "######## [Org2] ==> Launch chaincode container"
+helm install eventstore -n $NS --set ccid=$CCID -f ./releases/org2/eventstore-hlf-cc.gcp.yaml ./hlf-cc
+set -x
+export POD_CC2=$(kubectl get pods -n $NS -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_CC2 -n $NS
+res=$?
+set +x
+printMessage "pod/eventstore chaincode" $res
+
+sleep 10
+
+echo "######## [Org2] ==> Approve chaincode and run smoke test"
+helm install installcc2b -n $NS -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 180s job/installcc2b-hlf-operator--bootstrap -n $NS
+res=$?
+set +x
+printMessage "job/install chaincode part2" $res
 
 echo "#####################################################################"
 echo "### END: MULTIPLE ORGS WORKFLOW"

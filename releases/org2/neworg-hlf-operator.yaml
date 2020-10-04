@@ -13,8 +13,7 @@ global:
 config:
   peer:
     id: cli
-#    peerTlsCaCert:  /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
-    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     address: p0o2-hlf-peer:7051
     target: peer0.org2.net
@@ -39,8 +38,12 @@ neworgSend:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    # gupload tlscacert
-    guploadTlscacert: org1.net-tlscacert # org1-tls-ca-cert # peer0.org1.net-tls
+    - name: guploadtlscacert
+      secret: org1.net-tlscacert
+      path: "/var/gupload/cert"
+    - name: org2tlscacert
+      secret: org2.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
   # used by configMap configtx.yaml
   configtx:
     mspId: Org2MSP

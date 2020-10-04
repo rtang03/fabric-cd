@@ -17,7 +17,7 @@ config:
     id: cli
     # used for CORE_PEER_TLS_ROOTCERT_FILE
     # peerTlsCaCert:  /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
-    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert/tlscacert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
     address: p0o1-hlf-peer:7051
     target: peer0.org1.net
@@ -36,8 +36,14 @@ bootstrap:
         - peer0.org1.net
       ip: 34.68.246.23
   pvcName: pvc-org1
+  # channeltx: channeltx
   secret:
-    tlscacert: org0-tls-ca-cert
+    - name: org0-tls-ca-cert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org1-tls-ca-cert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
     # Default should be no channelTx
     # channeltx: channeltx
   chaincode:
@@ -90,8 +96,8 @@ bootstrap:
       targets:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/tlscacerts/tls-tlsca1-hlf-ca-7054.pem
-          name: org1-net-tlscacert
-          secret: org1.net-tlscacert
+#          name: org1-net-tlscacert
+#          secret: org1.net-tlscacert
     dev_query:
       enabled: false
 
@@ -114,9 +120,15 @@ fetchSend:
     pvcName: pvc-gupload1
     uploadedFilename: "o1_channel_config--config.json"
   secret:
-    org0tlscacert: org0.com-tlscacert
-    org1tlscacert: org1.net-tlscacert
-    guploadTlscacert: org2.net-tlscacert
+    - name: org0tlscacert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org1tlscacert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+    - name: guploadtlscacert
+      secret: org2.net-tlscacert
+      path: "/var/gupload/cert"
   address:
     url: gupload.org2.net
     port: 15443
@@ -140,7 +152,12 @@ neworgSend:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    guploadTlscacert: org1.net-tlscacert
+    - name: guploadtlscacert
+      secret: org1.net-tlscacert
+      path: "/var/gupload/cert"
+    - name: org2tlscacert
+      secret: org2.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
   configtx:
     mspId: Org2MSP
     anchorPeer: peer0.org2.net
@@ -165,8 +182,12 @@ updateChannel:
   gupload:
     pvcName: pvc-gupload1
   secret:
-    org0tlscacert: org0.com-tlscacert
-    org1tlscacert: org1.net-tlscacert
+    - name: org0tlscacert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.com-tlscacert"
+    - name: org1tlscacert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
 
 #######################
 ### Param for join channel
@@ -183,9 +204,12 @@ joinChannel:
   gupload:
     pvcName: pvc-gupload2
   secret:
-    org0tlscacert: org0.com-tlscacert
-    org2tlscacert: org2.net-tlscacert
-#    tlscacert: org0-tls-ca-cert
+    - name: org0tlscacert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org2tlscacert
+      secret: org2.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
 
 #######################
 ### Param for add signature and forward
