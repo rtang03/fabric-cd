@@ -323,6 +323,7 @@ spec:
               #  -c '{"function":"{{ .Values.bootstrap.chaincode.contract }}:Init","Args":[]}' \
               {{- end }}
           {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+              sleep 30s
               printHeader "dev-invoke"
               set -x
               ${BIN}/peer chaincode invoke -o ${ORDERER_URL} -C ${CHANNEL_NAME} --tls --cafile ${ORDERER_CA} --name {{ .Values.bootstrap.chaincode.id }} \

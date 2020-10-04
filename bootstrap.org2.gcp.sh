@@ -287,7 +287,9 @@ res=$?
 set +x
 printMessage "pod/eventstore chaincode" $res
 
-sleep 10
+# NOTE: there is an unknonw timeslapse between the chaincode server starts, and container.
+# TODO: research how to use readiness probe for chaincode server.
+sleep 30
 
 echo "######## [Org2] ==> Approve chaincode and run smoke test"
 helm install installcc2b -n $NS -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator

@@ -73,6 +73,7 @@ bootstrap:
       sequence: 1
     queryapproved:
       enabled: true
+    # commmit and init cc is not required. And, must be false.
     checkcommitreadiness:
       enabled: false
     commit_chaincode:

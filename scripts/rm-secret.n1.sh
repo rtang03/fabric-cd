@@ -28,9 +28,9 @@ kubectl -n n1 delete secret org0.com-tlscacert
 kubectl -n n1 delete secret org1.net-tlscacert
 
 # Created By create-secret.rca1.sh
-kubectl -n n0 delete secret org1.net-admincert
-kubectl -n n0 delete secret org1.net-tlscacert
-kubectl -n n0 delete secret org1.net-cacert
+#kubectl -n n0 delete secret org1.net-admincert
+#kubectl -n n0 delete secret org1.net-tlscacert
+#kubectl -n n0 delete secret org1.net-cacert
 
 ## Optional
 ## When additional org join the network, it shall later add more tls certs.
