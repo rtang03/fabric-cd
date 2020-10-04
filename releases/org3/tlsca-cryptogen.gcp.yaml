@@ -1,0 +1,40 @@
+global:
+  mspId: Org3MSP
+  caName: tlsca3
+  # TODO: define it inside _helpers.tpl
+  # /var/hyperledger/crypto-config/[MSPID]/tls/server
+  caServerHome: /var/hyperledger/crypto-config/Org3MSP/tls/server
+  # /var/hyperledger/crypto-config/[MSPID]/tls/admin
+  caClientHome: /var/hyperledger/crypto-config/Org3MSP/tls/admin
+  domain: org3.net
+  # name of configMap [release-name of orgadmin]-[app-name]-setupsh
+  setupsh: admin3-orgadmin--setupsh
+
+# admin credential of tlsca
+caAdmin: tlsca3-admin
+caAdminPW: tlsca3-adminPW
+
+# service name [release name]-hlf-ca:7054
+endpoint: tlsca3-hlf-ca:7054
+
+# TODO: define it inside _helpers.tpl
+# /var/hyperledger/crypto-config/[MSPID]/tls/admin/msp/cacerts/[TLSCA Release Name]-hlf-ca-7054.pem
+tlsCaCert: /var/hyperledger/crypto-config/Org3MSP/tls/admin/msp/cacerts/tlsca3-hlf-ca-7054.pem
+
+orgAdmin:
+  enabled: false
+
+items:
+  - type: peer
+    # domain url
+    id: peer0.org3.net
+    secret: peer0.org3.netPW
+    caClientMspDir: tls-msp
+    profile: tls
+    # [Release Name of peer]-hlf-peer
+    # External domain name
+    # gupload subdomain
+    csrHosts: "p0o3-hlf-peer,peer0.org3.net,gupload.org3.net"
+
+persistence:
+  pvcName: pvc-org3

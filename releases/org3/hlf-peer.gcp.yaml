@@ -1,9 +1,9 @@
 global:
   TZ: Asia/Hong_Kong
-#  workingDir: /var/hyperledger/crypto-config
-  mspId: Org2MSP
-  domain: org2.net
-  istiogateway: p0o2-gateway
+  mspId: Org3MSP
+  domain: org3.net
+  # istio ingress gateway
+  istiogateway: p0o3-gateway
   istiogatewayPort: 15443
 
 #image:
@@ -11,21 +11,9 @@ global:
 #  tag: 2.2.0
 #  pullPolicy: IfNotPresent
 
-service:
-  type: ClusterIP
-  portRequest: 7051
-  portEvent: 7053
-
-# Path of the docker socket on the host
-dockerSocketPath: /var/run/docker.sock
-# Docker config to be used to pull the images (base64'd)
-dockerConfig: null
-# Docker config mount path
-dockerConfigMountPath: /root/.docker
-
 persistence:
   enabled: true
-  pvcName: pvc-p0o2
+  pvcName: pvc-p0o3
 
 logging:
   # "info" or "debug" or "grpc=debug:debug" or "grpc=debug:info"
@@ -54,19 +42,20 @@ peer:
   ledgerPath: /var/hyperledger/production
   peerName: peer0
   # orgPath: /var/hyperledger/crypto-config/Org2MSP
-  # Type of database ("goleveldb" or "CouchDB"):
+  # Type of database ("goleveldb" or "CouchDB"), CouchDB need fixing
   databaseType: goleveldb
   # If CouchDB is used, which chart holds it
-  couchdbInstance: p0o2db
+  # couchdbInstance: p0o2db
   ## Database username
-  couchdbUsername: couchdb
+  # couchdbUsername: couchdb
   ## Database password (default: random 24 character string)
-  couchdbPassword: password
-  ## MSP ID of the Peer
+  # couchdbPassword: password
   gossip:
-    bootstrap: "p0o2-hlf-peer:7051"
-    endpoint: "p0o2-hlf-peer:7051"
-    externalEndpoint: "peer0.org2.net:15443"
+    # [Release Name]-hlf-peer:7051
+    bootstrap: "p0o3-hlf-peer:7051"
+    endpoint: "p0o3-hlf-peer:7051"
+    # external url
+    externalEndpoint: "peer0.org3.net:15443"
     orgLeader: "true"
     useLeaderElection: "false"
   tls:
@@ -87,39 +76,42 @@ secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
   peer:
     ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-    # cred: hlf--peer1-cred
-    cred: "rcaorg2-tls"
+    # cred: [Release Name of Root CA]-tls
+    cred: "rca3-tls"
     ## Certificate, saved under key 'cert.pem'
-    # cert: hlf--peer1-idcert
-    cert: "peer0.org2.net-cert"
+    # cert: [external uri]-cert
+    cert: "peer0.org3.net-cert"
     ## Key, saved under 'key.pem'
-    # key: hlf--peer1-idkey
-    key: "peer0.org2.net-key"
+    # key: [external uri]-key
+    key: "peer0.org3.net-key"
     ## CA Cert, saved under 'cacert.pem'
-    # caCert: hlf--peer1-cacert
-    caCert: "peer0.org2.net-cacert"
+    # caCert: [external uri]-cacert
+    caCert: "peer0.org3.net-cacert"
     ## Intermediate CA Cert (optional), saved under 'intermediatecacert.pem'
+    # ica is not implemented yet, here reserves for future use.
     # intCaCert: hlf--peer1-caintcert
     ## TLS secret, saved under keys 'tls.crt' and 'tls.key' (to conform with K8S nomenclature)
-    # tls: hlf--peer1-tls
-    tls: "peer0.org2.net-tls"
+    # tls: [external uri]-tls
+    tls: "peer0.org3.net-tls"
     ## TLS root CA certificate saved under key 'cert.pem'
-    # tlsRootCert: hlf--peer-tlsrootcert
-    tlsRootCert: "peer0.org2.net-tlsrootcert"
+    # tlsRootCert: [external uri]-tlsrootcert
+    tlsRootCert: "peer0.org3.net-tlsrootcert"
+    ## mTls is not tested. Below reserved for future use.
     ## TLS client root CA certificates saved under any names (as there may be multiple)
     # tlsClient: hlf--peer1-tls
     ## TLS client root CA certificates saved under any names (as there may be multiple)
     # tlsClientRootCerts: hlf--ord-tlsrootcert
   ## This should contain the Certificate of the Peer Organisation admin
   ## This is necessary to successfully run the peer
-  # adminCert: hlf--peer-admincert
-  adminCert: "peer0.org2.net-admincert"
+  # adminCert: [external uri]-admincert
+  adminCert: "peer0.org3.net-admincert"
   ## This should contain the Private Key of the Peer Organisation admin
   ## This is necessary to successfully join a channel
-  # adminKey: hlf--peer-adminkey
-  adminKey: "peer0.org2.net-adminkey"
+  # adminKey: [external uri]-adminkey
+  adminKey: "peer0.org3.net-adminkey"
   ## This should include the Orderer TLS 'cacert.pem'
   # ordTlsRootCert: hlf--ord-tlsrootcert
+  # TODO: Below certs may be duplicated; need verify it
   ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
-  ordTlsSignCert: "orderer0.org0.com-tlssigncert"
+#  ordTlsSignCert: "orderer0.org0.com-tlssigncert"
   ordOrg0Tlscacert: "org0-tls-ca-cert"

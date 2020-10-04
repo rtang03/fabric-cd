@@ -1,0 +1,47 @@
+global:
+  mspId: Org3MSP
+  caName: rca3
+  # TODO: define it inside _helpers.tpl
+  # /var/hyperledger/crypto-config/[MSPID]/ca/server
+  caServerHome: /var/hyperledger/crypto-config/Org3MSP/ca/server
+  # /var/hyperledger/crypto-config/[MSPID]/ca/server
+  caClientHome: /var/hyperledger/crypto-config/Org3MSP/ca/admin
+  domain: org3.net
+  # name of configMap [release-name of orgadmin]-[app-name]-setupsh
+  setupsh: admin3-orgadmin--setupsh
+
+# admin credential of tlsca
+caAdmin: rca3-admin
+caAdminPW: rca3-adminPW
+
+# service name [release name]-hlf-ca:7054
+endpoint: rca3-hlf-ca:7054
+
+# TODO: define it inside _helpers.tpl
+# /var/hyperledger/crypto-config/[MSPID]/ca/admin/msp/cacerts/[RCA Release Name]-hlf-ca-7054.pem
+orgCaCert: /var/hyperledger/crypto-config/Org3MSP/ca/admin/msp/cacerts/rca3-hlf-ca-7054.pem
+
+# /var/hyperledger/crypto-config/[MSPID]/admin/msp/signcerts/cert.pem
+adminCert: /var/hyperledger/crypto-config/Org3MSP/admin/msp/signcerts/cert.pem
+
+orgAdmin:
+  enabled: true
+  # Root CA admin id - no naming convention
+  id: admin-peer0.org3.net
+  secret: admin-peer0.org3.netPW
+  type: admin
+  attrs: "hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert"
+
+items:
+  - type: peer
+    id: peer0.org3.net
+    secret: peer0.org3.netPW
+    caClientMspDir: msp
+    # csrHosts is OPTIONAL
+    # [Release Name of peer]-hlf-peer
+    # External domain name
+    # gupload subdomain
+    csrHosts: "p0o3-hlf-peer,peer0.org3.net,gupload.org3.net"
+
+persistence:
+  pvcName: pvc-org3

@@ -1,6 +1,12 @@
 ## Continuous Deployment
 Continuous deployment for fabric-es
 
+```text
+Dear Sir,
+All steps are not future-proved, any change may break. It works, maybe I don't know how it works.
+Take your own risk.
+```
+
 ### Pre-requisite
 - GKE 1.16.13-gke.401/regular channel
 - n1-standard-4: 4 vcpu/15GB x 1 node
@@ -18,19 +24,25 @@ istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual contr
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
 ```
 
+### Update Private DNS
+
 ### Preparation Step
+
+**Step 0: after GKE is created, update local machine credentials**
+
 ```shell script
 # gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
-# Step 0: after GKE is created, update local machine credentials
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 
 # Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
 kubectl create namespace n0
 kubectl create namespace n1
 kubectl create namespace n2
+kubectl create namespace n3
 kubectl label namespace n0 istio-injection=enabled
 kubectl label namespace n1 istio-injection=enabled
 kubectl label namespace n2 istio-injection=enabled
+kubectl label namespace n3 istio-injection=enabled
 
 # Step 2: Create persistence volume claim for org0 and org1
 # Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
@@ -39,13 +51,30 @@ kubectl label namespace n2 istio-injection=enabled
 scripts/recreate-pvc.org01.gcp.sh
 ```
 
+**Goto GKE, obtain the IP for Istio Ingress Gateway**
+Update ip address for hlf-peer.gcp.yaml
+
+```yaml
+peer:
+  hostAlias:
+    - hostnames:
+        - orderer0.org0.com
+        - orderer1.org0.com
+        - orderer2.org0.com
+        - orderer3.org0.com
+        - orderer4.org0.com
+        - peer0.org1.net
+      ip: 35.xxx.xxx.xxx
+```
+
 ### Initial Setup
 ```shell script
 # Install istio for org0 and org1
 kubectl -n n0 apply -f networking/istio-n0.yaml
 kubectl -n n1 apply -f networking/istio-n1.yaml
+kubectl -n n1 apply -f networking/istio-n2.yaml
+kubectl -n n1 apply -f networking/istio-n3.yaml
 
-# Install
 bootstrap.gcp.sh
 ```
 
@@ -123,14 +152,14 @@ Similarly, I publish the `gupload` grpc upload server/client to Github container
 
 ### Helm charts
 Availble app:
-- gupload
-- hlf-ca
-- hlf-couchdb
-- hlf-ord
-- hlf-peer
-- hlf-cc
-- hlf-operator
-- orgadmin
+- gupload: grpc file uploader
+- hlf-ca: Hyperledger Fabric Certificate Authority
+- hlf-couchdb: CouchDB
+- hlf-ord: Hyperledger Fabric Orderer
+- hlf-peer: Hyperledger Fabric Peer
+- hlf-cc: Hyperledger Fabric Chaincode
+- hlf-operator: administrative tasks via k8s jobs
+- orgadmin: administrative cli
 
 ### Helm
 ```shell script
@@ -164,6 +193,6 @@ work as expected.
 [release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml
 
 ### Reference Info
-[External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
-[External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
-[install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)
+- [External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
+- [External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
+- [install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)

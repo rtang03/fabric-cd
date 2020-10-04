@@ -14,6 +14,9 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPULimit: "50m"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -30,3 +33,17 @@ spec:
               value: "0.0.0.0:7052"
             - name: TZ
               value: {{ .Values.global.TZ | quote }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+  {{- end }}

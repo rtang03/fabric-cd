@@ -3,3 +3,28 @@ global:
 
 image: "ghcr.io/rtang03/eventstore:0.0.4"
 ccid: "eventstorev1:1690e452d040fce92201149e0a384f465791d279b9cfb75961d131e42b6194ca"
+
+resources:
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 50m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+  ## Suggested antiAffinity, as each CA should be on a separate Node for resilience
+  # podAntiAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     - topologyKey: "kubernetes.io/hostname"
+#       labelSelector:
+#         matchLabels:
+#           app: hlf-ca

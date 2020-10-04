@@ -11,6 +11,9 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPULimit: "50m"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -28,14 +31,31 @@ spec:
             - -c
             - |
               echo "### Starting gupload ###"
+              /var/gupload/gupload --version
               set -x
-              cp /var/gupload/gupload /var/gupload/uploaded
-              /var/gupload/gupload serve --key ./cert/tls.key --certificate ./cert/tls.crt
+              cp /var/gupload/gupload /var/gupload/fileserver
+              mkdir -p /var/gupload/fileserver/public
+              ls /var/gupload/fileserver/public > /var/gupload/fileserver/public/index.txt
+              /var/gupload/gupload serve --key /var/gupload/cert/tls.key --certificate /var/gupload/cert/tls.crt
           volumeMounts:
             - mountPath: /var/gupload/cert
               name: tls
-            - mountPath: /var/gupload/uploaded
+            - mountPath: /var/gupload/fileserver
               name: files
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
       volumes:
         - name: files
           persistentVolumeClaim:
@@ -43,3 +63,4 @@ spec:
         - name: tls
           secret:
             secretName: {{ .Values.secrets.peer.tls }}
+

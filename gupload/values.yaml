@@ -1,6 +1,6 @@
 global:
   fabricBinary: 2.2.0
-  guploadImage: ghcr.io/rtang03/gupload:0.0.7
+  guploadImage: ghcr.io/rtang03/gupload:0.1.5
   istiogateway: p0o1-gateway
   istiogatewayPort: 15443
   domain: org1.net
@@ -12,3 +12,28 @@ persistence:
 secrets:
   peer:
     tls: peer0.org1.net-tls
+
+resources:
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 50m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+  ## Suggested antiAffinity, as each CA should be on a separate Node for resilience
+  # podAntiAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     - topologyKey: "kubernetes.io/hostname"
+#       labelSelector:
+#         matchLabels:
+#           app: hlf-ca

@@ -71,12 +71,12 @@ spec:
             secretName: {{ . }}
         {{- end }}
         {{- end }}
-        {{- if .Values.peer.enabled }}
-        - name: ord-tlssigncert
-          secret:
-            optional: true
-            secretName: {{ .Values.peer.secret.ordTlsSignCert | quote }}
-        {{- end }}
+        # {{- if .Values.peer.enabled }}
+        # - name: ord-tlssigncert
+        #   secret:
+        #     optional: true
+        #     secretName: {{ .Values.peer.secret.ordTlsSignCert | quote }}
+        # {{- end }}
         {{- if .Values.peer.enabled }}
         - name: org0-tls-ca-cert
           secret:
@@ -170,10 +170,10 @@ spec:
               name: {{ . }}
             {{- end }}
             {{- end }}
-            {{- if .Values.peer.enabled }}
-            - mountPath: "{{ $.Values.cli.firstOrgDir }}/peer0.org1.net/ord/tls-msp/signcerts"
-              name: ord-tlssigncert
-            {{- end }}
+            # {{- if .Values.peer.enabled }}
+            # - mountPath: "{{ $.Values.cli.firstOrgDir }}/peer0.org1.net/ord/tls-msp/signcerts"
+            #   name: ord-tlssigncert
+            # {{- end }}
             {{- if .Values.peer.enabled }}
             - mountPath: "{{ $.Values.cli.firstOrgDir }}/peer0.org1.net/ord/org0/tlscacerts"
               name: org0-tls-ca-cert
