@@ -31,10 +31,10 @@ peer:
   ### configmap
   config:
     peerAddress: "p0o2-hlf-peer:7051"
-    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
+    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org2MSP/msp/tlscacerts/tls-ca-cert.pem
+#    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org2MSP/peer0.org2.net/tls-msp/signcerts/cert.pem
   ### certs provider by org0, to peer
   secret:
-    # ordTlsSignCert: orderer0.org0.com-tlssigncert
     ordTlsCaCert: org0.com-tlscacert
 
 persistence:
@@ -69,7 +69,6 @@ postgresql-0:
       app: "orgadmin"
   service:
     type: NodePort
-    nodePort: 32433
   persistence:
     enabled: true
     existingClaim: pvc-org2

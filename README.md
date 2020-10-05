@@ -3,8 +3,10 @@ Continuous deployment for fabric-es
 
 ```text
 Dear Sir,
-All steps are not future-proved, any change may break. It works, maybe I don't know how it works.
-Take your own risk.
+
+All steps are not future-proof, any change may break. It works, maybe I don't know how it works.
+
+Take your own risk  🎃
 ```
 
 ### Pre-requisite
@@ -88,6 +90,8 @@ scripts/helm-uninstall.org01.sh
 
 # and then, delete/recreate ALL pvc
 scripts/recreate-pvc.org01.gcp.sh
+scripts/recreate-pvc.org2.gcp.sh
+scripts/recreate-pvc.orgx.gcp.sh
 
 # remove istio objects
 # if you want to re-run installation of the same cluster, you are not necessarily removing istio object
@@ -196,3 +200,4 @@ work as expected.
 - [External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
 - [External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
 - [install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)
+- [k8s api spec](https://pkg.go.dev/k8s.io/api@v0.16.13)

@@ -5,7 +5,7 @@ global:
   config:
     setupsh: admin1-orgadmin--setupsh
     coreyaml: admin1-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.5
+  guploadImage: ghcr.io/rtang03/gupload:0.1.6
   channel:
     name: loanapp
 

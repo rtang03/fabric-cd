@@ -102,7 +102,4 @@ secrets:
   ## This is necessary to successfully join a channel
   adminKey: "peer0.org2.net-adminkey"
   ## This should include the Orderer TLS 'cacert.pem'
-  # ordTlsSignCert: "orderer0.org0.com-tlssigncert"
-  # Duplicated
-  # ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
   ordOrg0Tlscacert: "org0.com-tlscacert"

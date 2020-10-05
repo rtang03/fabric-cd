@@ -6,7 +6,7 @@ global:
   config:
     setupsh: admin1-orgadmin--setupsh
     coreyaml: admin1-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.5
+  guploadImage: ghcr.io/rtang03/gupload:0.1.6
   channel:
     name: loanapp
 
@@ -210,6 +210,18 @@ joinChannel:
     - name: org2tlscacert
       secret: org2.net-tlscacert
       path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
+
+#######################
+### Param for multiple download
+#######################
+multidownload:
+  enabled: false
+  gupload:
+    pvcName: pvc-gupload3
+  secret:
+    - name: guploadtlscacert
+      secret: org1.net-tlscacert
+      path: "/var/gupload/cert"
 
 #######################
 ### Param for add signature and forward
