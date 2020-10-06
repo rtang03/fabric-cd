@@ -143,10 +143,8 @@ printMessage "obtain $TLSCACERT_0.pem using Gupload" $res
 echo "######## 4. [$NS] ==> create secret $TLSCACERT_0"
 CONTENT=$(kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cat ./fileserver/$TLSCACERT_0.pem")
 preventEmptyValue "$TLSCACERT_0" $CONTENT
-set -x
 kubectl -n $NS create secret generic $TLSCACERT_0 --from-literal=tlscacert.pem="$CONTENT"
 res=$?
-set +x
 printMessage "create secret $TLSCACERT_0 for $NS" $res
 
 # Below step cp $TLSCACERT_2 to 'fileserver/public' directory pvc-gupload2 for later sharing

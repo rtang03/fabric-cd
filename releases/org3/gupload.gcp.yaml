@@ -1,6 +1,6 @@
 global:
   fabricBinary: 2.2.0
-  guploadImage: ghcr.io/rtang03/gupload:0.1.3
+  guploadImage: ghcr.io/rtang03/gupload:0.1.6
   # istio ingress gateway
   istiogateway: p0o3-gateway
   istiogatewayPort: 15443

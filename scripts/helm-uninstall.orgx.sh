@@ -1,5 +1,5 @@
 #!/bin/bash
-. ./env.sh
+. ./env.orgx.sh
 
 helm uninstall -n $NS $REL_ORGADMIN
 helm uninstall -n $NS crypto-$REL_RCA

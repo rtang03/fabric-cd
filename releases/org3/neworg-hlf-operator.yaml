@@ -1,13 +1,11 @@
 global:
   logging: info
   workingDir: /var/hyperledger
-  mspId: Org2MSP
+  mspId: Org3MSP
   # configMap
   config:
-    # [Release name]-orgadmin-setupsh
-    setupsh: admin2-orgadmin--setupsh
-    # [Release name]-orgadmin-core
-    coreyaml: admin2-orgadmin--core
+    setupsh: admin3-orgadmin--setupsh
+    coreyaml: admin3-orgadmin--core
   guploadImage: ghcr.io/rtang03/gupload:0.1.6
   channel:
     name: loanapp
@@ -15,10 +13,10 @@ global:
 config:
   peer:
     id: cli
-    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert/tlscacert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org3.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    address: p0o2-hlf-peer:7051
-    target: peer0.org2.net
+    address: p0o3-hlf-peer:7051
+    target: peer0.org3.net
   orderer:
     #Provide the address for orderer
     address: orderer0.org0.com:15443
@@ -28,7 +26,7 @@ neworgSend:
   hostAlias:
     - hostnames:
         - orderer0.org0.com
-        - peer0.org2.net
+        - peer0.org3.net
       ip: 35.202.107.80
     - hostnames:
         - gupload.org1.net
@@ -36,20 +34,20 @@ neworgSend:
   # latest channel block (block 0), uploaded by "fetch1"
   channelConfg: o1_channel_config--config.json
   orgadmin:
-    pvcName: pvc-org2
+    pvcName: pvc-org3
   gupload:
-    pvcName: pvc-gupload2
+    pvcName: pvc-gupload3
   secret:
     - name: guploadtlscacert
       secret: org1.net-tlscacert
       path: "/var/gupload/cert"
-    - name: org2tlscacert
-      secret: org2.net-tlscacert
-      path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
+    - name: org3tlscacert
+      secret: org3.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org3.net-tlscacert"
   # used by configMap configtx.yaml
   configtx:
-    mspId: Org2MSP
-    anchorPeer: peer0.org2.net
+    mspId: Org3MSP
+    anchorPeer: peer0.org3.net
     anchorPeerPort: 15443
   # dial address of gupload
   address:
