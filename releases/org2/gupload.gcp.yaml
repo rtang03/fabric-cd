@@ -1,6 +1,6 @@
 global:
   fabricBinary: 2.2.0
-  guploadImage: ghcr.io/rtang03/gupload:0.1.5
+  guploadImage: ghcr.io/rtang03/gupload:0.1.6
   istiogateway: p0o2-gateway
   istiogatewayPort: 15443
   domain: org2.net

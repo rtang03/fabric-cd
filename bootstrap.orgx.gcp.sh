@@ -1,11 +1,13 @@
 #!/bin/bash
+# $1 "org2" or "org3"
+
 . ./scripts/setup.sh
-. ./scripts/env.sh
+. "env.$1.sh"
 
 SECONDS=0
-./scripts/rm-secret.nx.sh
+
 mkdir -p ./download
-rm ./download/*.crt
+rm ./download/*.pem
 
 echo "#################################"
 echo "### Step 1: Install $REL_ORGADMIN"
@@ -13,7 +15,7 @@ echo "#################################"
 helm install $REL_ORGADMIN -n $NS -f $RELEASE_DIR/orgadmin.$CLOUD.yaml ./orgadmin
 printMessage "install $REL_ORGADMIN" $?
 set -x
-export POD_PSQL=$(kubectl get pods -n $NS -l "app.kubernetes.io/name=postgresql-0,app.kubernetes.io/instance=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
+POD_PSQL=$(kubectl get pods -n $NS -l "app.kubernetes.io/name=postgresql-0,app.kubernetes.io/instance=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_PSQL -n $NS
 res=$?
 set +x
@@ -27,7 +29,7 @@ echo "#################################"
 helm install $REL_TLSCA -n $NS -f $RELEASE_DIR/tlsca-hlf-ca.$CLOUD.yaml ./hlf-ca
 printMessage "install $REL_TLSCA" $?
 set -x
-export POD_TLSCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_TLSCA" -o jsonpath="{.items[0].metadata.name}")
+POD_TLSCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_TLSCA" -o jsonpath="{.items[0].metadata.name}")
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_TLSCA -n $NS
 res=$?
 set +x
@@ -40,7 +42,7 @@ echo "### Step 3: Install $REL_RCA"
 echo "#################################"
 helm install $REL_RCA -n $NS -f $RELEASE_DIR/rca-hlf-ca.$CLOUD.yaml ./hlf-ca
 set -x
-export POD_RCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_RCA" -o jsonpath="{.items[0].metadata.name}")
+POD_RCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_RCA" -o jsonpath="{.items[0].metadata.name}")
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_RCA -n $NS
 res=$?
 set +x
@@ -76,242 +78,329 @@ echo "#################################"
 echo "### Step 6: Create secrets"
 echo "#################################"
 echo "######## 0. peer msp - cert"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/signcerts/cert.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/signcerts/cert.pem)
 preventEmptyValue "$MSPID/$PEER/msp/signcerts/cert.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-cert
 kubectl -n $NS create secret generic "$PEER-cert" --from-literal=cert.pem="$CONTENT"
 printMessage "create secret $PEER-cert" $?
 
 echo "######## 1. peer msp - key"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/keystore/key.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/keystore/key.pem)
 preventEmptyValue "$MSPID/$PEER/msp/keystore/key.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-key
 kubectl -n $NS create secret generic "$PEER-key" --from-literal=key.pem="$CONTENT"
 printMessage "create secret $PEER-key" $?
 
 echo "######## 2. secret: CA cert"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/cacerts/$REL_RCA-hlf-ca-7054.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/msp/cacerts/$REL_RCA-hlf-ca-7054.pem)
 preventEmptyValue "$MSPID/$PEER/msp/cacerts/$REL_RCA-hlf-ca-7054.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-cacert
 kubectl -n $NS create secret generic "$PEER-cacert" --from-literal=cacert.pem="$CONTENT"
 printMessage "create secret $PEER-cacert" $?
 
 echo "######## 3. secret: tls cert and key"
-export CERT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/signcerts/cert.pem)
+CERT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/signcerts/cert.pem)
 preventEmptyValue "$MSPID/$PEER/tls-msp/signcerts/cert.pem" $CONTENT
-export KEY=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/keystore/key.pem)
+
+KEY=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/keystore/key.pem)
 preventEmptyValue "$MSPID/$PEER/tls-msp/keystore/key.pem" $CONTENT
-# NOTE: tls.crt and tls.key is k8 ingress's tls naming convention. Keep it.
+
+kubectl -n $NS delete secret $PEER-tls
+# NOTE: tls.crt and tls.key is k8 ingress's tls naming convention. Keep the nameing convention
 kubectl -n $NS create secret generic "$PEER-tls" --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
 printMessage "create secret $PEER-tls" $?
 
 echo "######## 4. secret: tls root CA cert"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/tlscacerts/tls-$REL_TLSCA-hlf-ca-7054.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/$PEER/tls-msp/tlscacerts/tls-$REL_TLSCA-hlf-ca-7054.pem)
 preventEmptyValue "$MSPID/$PEER/tls-msp/tlscacerts/tls-$REL_TLSCA-hlf-ca-7054.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-tlsrootcert
 kubectl -n $NS create secret generic "$PEER-tlsrootcert" --from-literal=tlscacert.pem="$CONTENT"
 printMessage "create secret $PEER-tlsrootcert" $?
 
 echo "######## 5. create secret for $DOMAIN-admin-cert.pem"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/admin/msp/admincerts/$DOMAIN-admin-cert.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/admin/msp/admincerts/$DOMAIN-admin-cert.pem)
 preventEmptyValue "$MSPID/admin/msp/admincerts/$DOMAIN-admin-cert.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-admincert
 kubectl -n $NS create secret generic $PEER-admincert --from-literal=$DOMAIN-admin-cert.pem="$CONTENT"
 printMessage "create secret $PEER-admincert" $?
 
 echo "######## 6. create secret for $DOMAIN-admin-key.pem"
-export CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/admin/msp/keystore/key.pem)
+CONTENT=$(kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/admin/msp/keystore/key.pem)
 preventEmptyValue "$MSPID/admin/msp/keystore/key.pem" $CONTENT
+
+kubectl -n $NS delete secret $PEER-adminkey
 kubectl -n $NS create secret generic "$PEER-adminkey" --from-literal=$DOMAIN-admin-key.pem="$CONTENT"
 printMessage "create secret $PEER-adminkey" $?
+
+#### OPTIONAL: NOT CURRENTLY USED
+echo "######## 7. Create secret for tls for tlsca, used by ingress controller"
+POD_TLSCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_TLSCA" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" POD_TLSCA
+
+CERT=$(kubectl -n $NS exec ${POD_TLSCA} -c ca -- cat ./$MSPID/tls/server/ca-cert.pem)
+preventEmptyValue "./$MSPID/tls/server/ca-cert.pem" $CERT
+
+KEY=$(kubectl -n $NS exec ${POD_TLSCA} -c ca -- cat ./$MSPID/tls/server/msp/keystore/key.pem)
+preventEmptyValue "./$MSPID/tls/server/msp/keystore/key.pem" $KEY
+
+kubectl -n $NS delete secret $REL_TLSCA-tls
+kubectl -n $NS create secret generic $REL_TLSCA-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
+printMessage "create secret $REL_TLSCA-tls" $?
+
+#### OPTIONAL: NOT CURRENTLY USED
+echo "######## 8. Create secret for tls for rca, used by ingress controller"
+CERT=$(kubectl -n $NS exec ${POD_RCA} -c ca -- cat ./$MSPID/ca/server/ca-cert.pem)
+preventEmptyValue "./$MSPID/ca/server/ca-cert.pem" $CERT
+
+KEY=$(kubectl -n $NS exec ${POD_RCA} -c ca -- cat ./$MSPID/ca/server/msp/keystore/key.pem)
+preventEmptyValue "./$MSPID/ca/server/msp/keystore/key.pem" $KEY
+
+kubectl -n $NS delete secret $REL_RCA-tls
+kubectl -n $NS create secret generic $REL_RCA-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
+printMessage "create secret $REL_RCA-tls" $?
+
 
 echo "#################################"
 echo "### Step 7: Install gupload $REL_GUPLOAD"
 echo "#################################"
 helm install $REL_GUPLOAD -n $NS -f $RELEASE_DIR/gupload.$CLOUD.yaml ./gupload
 set -x
-export POD_GUPLOAD=$(kubectl get pods -n $NS -l "app=gupload,release=$REL_GUPLOAD" -o jsonpath="{.items[0].metadata.name}")
+POD_GUPLOAD=$(kubectl get pods -n $NS -l "app=gupload,release=$REL_GUPLOAD" -o jsonpath="{.items[0].metadata.name}")
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_GUPLOAD -n $NS
 res=$?
 set +x
 printMessage "pod/$REL_GUPLOAD" $res
 
 
-# Out of band process may be replaced by other manual arrangement, instead of using kubectl commands
-# Below steps require kubectl commands to access corresponding orgs'.
 echo "#################################"
 echo "### Step 8: Out-of-band process"
 echo "#################################"
-# Sub-step 1 to 3 below are common to newly added orgs:
-# org0-tls-ca-cert, ord-tlsrootcert, ord-tlssigncert are required to connect to orderer0
-# Step 4 an 5 are only required for join channel, install/approve cc.
 
-ORDERER_URL=orderer0.org0.com
-MSPID=Org0MSP
+echo "# IMPORTANT NOTE: THIS SUB-STEP REQUIRING MANUAL INTERRUPTION"
+# Below step may be replaced by manual step, to obtain org1 root cert
+echo "######## 0. [$NS1] ==> obtain $TLSCACERT_1.pem from out-of-band process"
+POD_RCA1=$(kubectl get pods -n $NS1 -l "app=hlf-ca,release=$REL_RCA1" -o jsonpath="{.items[0].metadata.name}")
+set -x
+kubectl -n $NS1 exec $POD_RCA1 -c ca -- cat ./$MSPID_1/msp/tlscacerts/tls-ca-cert.pem > ./download/$TLSCACERT_1.pem
+res=$?
+set +x
+printMessage "download $TLSCACERT_1.pem from n1" $res
 
-export POD_CLI=$(kubectl get pods -n $NS -l "app=orgadmin,release=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_CLI
+# org1 root cert is used to connect to G1 with "gupload" cli in sequent steps
+echo "######## 1. [$NS] ==> cp $TLSCACERT_1.pem to $REL_GUPLOAD"
+POD_GUPLOAD=$(kubectl get pods -n $NS -l "app=gupload,release=$REL_GUPLOAD" -o jsonpath="{.items[0].metadata.name}")
+set -x
+kubectl -n $NS cp ./download/$TLSCACERT_1.pem $POD_GUPLOAD:/var/gupload/fileserver -c gupload
+res=$?
+set +x
+printMessage "cp $TLSCACERT_1.pem to $REL_GUPLOAD" $res
 
-# IMPORTANT NOTE: require kubectl connect to $NS0. If not, need to do it offline, for sub-step 1 - 3.
-export POD_RCA0=$(kubectl get pods -n $NS0 -l "app=hlf-ca,release=$REL_RCA0" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA0
+echo "######## 2. [$NS] ==> create secret $TLSCACERT_1"
+kubectl -n $NS delete secret $TLSCACERT_1
+set -x
+kubectl -n $NS create secret generic $TLSCACERT_1 --from-file=tlscacert.pem=./download/$TLSCACERT_1.pem
+res=$?
+set +x
+printMessage "create secret $TLSCACERT_1 for $NS" $res
 
-echo "########  1. create $ORDERER_URL-tlssigncert for $NS"
-set -x
-kubectl -n $NS0 exec $POD_RCA0 -c ca -- cat ./Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem > ./download/orderer0.crt
-res=$?
-set +x
-printMessage "download Org0MSP/$ORDERER_URL/tls-msp/signcerts/cert.pem from $NS0" $res
-set -x
-kubectl -n $NS create secret generic "$ORDERER_URL-tlssigncert" --from-file=cert.pem=./download/orderer0.crt
-res=$?
-set +x
-printMessage "create secret $ORDERER_URL-tlssigncert for $NS" $res
 
-echo "########  2. create $ORDERER_URL-tlsrootcert for $NS"
+echo "######## 3. [$NS] ==> gupload download Index.txt from $NS1"
 set -x
-kubectl -n $NS exec $POD_RCA0 -c ca -- cat ./Org0MSP/$ORDERER_URL/tls-msp/tlscacerts/tls-$REL_TLSCA0-hlf-ca-7054.pem > ./download/orderer0-tlsroot.crt
+kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cd fileserver && ./gupload download --cacert $TLSCACERT_1.pem --file index.txt --address $G1_URL"
 res=$?
 set +x
-printMessage "download Org0MSP/$ORDERER_URL/tls-msp/tlscacerts/tls-$REL_TLSCA0-hlf-ca-7054.pem from $NS" $res
+printMessage "download index.txt using Gupload" $res
 set -x
-kubectl -n $NS create secret generic "$ORDERER_URL-tlsrootcert" --from-file=tlscacert.pem=./download/orderer0-tlsroot.crt
+kubectl -n $NS exec $POD_GUPLOAD -c gupload -- cat /var/gupload/fileserver/index.txt > ./download/index.txt
 res=$?
 set +x
-printMessage "create secret $ORDERER_URL-tlsrootcert for $NS" $res
+printMessage "cp index.txt to local folder" $res
 
-echo "######## 3. create secret org0-tls-ca-cert for $NS"
-set -x
-kubectl -n $NS0 exec $POD_RCA0 -c ca -- sh -c "cat ./Org0MSP/msp/tlscacerts/tls-ca-cert.pem" > ./download/org0tlscacert.crt
-res=$?
-set +x
-printMessage "download Org0MSP/msp/tlscacerts/tls-ca-cert.pem from $NS0" $res
-set -x
-kubectl -n $NS create secret generic org0-tls-ca-cert --from-file=tlscacert.pem=./download/org0tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org0-tls-ca-cert for $NS" $res
+echo "######## 4. [$NS] ==> Looping Index.txt to create secret"
+echo "=> this is indext.txt"
+cat ./download/index.txt
+cat ./download/index.txt | grep -v index.txt | grep -v $TLSCACERT_1 | while read CERT_FILE
+do
+  # CERT_FILE, e.g. org0.com-tlscacert.pem
+  echo "### [$NS] .... $CERT_FILE"
 
-# IMPORTANT NOTE: require kubectl connect to all org's. If not, need to do it offline, for sub-step 4 - 5.
-echo "# ORG1: Out-of-band process: Manually send p0o1.crt from org2 to org1"
-export POD_RCA2=$(kubectl get pods -n n2 -l "app=hlf-ca,release=rca2" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA2
-echo "# ORG2: Out-of-band process: Manually send p0o2.crt from org1 to org2"
-export POD_RCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_RCA1
+  # CERT_NAME, e.g. org0.com-tlscacert
+  CERT_NAME=$(echo $CERT_FILE | sed -En 's/(.*)[.]pem$/\1/gp')
 
-echo "########  4. create org1-tls-ca-cert for $NS"
-set -x
-kubectl -n n1 exec $POD_RCA1 -c ca -- cat ./Org1MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org1tlscacert.crt
-res=$?
-set +x
-printMessage "download Org1MSP/msp/tlscacerts/tls-ca-cert.pem from n1" $res
-set -x
-kubectl -n $NS create secret generic org1-tls-ca-cert --from-file=tls.crt=./download/org1tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org1-tls-ca-cert for n2" $res
+  # Gupload download from gupload.org1.net
+  set -x
+  kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cd fileserver && ./gupload download --cacert $TLSCACERT_1.pem --file $CERT_FILE --address $G1_URL"
+  res=$?
+  set +x
+  printMessage "gupload download $CERT_FILE" $res
 
-echo "######## 5. create org2-tls-ca-cert for n1 and n2"
-set -x
-kubectl -n n2 exec $POD_RCA2 -c ca -- cat ./Org2MSP/msp/tlscacerts/tls-ca-cert.pem > ./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "download Org2MSP/msp/tlscacerts/tls-ca-cert.pem from n2" $res
-set -x
-kubectl -n n1 create secret generic org2-tls-ca-cert --from-file=tls.crt=./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org2-tls-ca-cert for n1" $res
-set -x
-kubectl -n n2 create secret generic org2-tls-ca-cert --from-file=tls.crt=./download/org2tlscacert.crt
-res=$?
-set +x
-printMessage "create secret org2-tls-ca-cert for n2" $res
+  # retrieve certicate content
+  CONTENT=$(kubectl -n $NS exec $POD_GUPLOAD -c gupload -- cat ./fileserver/$CERT_FILE)
+  preventEmptyValue "$CERT_FILE" $CONTENT
 
-# step 9 requires out-of-band process to start; requiring below secrets
+  # delete pre-existing secret
+  kubectl -n $NS delete secret $CERT_NAME
+
+  # create new tlscacert
+  kubectl -n $NS create secret generic $CERT_NAME --from-literal=tlscacert.pem="$CONTENT"
+  res=$?
+  printMessage "create secret $TLSCACERT_0 for $NS" $res
+done
+
+# Below step cp $TLSCACERT to 'fileserver/public' directory pvc-gupload2 for later sharing
+echo "######## 5. [$NS] ==> cp $TLSCACERT to $REL_GUPLOAD"
+POD_RCA=$(kubectl get pods -n $NS -l "app=hlf-ca,release=$REL_RCA" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_RCA
+set -x
+kubectl -n $NS exec $POD_RCA -c ca -- cat ./$MSPID/msp/tlscacerts/tls-ca-cert.pem > ./download/$TLSCACERT.pem
+res=$?
+set +x
+printMessage "download $TLSCACERT.pem from $NS" $res
+set -x
+kubectl -n $NS cp ./download/$TLSCACERT.pem $POD_GUPLOAD:/var/gupload/fileserver/public -c gupload
+res=$?
+set +x
+printMessage "cp $TLSCACERT.pem to $REL_GUPLOAD" $res
+
+# Below step gupload $TLSCACERT to 'fileserver/public' directory pvc-gupload1 for later sharing
+# note that --cacert is located under fileserver, by step 4 above.
+echo "######## 6. [$NS] ==> gupload $TLSCACERT to $G1_URL"
+set -x
+kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cd fileserver && ./gupload upload --cacert $TLSCACERT_1.pem --infile ./public/$TLSCACERT.pem --public=true --outfile $TLSCACERT.pem  --address $G1_URL"
+res=$?
+set +x
+printMessage "gupload $TLSCACERT to $G1_URL" $res
+
+echo "######## 7. [$NS] ==> create secret $TLSCACERT"
+kubectl -n $NS delete secret $TLSCACERT
+kubectl -n $NS create secret generic $TLSCACERT --from-file=tlscacert.pem=./download/$TLSCACERT.pem
+res=$?
+printMessage "create secret $TLSCACERT for $NS" $res
+
+# NOTE: Below step 8 - 9 is performed by $NS1
+echo "# [$NS1] IMPORTANT NOTE: THIS SUB-STEP REQUIRING MANUAL INTERRUPTION"
+echo "######## 8. [$NS1] obtain $TLSCACERT"
+POD_GUPLOAD1=$(kubectl get pods -n $NS1 -l "app=gupload,release=$REL_GUPLOAD1" -o jsonpath="{.items[0].metadata.name}")
+CONTENT=$(kubectl -n $NS1 exec $POD_GUPLOAD1 -c gupload -- cat ./fileserver/public/$TLSCACERT.pem)
+printMessage "obtain $TLSCACERT" $?
+preventEmptyValue "$TLSCACERT" $CONTENT
+
+echo "######## 9. [$NS1] create secret $TLSCACERT"
+kubectl -n $NS1 delete secret $TLSCACERT
+kubectl -n $NS1 create secret generic $TLSCACERT --from-literal=tlscacert.pem="$CONTENT"
+res=$?
+printMessage "create secret $TLSCACERT for $NS1" $res
+
+echo "#####################################################################"
+echo "### END: OUT OF BAND"
+echo "#####################################################################\n"
+
+
 echo "#################################"
 echo "### Step 9: Install peer"
 echo "#################################"
 helm install $REL_PEER -n $NS -f $RELEASE_DIR/hlf-peer.$CLOUD.yaml ./hlf-peer
 set -x
-export POD_PEER=$(kubectl get pods -n $NS -l "app=hlf-peer,release=$REL_PEER" -o jsonpath="{.items[0].metadata.name}")
+POD_PEER=$(kubectl get pods -n $NS -l "app=hlf-peer,release=$REL_PEER" -o jsonpath="{.items[0].metadata.name}")
 kubectl wait --for=condition=Ready --timeout 180s pod/$POD_PEER -n $NS
 res=$?
 set +x
-printMessage "pod/p0o2-hlf-peer" $res
+printMessage "pod/$REL_PEER" $res
 
 
-echo "###### MULTIPLE ORGS WORKFLOW ###"
-echo "### Org1 fetch current block"
-helm install fetch1 -n n1 -f ./releases/org1/fetchsend-hlf-operator.yaml ./hlf-operator
+echo "#####################################################################"
+echo "### MULTIPLE ORGS WORKFLOW"
+echo "#####################################################################"
+echo "######## [$MSPID_1] ==> fetch current block"
+helm install $JOB_FETCH_BLOCK-$NS -n $NS1 -f $RELEASE_DIR1/fetch-$NS-hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/fetch1-hlf-operator--fetch-send -n n1
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_FETCH_BLOCK-$NS-hlf-operator--fetch -n $NS1
 res=$?
 set +x
-printMessage "job/fetch1-hlf-operator" $res
+printMessage "job/fetch block" $res
+
+sleep 5
+
+echo "######## [$MSPID] ==> prepares add-org update-channel-envelope"
+helm install $JOB_NEWORG -n $NS -f $RELEASE_DIR/neworg-hlf-operator.yaml ./hlf-operator
+
+set -x
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_NEWORG-hlf-operator--neworg -n $NS
+res=$?
+set +x
+printMessage "job/new org" $res
+
+sleep 5
+
+echo "######## [$MSPID_1] ==> sign the updatechannel block"
+helm install $JOB_UPDATE_CHANNEL-$NS -n $NS1 -f $RELEASE_DIR1/upch1-hlf-operator.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_UPDATE_CHANNEL-$NS-hlf-operator--updatechannel -n $NS1
+res=$?
+set +x
+printMessage "job/update channel" $res
+
+sleep 5
+
+echo "######## [$MSPID] ==> join channel"
+helm install $JOB_JOINCHANNEL -n $NS -f $RELEASE_DIR/joinch-hlf-operator.yaml ./hlf-operator
+set -x
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_JOINCHANNEL-hlf-operator--joinchannel -n $NS
+res=$?
+set +x
+printMessage "job/join channel" $res
+
+POD_CLI=$(kubectl get pods --namespace $NS -l "app=orgadmin,release=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
+preventEmptyValue "pod unavailable" $POD_CLI
 
 sleep 10
 
-echo "### Org2 prepares add-org update-channel-envelope"
-helm install neworg2 -n n2 -f ./releases/org2/neworgsend-hlf-operator.yaml ./hlf-operator
-
+echo "######## [$MSPID] ==> Update anchor peer; package & install chaincode"
+helm install $JOB_INSTALL_CHAINCODE_A -n $NS -f $RELEASE_DIR/installcc-a.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/neworg2-hlf-operator--neworg-send -n n2
-res=$?
-set +x
-printMessage "job/neworg2-hlf-operator" $res
-
-sleep 10
-
-echo "### Org1 sign the updatechannel block"
-helm install upch1 -n n1 -f ./releases/org1/upch1-hlf-operator.yaml ./hlf-operator
-set -x
-kubectl wait --for=condition=complete --timeout 120s job/upch1-hlf-operator--updatechannel -n n1
-res=$?
-set +x
-printMessage "job/upch1-hlf-operator" $res
-
-sleep 10
-
-echo "### Org2 join channel"
-helm install joinch2 -n n2 -f ./releases/org2/joinch2-hlf-operator.yaml ./hlf-operator
-set -x
-kubectl wait --for=condition=complete --timeout 120s job/joinch2-hlf-operator--joinchannel -n n2
-res=$?
-set +x
-printMessage "job/joinch2-hlf-operator" $res
-
-export POD_CLI=$(kubectl get pods --namespace n2 -l "app=orgadmin,release=admin2" -o jsonpath="{.items[0].metadata.name}")
-preventEmptyValue "pod unavailable" $POD_CLI1
-
-echo "### Update anchor peer; package & install chaincode"
-helm install installcc2a -n n2 -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
-set -x
-kubectl wait --for=condition=complete --timeout 300s job/installcc2a-hlf-operator--bootstrap -n n2
+kubectl wait --for=condition=complete --timeout 300s job/$JOB_INSTALL_CHAINCODE_A-hlf-operator--bootstrap -n $NS
 res=$?
 set +x
 printMessage "job/install chaincode part1" $res
 
+sleep 10
+
 set -x
-export CCID=$(kubectl -n n2 exec $POD_CLI -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
+CCID=$(kubectl -n $NS exec $POD_CLI -- cat /var/hyperledger/crypto-config/channel-artifacts/packageid.txt)
 res=$?
 set +x
 printMessage "retrieve CCID" $res
+preventEmptyValue "chaincodeId" $CCID
 
-echo "### Launch chaincode container"
-helm install eventstore -n n2 --set ccid=$CCID -f ./releases/org2/eventstore-hlf-cc.gcp.yaml ./hlf-cc
+echo "######## [$MSPID] ==> Launch chaincode container"
+helm install eventstore -n $NS --set ccid=$CCID -f $RELEASE_DIR/eventstore-hlf-cc.yaml ./hlf-cc
 set -x
-export POD_CC2=$(kubectl get pods -n n2 -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
-kubectl wait --for=condition=Ready --timeout 180s pod/$POD_CC2 -n n2
+POD_CC=$(kubectl get pods -n $NS -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")
+kubectl wait --for=condition=Ready --timeout 180s pod/$POD_CC -n $NS
 res=$?
 set +x
 printMessage "pod/eventstore chaincode" $res
 
-sleep 10
+## NOTE: there is an unknonw timeslapse between the chaincode server starts, and container.
+## TODO: research how to use readiness probe for chaincode server.
+sleep 30
 
-echo "### Approach chaincode and run smoke test"
-helm install installcc2b -n n2 -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
+echo "######## [$MSPID] ==> Approve chaincode and run smoke test"
+helm install $JOB_INSTALL_CHAINCODE_B -n $NS -f $RELEASE_DIR/installcc-b.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 180s job/installcc2b-hlf-operator--bootstrap -n n2
+kubectl wait --for=condition=complete --timeout 180s job/$JOB_INSTALL_CHAINCODE_B-hlf-operator--bootstrap -n $NS
 res=$?
 set +x
 printMessage "job/install chaincode part2" $res
+
+echo "#####################################################################"
+echo "### END: MULTIPLE ORGS WORKFLOW"
+echo "#####################################################################"
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

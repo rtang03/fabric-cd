@@ -5,7 +5,7 @@ global:
   config:
     setupsh: admin1-orgadmin--setupsh
     coreyaml: admin1-orgadmin--core
-  guploadImage: ghcr.io/rtang03/gupload:0.1.5
+  guploadImage: ghcr.io/rtang03/gupload:0.1.6
   channel:
     name: loanapp
 
@@ -32,7 +32,7 @@ fetchSend:
         - peer0.org1.net
       ip: 35.202.107.80
     - hostnames:
-        - gupload.org2.net
+        - gupload.org3.net
       ip: 35.202.107.80
   orgadmin:
     pvcName: pvc-org1
@@ -47,9 +47,9 @@ fetchSend:
       secret: org1.net-tlscacert
       path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
     - name: guploadtlscacert
-      secret: org2.net-tlscacert
+      secret: org3.net-tlscacert
       path: "/var/gupload/cert"
   address:
-    url: gupload.org2.net
+    url: gupload.org3.net
     port: 15443
 

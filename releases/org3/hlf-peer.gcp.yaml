@@ -110,8 +110,4 @@ secrets:
   # adminKey: [external uri]-adminkey
   adminKey: "peer0.org3.net-adminkey"
   ## This should include the Orderer TLS 'cacert.pem'
-  # ordTlsRootCert: hlf--ord-tlsrootcert
-  # TODO: Below certs may be duplicated; need verify it
-  ordTlsRootCert: "orderer0.org0.com-tlsrootcert"
-#  ordTlsSignCert: "orderer0.org0.com-tlssigncert"
-  ordOrg0Tlscacert: "org0-tls-ca-cert"
+  ordOrg0Tlscacert: "org0.com-tlscacert"

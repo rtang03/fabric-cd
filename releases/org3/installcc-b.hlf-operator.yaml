@@ -1,10 +1,10 @@
 global:
   logging: info
   workingDir: /var/hyperledger
-  mspId: Org2MSP
+  mspId: Org3MSP
   config:
-    setupsh: admin2-orgadmin--setupsh
-    coreyaml: admin2-orgadmin--core
+    setupsh: admin3-orgadmin--setupsh
+    coreyaml: admin3-orgadmin--core
   guploadImage: ghcr.io/rtang03/gupload:0.1.6
   channel:
     name: loanapp
@@ -12,10 +12,10 @@ global:
 config:
   peer:
     id: cli
-    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert/tlscacert.pem
+    peerTlsCaCert:  /var/hyperledger/crypto-config/channel-artifacts/org3.net-tlscacert/tlscacert.pem
     #Provide the address of the peer who creates the channel and port to be mentioned is grpc cluster IP port
-    address: p0o2-hlf-peer:7051
-    target: p0o2-hlf-peer
+    address: p0o3-hlf-peer:7051
+    target: p0o3-hlf-peer
   orderer:
     #Provide the address for orderer
     address: orderer0.org0.com:15443
@@ -29,13 +29,14 @@ bootstrap:
     - hostnames:
         - peer0.org1.net
         - peer0.org2.net
+        - peer0.org3.net
         - orderer0.org0.com
         - orderer1.org0.com
         - orderer2.org0.com
         - orderer3.org0.com
         - orderer4.org0.com
       ip: 35.202.107.80
-  pvcName: pvc-org2
+  pvcName: pvc-org3
   secret:
     - name: org0tlscacert
       secret: org0.com-tlscacert
@@ -46,6 +47,9 @@ bootstrap:
     - name: org2tlscacert
       secret: org2.net-tlscacert
       path: "/var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert"
+    - name: org3tlscacert
+      secret: org3.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org3.net-tlscacert"
   chaincode:
     id: eventstore
     contract: eventstore
@@ -64,5 +68,7 @@ bootstrap:
           tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
         - peerAddress: peer0.org2.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org2.net-tlscacert/tlscacert.pem
+        - peerAddress: peer0.org3.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org3.net-tlscacert/tlscacert.pem
     dev_query:
       enabled: true

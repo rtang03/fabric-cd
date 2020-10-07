@@ -58,15 +58,15 @@ data:
         Writers:
           Type: ImplicitMeta
           Rule: "ANY Writers"
+        # Admins:
+        #   Type: ImplicitMeta
+        #   Rule: "MAJORITY Admins"
         Admins:
-          Type: ImplicitMeta
-          Rule: "MAJORITY Admins"
+          Type: Signature
+          Rule: "OR('Org1MSP.admin','Org1MSP.member')"
         LifecycleEndorsement:
           Type: Signature
           Rule: "AND('Org1MSP.member')"
-        # LifecycleEndorsement:
-        #   Type: ImplicitMeta
-        #   Rule: "MAJORITY Endorsement"
         Endorsement:
           Type: ImplicitMeta
           Rule: "MAJORITY Endorsement"

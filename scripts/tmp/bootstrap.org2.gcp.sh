@@ -2,6 +2,7 @@
 . ./scripts/setup.sh
 . ./scripts/env.org2.sh
 
+# Non-org2 variables
 ORDERER_URL=orderer0.org0.com
 MSPID_0=Org0MSP
 MSPID_1=Org1MSP
@@ -116,7 +117,7 @@ set +x
 printMessage "download $TLSCACERT_1.pem from n1" $res
 
 # org1 root cert is used to connect to G1 with "gupload" cli in sequent steps
-echo "######## 1. [$NS] ==> cp $TLSCACERT_0.pem to $REL_GUPLOAD"
+echo "######## 1. [$NS] ==> cp $TLSCACERT_1.pem to $REL_GUPLOAD"
 set -x
 kubectl -n $NS cp ./download/$TLSCACERT_1.pem $POD_GUPLOAD:/var/gupload/fileserver/ -c gupload
 res=$?
@@ -142,10 +143,8 @@ printMessage "obtain $TLSCACERT_0.pem using Gupload" $res
 echo "######## 4. [$NS] ==> create secret $TLSCACERT_0"
 CONTENT=$(kubectl -n $NS exec $POD_GUPLOAD -c gupload -- sh -c "cat ./fileserver/$TLSCACERT_0.pem")
 preventEmptyValue "$TLSCACERT_0" $CONTENT
-set -x
 kubectl -n $NS create secret generic $TLSCACERT_0 --from-literal=tlscacert.pem="$CONTENT"
 res=$?
-set +x
 printMessage "create secret $TLSCACERT_0 for $NS" $res
 
 # Below step cp $TLSCACERT_2 to 'fileserver/public' directory pvc-gupload2 for later sharing
@@ -218,43 +217,43 @@ echo "#####################################################################"
 echo "### MULTIPLE ORGS WORKFLOW"
 echo "#####################################################################"
 echo "######## [Org1] ==> fetch current block"
-helm install fetch1 -n $NS1 -f ./releases/org1/fetch-hlf-operator.yaml ./hlf-operator
+helm install $JOB_FETCH_BLOCK -n $NS1 -f ./releases/org1/fetch-hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/fetch1-hlf-operator--fetch -n n1
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_FETCH_BLOCK-hlf-operator--fetch -n $NS1
 res=$?
 set +x
-printMessage "job/fetch1-hlf-operator" $res
+printMessage "job/fetch block" $res
 
 sleep 5
 
 echo "######## [Org2] ==> prepares add-org update-channel-envelope"
-helm install neworg2 -n $NS -f ./releases/org2/neworg-hlf-operator.yaml ./hlf-operator
+helm install $JOB_NEWORG -n $NS -f ./releases/org2/neworg-hlf-operator.yaml ./hlf-operator
 
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/neworg2-hlf-operator--neworg -n $NS
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_NEWORG-hlf-operator--neworg -n $NS
 res=$?
 set +x
-printMessage "job/neworg2-hlf-operator" $res
+printMessage "job/new org" $res
 
 sleep 5
 
 echo "######## [Org1] ==> sign the updatechannel block"
-helm install upch1 -n $NS1 -f ./releases/org1/upch1-hlf-operator.yaml ./hlf-operator
+helm install $JOB_UPDATE_CHANNEL -n $NS1 -f ./releases/org1/upch1-hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/upch1-hlf-operator--updatechannel -n $NS1
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_UPDATE_CHANNEL-hlf-operator--updatechannel -n $NS1
 res=$?
 set +x
-printMessage "job/upch1-hlf-operator" $res
+printMessage "job/update channel" $res
 
 sleep 5
 
 echo "######## [Org2] ==> join channel"
-helm install joinch2 -n $NS -f ./releases/org2/joinch2-hlf-operator.yaml ./hlf-operator
+helm install $JOB_JOINCHANNEL -n $NS -f ./releases/org2/joinch2-hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/joinch2-hlf-operator--joinchannel -n $NS
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_JOINCHANNEL-hlf-operator--joinchannel -n $NS
 res=$?
 set +x
-printMessage "job/joinch2-hlf-operator" $res
+printMessage "job/join channel" $res
 
 export POD_CLI=$(kubectl get pods --namespace $NS -l "app=orgadmin,release=$REL_ORGADMIN" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI
@@ -262,9 +261,9 @@ preventEmptyValue "pod unavailable" $POD_CLI
 sleep 10
 
 echo "######## [Org2] ==> Update anchor peer; package & install chaincode"
-helm install installcc2a -n $NS -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
+helm install $JOB_INSTALL_CHAINCODE_A -n $NS -f ./releases/org2/installcc-a.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 300s job/installcc2a-hlf-operator--bootstrap -n $NS
+kubectl wait --for=condition=complete --timeout 300s job/$JOB_INSTALL_CHAINCODE_A-hlf-operator--bootstrap -n $NS
 res=$?
 set +x
 printMessage "job/install chaincode part1" $res
@@ -292,9 +291,9 @@ printMessage "pod/eventstore chaincode" $res
 sleep 30
 
 echo "######## [Org2] ==> Approve chaincode and run smoke test"
-helm install installcc2b -n $NS -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
+helm install $JOB_INSTALL_CHAINCODE_B -n $NS -f ./releases/org2/installcc-b.hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 180s job/installcc2b-hlf-operator--bootstrap -n $NS
+kubectl wait --for=condition=complete --timeout 180s job/$JOB_INSTALL_CHAINCODE_B-hlf-operator--bootstrap -n $NS
 res=$?
 set +x
 printMessage "job/install chaincode part2" $res
