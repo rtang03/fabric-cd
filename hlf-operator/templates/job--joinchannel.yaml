@@ -59,7 +59,7 @@ spec:
               ########
               # Step 1: fetch block 0
               ########
-              export TMP={{ .Values.global.workingDir }}/uploaded/tmp/{{include "hlf-operator.fullname" .}}
+              export TMP={{ .Values.global.workingDir }}/uploaded/tmp/{{ include "hlf-operator.fullname" . }}
               printHeader "Fetch block 0"
               set -x
               rm -r $TMP

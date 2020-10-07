@@ -2,7 +2,7 @@
 Continuous deployment for fabric-es
 
 ```text
-Dear Sir,
+Dear Everyone,
 
 All steps are not future-proof, any change may break. It works, maybe I don't know how it works.
 
@@ -27,6 +27,21 @@ curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64
 ```
 
 ### Update Private DNS
+Currently, an one-off setup of private zone DNS in Google Networking is required for:
+- orderer0.org0.com
+- orderer1.org0.com
+- orderer2.org0.com
+- orderer3.org0.com
+- orderer4.org0.com
+- gupload.org1.net
+- gupload.org1.net
+- gupload.org2.net
+- gupload.org3.net
+- peer0.org1.net
+- peer0.org2.net
+- peer0.org3.net
+
+All A record is set equal to istio gateway ip.
 
 ### Preparation Step
 
@@ -50,11 +65,13 @@ kubectl label namespace n3 istio-injection=enabled
 # Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
 # requirement. Also, different cloud provider has different offering.
 # In GCP, here assumes to use "standard" storageClass.
-scripts/recreate-pvc.org01.gcp.sh
+./recreate-pvc.gcp.sh org1
+./recreate-pvc.gcp.sh org2
+./recreate-pvc.gcp.sh org3
 ```
 
 **Goto GKE, obtain the IP for Istio Ingress Gateway**
-Update ip address for hlf-peer.gcp.yaml
+Update ip address for hlf-peer.gcp.yaml, and all values files of "hlf-operator" jobs.
 
 ```yaml
 peer:
@@ -70,28 +87,36 @@ peer:
 ```
 
 ### Initial Setup
+For every new cluster, it needs to install istio CRD. For `uninstall', re-install of istio is not required.
+
 ```shell script
-# Install istio for org0 and org1
+# One time Install istio
 kubectl -n n0 apply -f networking/istio-n0.yaml
 kubectl -n n1 apply -f networking/istio-n1.yaml
 kubectl -n n1 apply -f networking/istio-n2.yaml
 kubectl -n n1 apply -f networking/istio-n3.yaml
-
-bootstrap.gcp.sh
 ```
 
 ### Releases
 All releases' custom configuration is at `releases` directory, in form of helm charts value files.
+```shell script
+# execute one by one
+bootstrap.gcp.sh org1
+bootstrap.gcp.sh org2
+bootstrap.gcp.sh org3
+```
 
 ### Cleanup
 ```shell script
 # uninstall helm charts for org0 and org1
-scripts/helm-uninstall.org01.sh
+./uninstall.sh org1
+./uninstall.sh org2
+./uninstall.sh org3
 
 # and then, delete/recreate ALL pvc
-scripts/recreate-pvc.org01.gcp.sh
-scripts/recreate-pvc.org2.gcp.sh
-scripts/recreate-pvc.orgx.gcp.sh
+./recreate-pvc.gcp.sh org1
+./recreate-pvc.gcp.sh org2
+./recreate-pvc.gcp.sh org3
 
 # remove istio objects
 # if you want to re-run installation of the same cluster, you are not necessarily removing istio object
@@ -165,6 +190,13 @@ Availble app:
 - hlf-operator: administrative tasks via k8s jobs
 - orgadmin: administrative cli
 
+`hlf-operator` involves below list of k8s jobs
+- *bootstrap*: (a) multiples step to install `org1`; and (b) `orgX` Note that `orgX` has few steps than `org1`
+- *fetch*: fetch block by `org1`, and then `gupload` to `orgX`
+- *joinchannel*: join channel by `orgX`
+- *neworg*: create new configtx.yaml of `orgX`, and then `gupload` to `org1`
+- *updatechannel*: `org1` update channel with `orgX`'s channel-update-envelope
+
 ### Helm
 ```shell script
 # search public helm repository
@@ -196,8 +228,16 @@ work as expected.
 *Helm chart value file*
 [release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml
 
-### Reference Info
+### External Reference
 - [External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
 - [External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
 - [install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)
 - [k8s api spec](https://pkg.go.dev/k8s.io/api@v0.16.13)
+- [hlf-ca helm chart](https://github.com/helm/charts/tree/master/stable/hlf-ca)
+- [postgres helm chart](https://github.com/bitnami/charts/tree/master/bitnami/postgresql)
+- [example: nginx ingress](https://matthewpalmer.net/kubernetes-app-developer/articles/kubernetes-ingress-guide-nginx-example.html)
+- [fabric helm chart](https://medium.com/google-cloud/helm-chart-for-fabric-for-kubernetes-80408b9a3fb6)
+- [kubect documentation](https://kubectl.docs.kubernetes.io/)
+- [k8s dashboard](https://github.com/kubernetes/dashboard#kubernetes-dashboard)
+- [gke nginx example](https://github.com/GoogleCloudPlatform/community/blob/master/tutorials/nginx-ingress-gke/index.md)
+- [Hyperledger on Azure](https://github.com/Azure/Hyperledger-Fabric-on-Azure-Kubernetes-Service/blob/master/fabricTools/deployments/peer/fabric-peer-template-couchDB.yaml)

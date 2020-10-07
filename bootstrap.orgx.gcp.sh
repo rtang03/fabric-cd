@@ -1,39 +1,11 @@
 #!/bin/bash
+# $1 "org2" or "org3"
+
 . ./scripts/setup.sh
-
-## Org3
-CLOUD=gcp
-DOMAIN=org3.net
-MSPID=Org3MSP
-NS=n3
-REL_GUPLOAD=g3
-REL_ORGADMIN=admin3
-REL_PEER=p0o3
-REL_RCA=rca3
-REL_TLSCA=tlsca3
-RELEASE_DIR=releases/org3
-PEER=peer0.org3.net
-TLSCACERT=org3.net-tlscacert
-
-## Non-org3
-G1_URL=gupload.org1.net:15443
-JOB_FETCH_BLOCK=fetch1
-JOB_INSTALL_CHAINCODE_A=installcc_a
-JOB_INSTALL_CHAINCODE_B=installcc_b
-JOB_JOINCHANNEL=joinch
-JOB_NEWORG=neworg
-JOB_UPDATE_CHANNEL=upch1
-MSPID_1=Org1MSP
-NS1=n1
-RELEASE_DIR1=releases/org1
-REL_GUPLOAD1=g1
-REL_RCA1=rca1
-TLSCACERT_0=org0.com-tlscacert
-TLSCACERT_1=org1.net-tlscacert
+. "env.$1.sh"
 
 SECONDS=0
 
-#./scripts/rm-secret.nx.sh
 mkdir -p ./download
 rm ./download/*.pem
 
@@ -250,6 +222,8 @@ set +x
 printMessage "cp index.txt to local folder" $res
 
 echo "######## 4. [$NS] ==> Looping Index.txt to create secret"
+echo "=> this is indext.txt"
+cat ./download/index.txt
 cat ./download/index.txt | grep -v index.txt | grep -v $TLSCACERT_1 | while read CERT_FILE
 do
   # CERT_FILE, e.g. org0.com-tlscacert.pem
@@ -312,11 +286,8 @@ printMessage "create secret $TLSCACERT for $NS" $res
 echo "# [$NS1] IMPORTANT NOTE: THIS SUB-STEP REQUIRING MANUAL INTERRUPTION"
 echo "######## 8. [$NS1] obtain $TLSCACERT"
 POD_GUPLOAD1=$(kubectl get pods -n $NS1 -l "app=gupload,release=$REL_GUPLOAD1" -o jsonpath="{.items[0].metadata.name}")
-set -x
 CONTENT=$(kubectl -n $NS1 exec $POD_GUPLOAD1 -c gupload -- cat ./fileserver/public/$TLSCACERT.pem)
-res=$?
-set +x
-printMessage "obtain $TLSCACERT" $res
+printMessage "obtain $TLSCACERT" $?
 preventEmptyValue "$TLSCACERT" $CONTENT
 
 echo "######## 9. [$NS1] create secret $TLSCACERT"
@@ -369,7 +340,7 @@ sleep 5
 echo "######## [$MSPID_1] ==> sign the updatechannel block"
 helm install $JOB_UPDATE_CHANNEL-$NS -n $NS1 -f $RELEASE_DIR1/upch1-hlf-operator.yaml ./hlf-operator
 set -x
-kubectl wait --for=condition=complete --timeout 120s job/$JOB_UPDATE_CHANNEL-hlf-operator--updatechannel -n $NS1
+kubectl wait --for=condition=complete --timeout 120s job/$JOB_UPDATE_CHANNEL-$NS-hlf-operator--updatechannel -n $NS1
 res=$?
 set +x
 printMessage "job/update channel" $res

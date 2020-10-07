@@ -63,7 +63,7 @@ data:
         #   Rule: "MAJORITY Admins"
         Admins:
           Type: Signature
-          Rule: "AND('Org1MSP.member')"
+          Rule: "OR('Org1MSP.admin','Org1MSP.member')"
         LifecycleEndorsement:
           Type: Signature
           Rule: "AND('Org1MSP.member')"
