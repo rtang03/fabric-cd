@@ -22,9 +22,9 @@ hostAlias:
   enabled: true
   hostnames:
     - hostname: peer0.org1.net
-      ip: 35.202.107.80
+      ip: 34.67.169.143
     - hostname: orderer0.org0.com
-      ip: 35.202.107.80
+      ip: 34.67.169.143
 
 peer:
   enabled: true
