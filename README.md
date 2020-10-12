@@ -65,9 +65,9 @@ kubectl label namespace n3 istio-injection=enabled
 # Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
 # requirement. Also, different cloud provider has different offering.
 # In GCP, here assumes to use "standard" storageClass.
-./recreate-pvc.gcp.sh org1
-./recreate-pvc.gcp.sh org2
-./recreate-pvc.gcp.sh org3
+./recreate-pvc.sh org1
+./recreate-pvc.sh org2
+./recreate-pvc.sh org3
 ```
 
 **Goto GKE, obtain the IP for Istio Ingress Gateway**
