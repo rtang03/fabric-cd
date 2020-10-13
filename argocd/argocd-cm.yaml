@@ -1,0 +1,26 @@
+# https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#helm-chart-repositories
+# need to add non standard helm chart for istio, in order for argocd to work
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  helm.repositories: |
+    - url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+      name: istio.io
+  repositories: |
+    - type: helm
+      url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+      name: istio.io
+    - passwordSecret:
+        key: password
+        name: repo-100220984
+      type: git
+      url: https://github.com/rtang03/fabric-cd.git
+      usernameSecret:
+        key: username
+        name: repo-100220984
