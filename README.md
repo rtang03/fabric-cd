@@ -202,6 +202,9 @@ Availble app:
 # search public helm repository
 helm search repo stable
 
+# add argo helm chart repo
+helm repo add argo https://argoproj.github.io/argo-helm
+
 # when there is external helm dependency in Chart.yaml
 # helm dep update will add postgresql dependency in orgadmin
 cd orgadmin
