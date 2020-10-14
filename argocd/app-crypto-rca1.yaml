@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crypto-tlsca1
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: cryptogen
+    helm:
+      releaseName: crypto-tlsca1
+      valueFiles:
+        - values-tlsca1.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n1
