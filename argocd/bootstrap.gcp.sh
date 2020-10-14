@@ -8,6 +8,8 @@ argocd app sync admin1
 argocd app sync tlsca1
 argocd app sync rca1
 
+kubectl -n argocd apply -f app-crypto-rca1.yaml
+
 echo "#################################"
 echo "### Step 4: Job: crypto-$REL_TLSCA1"
 echo "#################################"
