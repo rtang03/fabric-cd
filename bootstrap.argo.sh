@@ -42,11 +42,11 @@ kubectl -n argocd apply -f ./argocd/app-admin0.yaml
 
 argocd app sync admin0
 
-kubectl -n argocd apply -f ./argocd/app-ca1.yaml
+kubectl -n argocd apply -f ./argocd/app-ca0.yaml
 
-argocd app sync tlsca0
+argocd app sync tlsca0 --timeout 60
 
-argocd app sync rca0
+argocd app sync rca0 --timeout 60
 
 
 

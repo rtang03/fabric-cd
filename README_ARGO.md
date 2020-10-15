@@ -10,6 +10,10 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 # install argocd cli locally on macos
 brew install argocd
 
+# configure argocd
+kubectl -n argocd apply -f ./argocd/project.yaml
+kubectl -n argocd apply -f ./argocd/argcd-cm.yaml
+
 # adopt port-forward
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
@@ -42,7 +46,7 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```shell script
 ./recreate-pvc.sh org1
 
-kubectl apply -n argocd -f application.yaml
+
 ```
 
 ###
