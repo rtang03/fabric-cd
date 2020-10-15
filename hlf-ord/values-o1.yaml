@@ -1,15 +1,15 @@
 global:
-### Default
+  ### Default
   TZ: Asia/Hong_Kong
-### Default
+  ### Default
   workingDir: /var/hyperledger/crypto-config
-# https://hyperledger-fabric.readthedocs.io/en/release-2.0/logging-control.html
-# "info" or "debug" or "grpc=debug:debug" or "grpc=debug:info"
-### Default
-# logging: info
-### Default
+  # https://hyperledger-fabric.readthedocs.io/en/release-2.0/logging-control.html
+  # "info" or "debug" or "grpc=debug:debug" or "grpc=debug:info"
+  ### Default
+  # logging: info
+  ### Default
   mspId: Org0MSP
-### Default
+  ### Default
   domain: org0.com
   istiogateway: orderer1-gw
   istiogatewayPort: 15443

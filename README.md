@@ -114,9 +114,9 @@ bootstrap.gcp.sh org3
 ./uninstall.sh org3
 
 # and then, delete/recreate ALL pvc
-./recreate-pvc.gcp.sh org1
-./recreate-pvc.gcp.sh org2
-./recreate-pvc.gcp.sh org3
+./recreate-pvc.sh org1
+./recreate-pvc.sh org2
+./recreate-pvc.sh org3
 
 # remove istio objects
 # if you want to re-run installation of the same cluster, you are not necessarily removing istio object
