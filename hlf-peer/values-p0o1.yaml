@@ -43,7 +43,7 @@ peer:
         - orderer3.org0.com
         - orderer4.org0.com
         - peer0.org2.net
-      ip: 35.202.107.80
+      ip: 34.67.169.143
   ledgerPath: /var/hyperledger/production
   peerName: peer0
   # orgPath: /var/hyperledger/crypto-config/Org1MSP
