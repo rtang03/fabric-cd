@@ -48,6 +48,36 @@ argocd app sync tlsca0 --timeout 60
 
 argocd app sync rca0 --timeout 60
 
+echo "#################################"
+echo "### Step 9: crypto-$REL_TLSCA0"
+echo "#################################"
+helm install crypto-$REL_TLSCA0 -n $NS0 -f $RELEASE_DIR0/tlsca-cryptogen.$CLOUD.yaml ./cryptogen
+printMessage "install crypto-tlsca0" $?
 
+set -x
+kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_TLSCA0-cryptogen -n $NS0
+res=$?
+set +x
+printMessage "job/crypto-$REL_TLSCA0-cryptogen" $res
+
+sleep 30
+
+echo "#################################"
+echo "### Step 10: crypto-$REL_RCA0"
+echo "#################################"
+helm install crypto-$REL_RCA0 -n $NS0 -f $RELEASE_DIR0/rca-cryptogen.$CLOUD.yaml ./cryptogen
+printMessage "install crypto-$REL_RCA0" $?
+
+set -x
+kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_RCA0-cryptogen -n $NS0
+res=$?
+set +x
+printMessage "job/crypto-$REL_RCA0-cryptogen" $res
+
+./scripts/create-secret.rca0.sh
+printMessage "create secret rca0" $?
+
+./scripts/create-secret.rca1.sh
+printMessage "create secret rca1" $?
 
 helm template ./bootstrap-flow | argo -n n1 submit - --watch
