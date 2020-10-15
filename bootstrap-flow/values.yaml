@@ -1,0 +1,11 @@
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+    ip: 34.68.246.23
+
+pvcName: pvc-org1
+
+config:
+  setupsh: admin1-orgadmin--setupsh
+  coreyaml: admin1-orgadmin--core

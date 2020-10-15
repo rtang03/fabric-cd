@@ -8,7 +8,7 @@ SECONDS=0
 echo "#################################"
 echo "### Step 1: Install $REL_ORGADMIN1"
 echo "#################################"
-helm install $REL_ORGADMIN1 -n $NS1 -f $RELEASE_DIR1/orgadmin.$CLOUD.yaml ./orgadmin
+helm install $REL_ORGADMIN1 -n $NS1 -f ./orgadmin/values-$REL_ORGADMIN1.yaml ./orgadmin
 printMessage "install $REL_ORGADMIN1" $?
 
 set -x
@@ -29,7 +29,7 @@ sleep 30
 echo "#################################"
 echo "### Step 2: Install $REL_TLSCA1"
 echo "#################################"
-helm install $REL_TLSCA1 -n $NS1 -f $RELEASE_DIR1/tlsca-hlf-ca.$CLOUD.yaml ./hlf-ca
+helm install $REL_TLSCA1 -n $NS1 -f ./hlf-ca/values-$REL_TLSCA1.yaml ./hlf-ca
 printMessage "install $REL_TLSCA1" $?
 
 set -x
@@ -42,7 +42,7 @@ printMessage "pod/$POD_TLSCA1" $res
 echo "#################################"
 echo "### Step 3: Install $REL_RCA1"
 echo "#################################"
-helm install $REL_RCA1 -n $NS1 -f $RELEASE_DIR1/rca-hlf-ca.$CLOUD.yaml ./hlf-ca
+helm install $REL_RCA1 -n $NS1 -f ./hlf-ca/values-$REL_RCA1.yaml ./hlf-ca
 printMessage "install $REL_RCA1" $?
 
 set -x
@@ -83,7 +83,7 @@ printMessage "job/crypto-$REL_RCA1-cryptogen" $res
 echo "#################################"
 echo "### Step 6: Install $REL_ORGADMIN0"
 echo "#################################"
-helm install $REL_ORGADMIN0 -n $NS0 -f $RELEASE_DIR0/orgadmin.$CLOUD.yaml ./orgadmin
+helm install $REL_ORGADMIN0 -n $NS0 -f ./orgadmin/values-$REL_ORGADMIN0.yaml ./orgadmin
 printMessage "install $REL_ORGADMIN0" $?
 
 set -x
@@ -98,7 +98,7 @@ sleep 30
 echo "#################################"
 echo "### Step 7: Install $REL_TLSCA0"
 echo "#################################"
-helm install $REL_TLSCA0 -n $NS0 -f $RELEASE_DIR0/tlsca-hlf-ca.$CLOUD.yaml ./hlf-ca
+helm install $REL_TLSCA0 -n $NS0 -f ./hlf-ca/values-$REL_TLSCA0.yaml ./hlf-ca
 printMessage "install $REL_TLSCA0" $?
 
 set -x
@@ -113,7 +113,7 @@ sleep 30
 echo "#################################"
 echo "### Step 8: Install $REL_RCA0"
 echo "#################################"
-helm install $REL_RCA0 -n $NS0 -f $RELEASE_DIR0/rca-hlf-ca.$CLOUD.yaml ./hlf-ca
+helm install $REL_RCA0 -n $NS0 -f ./hlf-ca/values-$REL_RCA0.yaml ./hlf-ca
 printMessage "install $REL_RCA0" $?
 
 set -x
@@ -215,15 +215,16 @@ echo "#################################"
 echo "### Step 13: Install orderers"
 echo "#################################"
 
-helm install o1 -f $RELEASE_DIR0/$REL_O1-hlf-ord.$CLOUD.yaml -n $NS0 ./hlf-ord
+helm install o1 -f ./hlf-ord/values-$REL_O1.yaml -n $NS0 ./hlf-ord
 sleep 3
-helm install o2 -f $RELEASE_DIR0/$REL_O2-hlf-ord.$CLOUD.yaml -n $NS0 ./hlf-ord
+helm install o2 -f ./hlf-ord/values-$REL_O2.yaml -n $NS0 ./hlf-ord
 sleep 3
-helm install o3 -f $RELEASE_DIR0/$REL_O3-hlf-ord.$CLOUD.yaml -n $NS0 ./hlf-ord
+helm install o3 -f ./hlf-ord/values-$REL_O3.yaml -n $NS0 ./hlf-ord
 sleep 3
-helm install o4 -f $RELEASE_DIR0/$REL_O4-hlf-ord.$CLOUD.yaml -n $NS0 ./hlf-ord
+helm install o4 -f ./hlf-ord/values-$REL_O4.yaml -n $NS0 ./hlf-ord
 sleep 3
-helm install o0 -f $RELEASE_DIR0/$REL_O0-hlf-ord.$CLOUD.yaml -n $NS0 ./hlf-ord
+helm install o0 -f ./hlf-ord/values-$REL_O0.yaml -n $NS0 ./hlf-ord
+sleep 3
 
 set -x
 POD_O0=$(kubectl get pods -n $NS0 -l "app=hlf-ord,release=$REL_O0" -o jsonpath="{.items[0].metadata.name}")
@@ -235,7 +236,7 @@ printMessage "pod/$REL_O0-hlf-ord" $res
 echo "#################################"
 echo "### Step 14: Install $REL_PEER"
 echo "#################################"
-helm install $REL_PEER -n $NS1 -f $RELEASE_DIR1/hlf-peer.$CLOUD.yaml ./hlf-peer
+helm install $REL_PEER -n $NS1 -f ./hlf-peer/values-$REL_PEER.yaml ./hlf-peer
 
 set -x
 POD_P0O1=$(kubectl get pods -n $NS1 -l "app=hlf-peer,release=$REL_PEER" -o jsonpath="{.items[0].metadata.name}")
@@ -247,7 +248,7 @@ printMessage "pod/$REL_PEER-hlf-peer" $res
 echo "#################################"
 echo "### Step 15: Install $REL_GUPLOAD"
 echo "#################################"
-helm install $REL_GUPLOAD -n $NS1 -f $RELEASE_DIR1/gupload.$CLOUD.yaml ./gupload
+helm install $REL_GUPLOAD -n $NS1 -f ./gupload/values-$REL_GUPLOAD.yaml ./gupload
 
 POD_CLI1=$(kubectl get pods -n $NS1 -l "app=orgadmin,release=$REL_ORGADMIN1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" $POD_CLI1
@@ -272,7 +273,7 @@ res=$?
 set +x
 printMessage "retrieve CCID" $res
 
-helm install eventstore -n $NS1 --set ccid=$CCID -f $RELEASE_DIR1/eventstore-hlf-cc.$CLOUD.yaml ./hlf-cc
+helm install eventstore -n $NS1 --set ccid=$CCID -f ./hlf-cc/values-$ORG1.yaml ./hlf-cc
 
 set -x
 POD_CC1=$(kubectl get pods -n $NS1 -l "app=hlf-cc,release=eventstore" -o jsonpath="{.items[0].metadata.name}")

@@ -1,14 +1,17 @@
 #!/bin/bash
 
-kubectl -n argocd apply -f argocd-cm.yaml
-kubectl -n argocd apply -f app-admin1.yaml
-kubectl -n argocd apply -f app-ca1.yaml
+. ./scripts/setup.sh
+. "env.org1.sh"
+
+kubectl -n argocd apply -f ./argocd/app-admin1.yaml
 
 argocd app sync admin1
-argocd app sync tlsca1
-argocd app sync rca1
 
-kubectl -n argocd apply -f app-crypto-rca1.yaml
+kubectl -n argocd apply -f ./argocd/app-ca1.yaml
+
+argocd app sync tlsca1
+
+argocd app sync rca1
 
 echo "#################################"
 echo "### Step 4: Job: crypto-$REL_TLSCA1"
@@ -33,3 +36,18 @@ kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_RCA1-crypto
 res=$?
 set +x
 printMessage "job/crypto-$REL_RCA1-cryptogen" $res
+
+
+kubectl -n argocd apply -f ./argocd/app-admin0.yaml
+
+argocd app sync admin0
+
+kubectl -n argocd apply -f ./argocd/app-ca1.yaml
+
+argocd app sync tlsca0
+
+argocd app sync rca0
+
+
+
+helm template ./bootstrap-flow | argo -n n1 submit - --watch

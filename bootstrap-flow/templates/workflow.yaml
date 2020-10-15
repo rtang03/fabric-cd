@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bootstrap-
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+spec:
+  serviceAccountName: workflow
+  entrypoint: channels
+  {{- if .Values.hostAlias }}
+  hostAliases:
+  {{- range .Values.hostAlias }}
+    - ip: {{ .ip}}
+      hostnames:
+        {{- range .hostnames }}
+        - {{ . }}
+        {{- end }}
+  {{- end }}
+  {{- end }}
+
+  # volumes:
+  #  - name: fabricfiles
+  #    persistentVolumeClaim:
+  #      claimName: {{ .Values.pvcName }}
+  #  - name: setup-script
+  #    configMap:
+  #      name: {{ .Values.config.setupsh }}
+  #      defaultMode: 0777
+  #  - name: core-yaml
+  #    configMap:
+  #      name: {{ .Values.config.coreyaml }}
+
+  templates:
+    - name: channels
+      container:
+        image: docker/whalesay:latest
+        command: [cowsay]
+        args: ["hello world"]
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+
