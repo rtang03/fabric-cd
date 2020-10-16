@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPU: "10m"
         sidecar.istio.io/proxyCPULimit: "50m"
       labels:
 {{ include "labels.standard" . | indent 8 }}

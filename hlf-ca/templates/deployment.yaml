@@ -17,8 +17,11 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPU: "10m"
         sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "debug"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -132,19 +135,33 @@ spec:
               containerPort: 9443
               protocol: TCP
           livenessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 3
             periodSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 3
             periodSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - ls
+          #       - /var/hyperledger
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - ls
+          #       - /var/hyperledger
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
           volumeMounts:
             - name: data
               mountPath: /var/hyperledger
