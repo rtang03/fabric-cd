@@ -65,3 +65,6 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 [argocd api spec](https://github.com/argoproj/argo/blob/master/api/openapi-spec/swagger.json)
 [helm chart for installing argo](https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd)
 [docker image with helm and gke](https://hub.docker.com/r/devth/helm)
+
+
+git config --global commit.gpgsign true
