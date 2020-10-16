@@ -51,6 +51,9 @@ All A record is set equal to istio gateway ip.
 # gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 
+# disable itio probe rewrite globally
+kubectl get cm istio-sidecar-injector -n istio-system -o yaml | sed -e 's/"rewriteAppHTTPProbe": true/"rewriteAppHTTPProbe": false/' | kubectl apply -f -
+
 # Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
 kubectl create namespace n0
 kubectl create namespace n1
@@ -93,8 +96,8 @@ For every new cluster, it needs to install istio CRD. For `uninstall', re-instal
 # One time Install istio
 kubectl -n n0 apply -f networking/istio-n0.yaml
 kubectl -n n1 apply -f networking/istio-n1.yaml
-kubectl -n n1 apply -f networking/istio-n2.yaml
-kubectl -n n1 apply -f networking/istio-n3.yaml
+kubectl -n n2 apply -f networking/istio-n2.yaml
+kubectl -n n3 apply -f networking/istio-n3.yaml
 ```
 
 ### Releases

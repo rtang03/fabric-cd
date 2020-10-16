@@ -1,0 +1,115 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: o0
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: hlf-ord
+    helm:
+      releaseName: o0
+      valueFiles:
+        - values-o0.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n0
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: o1
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: hlf-ord
+    helm:
+      releaseName: o1
+      valueFiles:
+        - values-o1.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n0
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: o2
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: hlf-ord
+    helm:
+      releaseName: o2
+      valueFiles:
+        - values-o2.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n0
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: o3
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: hlf-ord
+    helm:
+      releaseName: o3
+      valueFiles:
+        - values-o3.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n0
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: o4
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: my-project
+  source:
+    repoURL: https://github.com/rtang03/fabric-cd.git
+    targetRevision: dev-0.0.1
+    path: hlf-ord
+    helm:
+      releaseName: o4
+      valueFiles:
+        - values-o4.yaml
+      version: v3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n0
+---

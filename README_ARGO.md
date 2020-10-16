@@ -12,18 +12,28 @@ brew install argocd
 
 # configure argocd
 kubectl -n argocd apply -f ./argocd/project.yaml
-kubectl -n argocd apply -f ./argocd/argcd-cm.yaml
+kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
 
 # adopt port-forward
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 # initial password
 kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
+
+# change initial password
+# see https://argoproj.github.io/argo-cd/getting_started/
+
 ```
 
 If running on GKE,
 ```shell script
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user="$(gcloud config get-value account)"
+```
+
+```shell script
+# open browswer http://localhost:8080/settings/repos
+
+argocd repo add git@github.com:rtang03/fabric-cd.git --insecure-ignore-host-key --ssh-private-key-path ~/.ssh/id_rsa
 ```
 
 ### Argo Workflow Installation on GKE

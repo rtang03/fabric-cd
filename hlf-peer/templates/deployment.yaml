@@ -15,6 +15,9 @@ spec:
       maxUnavailable: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
