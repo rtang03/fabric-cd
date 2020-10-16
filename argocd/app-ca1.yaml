@@ -10,7 +10,7 @@ metadata:
 spec:
   project: my-project
   source:
-    repoURL: https://github.com/rtang03/fabric-cd.git
+    repoURL: git@github.com:rtang03/fabric-cd.git
     targetRevision: dev-0.0.1
     path: hlf-ca
     helm:
@@ -33,7 +33,7 @@ metadata:
 spec:
   project: my-project
   source:
-    repoURL: https://github.com/rtang03/fabric-cd.git
+    repoURL: git@github.com:rtang03/fabric-cd.git
     targetRevision: dev-0.0.1
     path: hlf-ca
     helm:

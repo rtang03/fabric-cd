@@ -139,14 +139,14 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 3
+            initialDelaySeconds: 15
             periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 3
+            initialDelaySeconds: 15
             periodSeconds: 10
           # livenessProbe:
           #   exec:
