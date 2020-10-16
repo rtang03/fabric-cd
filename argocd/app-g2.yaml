@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: admin1
+  name: g1
   namespace: argocd
   # Add a this finalizer ONLY if you want these to cascade delete.
   finalizers:
@@ -9,13 +9,13 @@ metadata:
 spec:
   project: my-project
   source:
-    repoURL: git@github.com:rtang03/fabric-cd.git
+    repoURL: https://github.com/rtang03/fabric-cd.git
     targetRevision: dev-0.0.1
-    path: orgadmin
+    path: gupload
     helm:
-      releaseName: admin1
+      releaseName: g1
       valueFiles:
-        - values-admin1.yaml
+        - values-g1.yaml
       version: v3
   destination:
     server: https://kubernetes.default.svc

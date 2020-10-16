@@ -15,6 +15,8 @@ argocd app sync tlsca1
 
 argocd app sync rca1
 
+argocd app wait tlsca1 rca1 --timeout 120
+
 echo "#################################"
 echo "### Step 4: Job: crypto-$REL_TLSCA1"
 echo "#################################"
