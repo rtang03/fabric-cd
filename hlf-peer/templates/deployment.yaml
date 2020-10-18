@@ -155,6 +155,9 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
+            - name: http-docker-endpoint
+              containerPort: 2375
+              protocol: TCP
           livenessProbe:
             httpGet:
               scheme: HTTP
