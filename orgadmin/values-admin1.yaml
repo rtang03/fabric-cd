@@ -22,9 +22,9 @@ hostAlias:
   enabled: true
   hostnames:
     - hostname: peer0.org1.net
-      ip: 34.67.169.143
+      ip: 35.202.107.80
     - hostname: orderer0.org0.com
-      ip: 34.67.169.143
+      ip: 35.202.107.80
 
 peer:
   enabled: true
@@ -55,15 +55,21 @@ postgresql-0:
   postgresqlPassword: password
   master:
     podAnnotations:
-      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPU: "10m"
       sidecar.istio.io/proxyCPULimit: "50m"
+      sidecar.istio.io/rewriteAppHTTPProbers: "false"
+      # trace|debug|info|warning|error|critical|off
+      sidecar.istio.io/logLevel: "info"
     podLabels:
       version: "0.6.3"
       app: "orgadmin"
   slave:
     podAnnotations:
-      sidecar.istio.io/proxyCPU: "50m"
+      sidecar.istio.io/proxyCPU: "10m"
       sidecar.istio.io/proxyCPULimit: "50m"
+      sidecar.istio.io/rewriteAppHTTPProbers: "false"
+      # trace|debug|info|warning|error|critical|off
+      sidecar.istio.io/logLevel: "info"
     podLabels:
       version: "0.6.3"
       app: "orgadmin"

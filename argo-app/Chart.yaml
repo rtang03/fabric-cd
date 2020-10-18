@@ -1,7 +1,7 @@
 apiVersion: v2
 appVersion: 1.4.7
-description: Hyperledger Fabric Certificate Authority chart
-name: hlf-ca
+description: Chart for org-setup for ArgoCD
+name: org-setup
 sources:
   - https://github.com/rtang03/fabric-cd
 version: 0.1.0

@@ -18,6 +18,9 @@ spec:
       annotations:
         sidecar.istio.io/proxyCPU: "10m"
         sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -153,19 +156,33 @@ spec:
               containerPort: 9443
               protocol: TCP
           livenessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 60
+            periodSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - ls
+          #       - /var/hyperledger
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - ls
+          #       - /var/hyperledger
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5
           command:
             - sh
             - -c
