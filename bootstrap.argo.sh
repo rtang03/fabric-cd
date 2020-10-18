@@ -325,10 +325,10 @@ res=$?
 set +x
 printMessage "$REL_PEER | $REL_GUPLOAD are healthy and sync" $res
 
-#echo "#################################"
-#echo "### Step 16: Bootstrap part 1"
-#echo "#################################"
-#
+echo "#################################"
+echo "### Step 16: Bootstrap part 1"
+echo "#################################"
+
 #echo "#################################"
 #echo "### Step 17: Install chaincode"
 #echo "#################################"
