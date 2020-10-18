@@ -24,7 +24,7 @@ hostAlias:
   enabled: false
   hostnames:
     - hostname: peer0.org1.net
-      ip: 34.68.246.23
+      ip: 35.202.107.80
 
 peer:
   enabled: false

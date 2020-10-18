@@ -21,7 +21,7 @@ spec:
         sidecar.istio.io/proxyCPULimit: "50m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
-        sidecar.istio.io/logLevel: "debug"
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -139,29 +139,15 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
-          # readinessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
           volumeMounts:
             - name: data
               mountPath: /var/hyperledger

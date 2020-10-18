@@ -2,5 +2,8 @@
 
 argocd app list -o name | while read APP
 do
-  argo app delete $APP
+  argocd app delete $APP
 done
+
+# uninstall jobs, created by helm-install
+./uninstall.sh org1

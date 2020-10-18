@@ -1,6 +1,19 @@
 ## Argo CD & Workflow
 Below are instruction for the deployment with Argo CD and Argo Workflow
 
+### Github Preparation
+Here assumes the connection to Github is via ssh; and every commit is gpg signed.
+
+- Add ssh key in Github.com
+- Add gpg key in Github.com
+
+```shell script
+# enable project level commit signing
+# git config --global commit.gpgsign true
+git config commit.gpgsign true
+```
+
+
 ### Argo CD Installation on GKE
 ```shell script
 # https://argoproj.github.io/argo-cd/getting_started/
@@ -56,7 +69,6 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```shell script
 ./recreate-pvc.sh org1
 
-
 ```
 
 ###
@@ -66,5 +78,3 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 [helm chart for installing argo](https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd)
 [docker image with helm and gke](https://hub.docker.com/r/devth/helm)
 
-
-git config --global commit.gpgsign true
