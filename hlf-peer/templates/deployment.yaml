@@ -155,7 +155,7 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
-            - name: http-docker-endpoint
+            - name: http-docker
               containerPort: 2375
               protocol: TCP
           livenessProbe:
@@ -163,14 +163,14 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 35
+            initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 35
+            initialDelaySeconds: 30
             periodSeconds: 10
           # livenessProbe:
           #   exec:
