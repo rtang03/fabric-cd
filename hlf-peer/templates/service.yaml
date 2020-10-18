@@ -25,7 +25,7 @@ spec:
       protocol: TCP
     - port: 2375
       targetPort: 2375
-      name: http-docker-endpoint
+      name: http-docker
       protocol: TCP
   selector:
     app: {{ include "hlf-peer.name" . }}
