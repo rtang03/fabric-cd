@@ -19,7 +19,7 @@ spec:
       targetPort: 7053
       protocol: TCP
       name: tls-event
-    - port: 9443
+    - port: 80
       targetPort: 9443
       name: http-metrics
       protocol: TCP
