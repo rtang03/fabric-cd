@@ -68,14 +68,10 @@ kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
 # adopt port-forward
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
-# get initial password, i.e. pod id
-PW=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
-
 # authenticate
 # see https://argoproj.github.io/argo-cd/getting_started/
+PW=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
 argocd login localhost:8080 --insecure --username admin --password $PW
-
-# change your password to "password"
 argocd account update-password --current-password $PW --new-password password
 
 # connect to github with ssh key
@@ -126,3 +122,5 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 - [helm-secrets plugin](https://github.com/zendesk/helm-secrets)
 - [custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [setup iam for kms](https://cloud.google.com/kms/docs/iam)
+
+sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key test.yaml
