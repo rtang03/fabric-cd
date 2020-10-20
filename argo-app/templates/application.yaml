@@ -15,7 +15,7 @@ spec:
     helm:
       releaseName: {{ .Values.rel }}
       valueFiles:
-        - {{ .Values.file | quote }}
+        - {{ .Values.file }}
         - "secrets.yaml"
       version: v3
   destination:
