@@ -1,3 +1,6 @@
+{{- $vars := dict }}
+{{- $_ := set $vars "templated" "" }}
+
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
@@ -5,6 +8,14 @@ metadata:
   labels:
     workflows.argoproj.io/archive-strategy: "false"
 spec:
+  # must complete in 15 min (900 seconds)
+  activeDeadlineSeconds: 900
+  # keep workflows for 1d (86,400 seconds)
+  ttlStrategy:
+    secondsAfterCompletion: 86400
+  # delete all pods as soon as they complete
+{{/*  podGC:*/}}
+{{/*    strategy: OnPodCompletion*/}}
   serviceAccountName: workflow
   entrypoint: channels
   {{- if .Values.hostAlias }}
@@ -18,24 +29,131 @@ spec:
   {{- end }}
   {{- end }}
 
-  # volumes:
-  #  - name: fabricfiles
-  #    persistentVolumeClaim:
-  #      claimName: {{ .Values.pvcName }}
-  #  - name: setup-script
-  #    configMap:
-  #      name: {{ .Values.config.setupsh }}
-  #      defaultMode: 0777
-  #  - name: core-yaml
-  #    configMap:
-  #      name: {{ .Values.config.coreyaml }}
+  volumes:
+   - name: fabricfiles
+     persistentVolumeClaim:
+       claimName: {{ .Values.pvcName }}
+   - name: setup-script
+     configMap:
+       name: {{ .Values.setupsh }}
+       defaultMode: 0777
+   - name: core-yaml
+     configMap:
+       name: {{ .Values.coreyaml }}
+  {{- range .Values.secret }}
+   - name: {{ .name }}
+     secret:
+       secretName: {{ .secret }}
+  {{- end }}
+  {{- if .Values.channeltx }}
+   - name: channel-tx
+     secret:
+       secretName: {{ .Values.channeltx }}
+  {{- end }}
 
   templates:
     - name: channels
+      steps:
+        - - name: create-channel
+            template: cli
+            arguments:
+              parameters:
+                - name: task
+                  value: create
+        - - name: join-channel
+            template: cli
+            arguments:
+              parameters:
+                - name: task
+                  value: join
+
+    - name: cli
+      inputs:
+        parameters:
+          - name: task
+        artifacts:
+          - name: collection-json
+            path: /builders/packaging/connection.json
+            raw:
+              data: {{ .Values.connection_json | quote }}
+          - name: metadata-json
+            path: /builders/packaging/metadata.json
+            raw:
+              data: |
+                {{ .Values.metadata_json }}
       container:
-        image: docker/whalesay:latest
-        command: [cowsay]
-        args: ["hello world"]
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: {{ .Values.dir }}
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq tzdata
+            ./bin/peer version
+            #################
+            ##### CREATE CHANNEL
+            #################
+            if [ {{ .Values.templatedTask }} = "create" ]
+            then
+              printHeader "Create channel"
+              echo "Fetch block to see if channel has already been created..."
+              set -x
+              $BIN/peer channel fetch 0 -c $CHANNEL_NAME --tls --cafile $ORDERER_CA -o $ORDERER_URL $DIR/$CHANNEL_NAME.block
+              set +x
+              if [ -f $DIR/$CHANNEL_NAME.block ]
+              then
+                echo "Channel ${CHANNEL_NAME} is already created."
+                echo "create-channel skipped."
+              else
+                echo "Creating Channel $CHANNEL_NAME"
+                set -x
+                $BIN/peer channel create -o $ORDERER_URL -c $CHANNEL_NAME \
+                  -f $DIR/channeltx/channel.tx \
+                  --outputBlock $DIR/$CHANNEL_NAME.block \
+                  --tls --cafile $ORDERER_CA >& $DIR/createchannel.log
+                res=$?
+                set +x
+                printMessage "create channel" $res
+                set -x
+                cat $DIR/createchannel.log
+                printMessage "generate $CHANNEL_NAME.block" $?
+              fi
+            fi
+            #################
+            #### JOIN CHANNEL
+            #################
+            if [ {{ .Values.templatedTask }} = "join" ]
+            then
+              printHeader "Join channel"
+              set -x
+              $BIN/peer channel getinfo -c $CHANNEL_NAME
+              res=$?
+              set +x
+              echo $res
+            fi
+        env:
+        {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+        {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- if .Values.channeltx }}
+          - name: channel-tx
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/channeltx
+          {{- end }}
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: {{ $.Values.dir }}/crypto-config/channel-artifacts/{{ .secret }}
+          {{- end }}
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"

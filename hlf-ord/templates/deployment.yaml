@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPU: "50m"
         sidecar.istio.io/proxyCPULimit: "50m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
@@ -119,20 +119,6 @@ spec:
               port: 8443
             initialDelaySeconds: 30
             periodSeconds: 10
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
-          # readinessProbe:
-          #   exec:
-          #     command:
-          #       - ls
-          #       - /var/hyperledger
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
           command:
             - sh
             - -c

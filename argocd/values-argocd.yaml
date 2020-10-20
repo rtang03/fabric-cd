@@ -1,0 +1,37 @@
+# https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
+global:
+  image:
+    repository: "ghcr.io/rtang03/argocd"
+    tag: "1.7.7-rel.1"
+  securityContext:
+    fsGroup: 2000
+
+repoServer:
+  volumes:
+    - name: "gcp-service-account"
+      secret:
+        secretName: "argocd-secret"
+        items:
+          - key: "kms-service-account"
+            path: "kms-service-account.json"
+        defaultMode: 0600
+  volumeMounts:
+    - name: "gcp-service-account"
+      mountPath: "/app/config/gcp"
+
+configs:
+  secret:
+    extra:
+      kms-service-account: |
+        {
+          "type": "service_account",
+          "project_id": "fdi-cd",
+          "private_key_id": "348b558665fec63dfdecf57f23b3f4cff5e81bb2",
+          "private_key": "",
+          "client_email": "kms-default-service-account@fdi-cd.iam.gserviceaccount.com",
+          "client_id": "107114143009673412676",
+          "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+          "token_uri": "https://oauth2.googleapis.com/token",
+          "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/kms-default-service-account%40fdi-cd.iam.gserviceaccount.com"
+        }
