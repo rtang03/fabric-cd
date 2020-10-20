@@ -8,6 +8,8 @@ gcloud kms keyrings create sops --location us-central1
 gcloud kms keys create sops-key --location us-central1 --keyring fdi --purpose encryption
 gcloud kms keys list --location us-central1 --keyring fdi
 
+# object KMS service account for enc and dec only
+
 # install helm-secret + sops
 helm plugin install https://github.com/zendesk/helm-secrets
 
