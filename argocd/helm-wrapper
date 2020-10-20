@@ -1,0 +1,17 @@
+#! /bin/sh
+
+GPG_PRIVATE_KEY_FILE='/app/config/gpg/privkey.asc'
+
+if [ -f "${GPG_PRIVATE_KEY_FILE}" ]
+then
+	gpg --import "${GPG_PRIVATE_KEY_FILE}"
+fi
+
+# GPG_KEY='/home/argocd/gpg/gpg.asc'
+# if [ -f ${GPG_KEY} ]
+# then
+#     gpg --quiet --import ${GPG_KEY}
+# fi
+
+# helm.bin is the original helm binary
+exec /usr/local/bin/helm.bin secrets $@

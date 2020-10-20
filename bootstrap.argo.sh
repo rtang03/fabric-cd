@@ -329,6 +329,8 @@ printMessage "$REL_PEER | $REL_GUPLOAD are healthy and sync" $res
 echo "#################################"
 echo "### Step 16: Bootstrap part 1"
 echo "#################################"
+#helm template ./bootstrap-flow | argo -n n1 submit -
+#helm template ./bootstrap-flow | argo -n n1 submit - --watch
 
 #echo "#################################"
 #echo "### Step 17: Install chaincode"
@@ -337,8 +339,6 @@ echo "#################################"
 #echo "#################################"
 #echo "### Step 18: Bootstrap part 2"
 #echo "#################################"
-
-#helm template ./bootstrap-flow | argo -n n1 submit - --watch
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

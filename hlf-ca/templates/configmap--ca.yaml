@@ -11,3 +11,4 @@ data:
   SERVICE_DNS: 0.0.0.0  # Point to itself
   TZ: {{ .Values.global.TZ }}
   FABRIC_CA_CLIENT_HOME: {{ include "hlf-ca.caClientHome" . }}
+  secret: {{ .Values.secret }}
