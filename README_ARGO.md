@@ -126,3 +126,4 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 - [setup iam for kms](https://cloud.google.com/kms/docs/iam)
 
 sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key test.yaml
+
