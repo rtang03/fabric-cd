@@ -126,8 +126,3 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 - [helm-secrets plugin](https://github.com/zendesk/helm-secrets)
 - [custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [setup iam for kms](https://cloud.google.com/kms/docs/iam)
-
-
-
-
-
