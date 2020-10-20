@@ -51,6 +51,9 @@ All A record is set equal to istio gateway ip.
 # gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 
+# disable itio probe rewrite globally
+kubectl get cm istio-sidecar-injector -n istio-system -o yaml | sed -e 's/"rewriteAppHTTPProbe": true/"rewriteAppHTTPProbe": false/' | kubectl apply -f -
+
 # Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
 kubectl create namespace n0
 kubectl create namespace n1
@@ -93,8 +96,8 @@ For every new cluster, it needs to install istio CRD. For `uninstall', re-instal
 # One time Install istio
 kubectl -n n0 apply -f networking/istio-n0.yaml
 kubectl -n n1 apply -f networking/istio-n1.yaml
-kubectl -n n1 apply -f networking/istio-n2.yaml
-kubectl -n n1 apply -f networking/istio-n3.yaml
+kubectl -n n2 apply -f networking/istio-n2.yaml
+kubectl -n n3 apply -f networking/istio-n3.yaml
 ```
 
 ### Releases
@@ -114,9 +117,9 @@ bootstrap.gcp.sh org3
 ./uninstall.sh org3
 
 # and then, delete/recreate ALL pvc
-./recreate-pvc.gcp.sh org1
-./recreate-pvc.gcp.sh org2
-./recreate-pvc.gcp.sh org3
+./recreate-pvc.sh org1
+./recreate-pvc.sh org2
+./recreate-pvc.sh org3
 
 # remove istio objects
 # if you want to re-run installation of the same cluster, you are not necessarily removing istio object
@@ -201,6 +204,9 @@ Availble app:
 ```shell script
 # search public helm repository
 helm search repo stable
+
+# add argo helm chart repo
+helm repo add argo https://argoproj.github.io/argo-helm
 
 # when there is external helm dependency in Chart.yaml
 # helm dep update will add postgresql dependency in orgadmin

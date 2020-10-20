@@ -1,0 +1,2 @@
+creation_rules:
+  - gcp_kms: projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key

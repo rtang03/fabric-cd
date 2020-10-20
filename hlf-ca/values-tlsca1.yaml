@@ -24,10 +24,10 @@ service:
 
 config:
   type: tls
-# can remove
-#  caServerHome: /var/hyperledger/crypto-config/Org1MSP/tls/server
-#  caClientHome: /var/hyperledger/crypto-config/Org1MSP/tls/admin
-#  caClientTlsCertfiles: /var/hyperledger/crypto-config/Org1MSP/tls/server/ca-cert.pem
+  # can remove
+  #  caServerHome: /var/hyperledger/crypto-config/Org1MSP/tls/server
+  #  caClientHome: /var/hyperledger/crypto-config/Org1MSP/tls/admin
+  #  caClientTlsCertfiles: /var/hyperledger/crypto-config/Org1MSP/tls/server/ca-cert.pem
   ### Default
   # debug: false
   csr:

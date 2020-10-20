@@ -1,6 +1,6 @@
 global:
   TZ: Asia/Hong_Kong
-#  workingDir: /var/hyperledger/crypto-config
+  #  workingDir: /var/hyperledger/crypto-config
   mspId: Org2MSP
   domain: org2.net
   istiogateway: p0o2-gateway

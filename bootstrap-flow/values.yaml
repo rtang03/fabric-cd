@@ -1,0 +1,66 @@
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+    ip: 35.202.107.80
+
+pvcName: pvc-org1
+setupsh: admin1-orgadmin--setupsh
+coreyaml: admin1-orgadmin--core
+dir: /var/hyperledger
+secret:
+  - name: org0-tls-ca-cert
+    secret: org0.com-tlscacert
+    path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+  - name: org1-tls-ca-cert
+    secret: org1.net-tlscacert
+    path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+# Default should be no channelTx
+channeltx: channeltx
+conf:
+  - name: TZ
+    value: "Asia/HongKong"
+  - name: CHANNEL_NAME
+    value: loanapp
+  - name: FABRIC_LOGGING_SPEC
+    value: info
+  - name: CORE_PEER_ID
+    value: cli
+  - name: CORE_PEER_ADDRESS
+    value: "p0o1-hlf-peer:7051"
+  - name: CORE_PEER_LOCALMSPID
+    value: Org1MSP
+  - name: CORE_PEER_TLS_ENABLED
+    value: "true"
+  - name: CORE_PEER_TLS_ROOTCERT_FILE
+    value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+  - name: ORDERER_CA
+    value: /var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert/tlscacert.pem
+  - name: ORDERER_URL
+    value: "orderer0.org0.com:15443"
+  - name: CORE_PEER_MSPCONFIGPATH
+    value: /var/hyperledger/crypto-config/Org1MSP/admin/msp
+  - name: FABRIC_CFG_PATH
+    value: /etc/hyperledger
+  - name: BIN
+    value: /var/hyperledger/bin
+  - name: DIR
+    value: /var/hyperledger/crypto-config/channel-artifacts
+  - name: GODEBUG
+    value: "netdns=go"
+
+templatedTask: "{{inputs.parameters.task}}"
+
+connection_json: |
+  {
+                  "address": "eventstore-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
+metadata_json: |
+  {"path":"","type":"external","label":"eventstorev1"}

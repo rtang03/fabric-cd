@@ -14,6 +14,9 @@ spec:
       annotations:
         sidecar.istio.io/proxyCPU: "50m"
         sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:

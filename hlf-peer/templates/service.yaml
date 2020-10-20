@@ -19,9 +19,13 @@ spec:
       targetPort: 7053
       protocol: TCP
       name: tls-event
-    - port: 9443
+    - port: 80
       targetPort: 9443
       name: http-metrics
+      protocol: TCP
+    - port: 2375
+      targetPort: 2375
+      name: http-docker
       protocol: TCP
   selector:
     app: {{ include "hlf-peer.name" . }}

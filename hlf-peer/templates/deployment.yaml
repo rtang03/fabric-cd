@@ -15,6 +15,12 @@ spec:
       maxUnavailable: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -149,20 +155,23 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
+            - name: http-docker
+              containerPort: 2375
+              protocol: TCP
           livenessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 30
+            periodSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - ls
-                - /var/hyperledger
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 9443
+            initialDelaySeconds: 30
+            periodSeconds: 10
           command:
             - sh
             - -c
