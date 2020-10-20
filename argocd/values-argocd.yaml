@@ -8,6 +8,7 @@ global:
     fsGroup: 2000
 
 repoServer:
+  logLevel: debug
   volumes:
     - name: "gcp-service-account"
       secret:

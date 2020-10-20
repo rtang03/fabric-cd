@@ -1,5 +1,5 @@
 global:
-  TZ: Asia/Hong_Kong
+  TZ: "Asia/Hong_Kong"
   mspId: Org0MSP
   workingDir: /var/hyperledger/crypto-config
   logging: info
