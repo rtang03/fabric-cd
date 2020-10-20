@@ -128,7 +128,6 @@ spec:
             - sh
             - -c
             - |
-              echo "Foo is : {{ $.Values.foo }}"
               apk update
               apk upgrade
               apk --no-cache add curl libc6-compat libstdc++
