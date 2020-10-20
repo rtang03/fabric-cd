@@ -3,6 +3,7 @@ global:
   image:
     repository: "ghcr.io/rtang03/argocd"
     tag: "1.7.7-rel.1"
+    imagePullPolicy: Always
   securityContext:
     fsGroup: 2000
 
@@ -27,7 +28,7 @@ configs:
           "type": "service_account",
           "project_id": "fdi-cd",
           "private_key_id": "348b558665fec63dfdecf57f23b3f4cff5e81bb2",
-          "private_key": "",
+          "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC7xHq6tWb/8LZB\nmK8VNAedCjPisFG9MH1+KpIAOwHb87Un4K04E/ININHdXWD0d5mUHWIoNf/v1r2g\nmjoV0PWb4U1Bt4adxk3Ms3/Jhxn8n0R9vaB2HvP/PnXw4OesNebkHJsFTu7qezRV\nJWs1YTvauVIcV9Lphr9UlujsYqB2FHypq6mX0d6zaFLHF1TWhIZ6TKYWaugqpQxe\nbtz6WfWSzH9Xof9Suki1yZTVYROyZw0hAFf3lFZFr+EneCIL6Tz3XEFrSvhubHB4\npcKbv99NDJ7W495Y/mXpULY1TvAFtMjxWHFFUoFlAu1gEbDg4oYjegubtkyo2nIs\nG24zm2hNAgMBAAECggEAVA1jBxtXLTD61ShdD7fHxLOhgFN/c5o2QvkZfELt1SEm\nMeCwic7b5qaPa3F2iljThesVWny5wgo1vqPrZoKwv4O+irF18ECp6P1dMcBpkJ1X\nEpaFMvsuLE8wipCTBJLodaqcdmbcKljWl1r1v+Jz4bhdmlRyFJl+IoafY9nOjKxg\nbFXgeLEFaQS5/6hNladpSmYgzt8QYAh2UQ2ZPGCUK26Cy4S1ULoggygIhNCEH1w9\nCsEzl7laEchWMOS5CVznodkSUStOYU/HnjohhTeZm4IbrYZjFyZmE/BWWXrQzVvq\nIYSxIPRK1BHMcz450+ZkRwfAV35+yU/dzd7RM7Zh/QKBgQDpLNytKinuB2J3kRsk\nvMl7JBJ0iH2jWSM0EN5a5XYPYvNq/dpfquqsAg2XQp4+HRsKUUYzL/KDKmjaOdmm\nqKYmYNDDt3OUDgbP0GRU/woTDwLv8NJ4vpSoTmCvVT9GAxIAKP2YF6PjPa0sHPSF\nfGJWPZFEWq8Y72xzEzFYWd4yIwKBgQDOJb6rdjz/9/c0cz++bwL7wOa3lHALxAkQ\nE4THEi2RzfyTXCqWt1KAtL3nhgd+EcOXUEvrlJEmlH1CsRqPZ6SjZVlo940VeBHZ\nHZcK/plyr0D4fWNbRoGssOFdRlbeBon4s/sU4tV+rNcQTbXZ0+6iAbXtePkdlDct\ndjoNLA6KzwKBgQC9R/2bVC7VWolEJjayi83CeHXCw0m54BIDoe3eO4aq1thicc9i\n+YumNcRylVF/eoEIzxD9XF6wuyyCeZOFBkJZxR2ywqi/9uLwr2nC1YWIExd/Ty6L\ndamXNoily72hR7zFBIFXhVk0jkyVEqwr79yjxTa3FiYtR63xfBMCdXE5oQKBgQCb\nxnPtdzyjJEqeTNSHX7W+bccqRDXi/jDnAAjesULUIfbRl9zq5P6oGWxDbslsn5nQ\nVrH4A90nbR+2bMQoR2Zmvmgw5Jes+H1sNmrzuO5Vdk8/NukEiSPmTgcOh9+OiRxr\nXf3Gi55Oyeb9/+sB/p8dtvM1zqtYia6kYOl/GKKoiwKBgQDQ4h1qjpF1RKNLsPlS\n680NIj2tL4B6J2sN0YKPjCCzM3xDCCj79UVEbUHQcnptPVtTMVoH+OxlJgAJd3Bx\nhUdXWalib5IxZXj17CEZuySpXHqbVBJcvATAuP60+ZgCDeZnWcJOZ0sXz6OAKE1t\nYT1dSYOKaE2YLIrrYY4ckAXJzw==\n-----END PRIVATE KEY-----\n",
           "client_email": "kms-default-service-account@fdi-cd.iam.gserviceaccount.com",
           "client_id": "107114143009673412676",
           "auth_uri": "https://accounts.google.com/o/oauth2/auth",
