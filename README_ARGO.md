@@ -7,6 +7,21 @@ Below are instruction for the deployment with Argo CD and Argo Workflow
 - GCP KMS
 - sops
 
+### Development and Deployment Workflow
+*Naming Convention*
+- "Deployment for Development Env": [dev-0.0.1]
+- The development branch of "Deployment for Development Environment": [dev-0.0.1]-a
+- "Deployment for Production Env": [prod-0.0.1]
+
+*Chart Development*
+All CD charts development and ArgoCD development should happen at [dev-0.0.1]-a. It should perform pull request
+FROM [dev-0.0.1]-a ---> [dev-0.0.1]
+
+*Deployment*
+- ArgoCD server will pull changes from [dev-0.0.1] for DEV deployment.
+- ArgoCD server will pull changes from [prod-0.0.1] for PROD deployment.
+
+The `master` branch is always is in line with DEV latest.
 
 ### Pre-requisite: GCP KMS
 You create new GCP keyring, and one key resource `sops-key`. This key will encrypt and decrypt the `secrets.yaml`, when running `sops`
@@ -97,7 +112,7 @@ There are two value files:
 `touch argocd/values-argocd.key.yaml` create new value file; and then manually copy the content of credential-json to it;
 see example in `argocd/values-argocd.key.example.yaml`.
 
-In above GCP KMS section, you should have save the credential json file.
+In above GCP KMS section, you should save the credential json file.
 
 ```shell script
 # CREATE DEFAULT NS
@@ -187,3 +202,4 @@ sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKe
 - [helm-secrets plugin](https://github.com/zendesk/helm-secrets)
 - [How to prepare custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
+- [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
