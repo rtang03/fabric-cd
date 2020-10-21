@@ -143,6 +143,8 @@ argocd login localhost:8080 --insecure --username admin --password $POD
 argocd account update-password --current-password $POD --new-password password
 
 # Argocd connect to github with ssh key. Private key of github ssh login is located at `.ssh/id_rsa`
+# Note that this will modify argcd-cm configmap. Hence, after each time 'kubectl -n argocd apply -f ./argocd/argocd-cm.yaml'
+# below add-repo needs rerun
 argocd repo add git@github.com:rtang03/fabric-cd.git --insecure-ignore-host-key --ssh-private-key-path ~/.ssh/id_rsa
 
 # IF RUNNING GKE, need cluster-admin
@@ -184,6 +186,9 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 
 ### Useful commands
 ```shell script
+# list GPG keys
+gpg --list-secret-keys --keyid-format LONG
+
 # Retrive PGP Private key from local machine, assuming gpg suite is used
 gpg --export-secret-keys --armor 33DBB14071110A8F093B29E7D95D3BE9260E76EA
 

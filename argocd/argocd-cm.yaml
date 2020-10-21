@@ -16,3 +16,83 @@ data:
     - type: helm
       url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
       name: istio.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: argocd-gpg-keys-cm
+    app.kubernetes.io/part-of: argocd
+  name: argocd-gpg-keys-cm
+data:
+  4AEE18F83AFDEB23: |
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    mQENBFmUaEEBCACzXTDt6ZnyaVtueZASBzgnAmK13q9Urgch+sKYeIhdymjuMQta
+    x15OklctmrZtqre5kwPUosG3/B2/ikuPYElcHgGPL4uL5Em6S5C/oozfkYzhwRrT
+    SQzvYjsE4I34To4UdE9KA97wrQjGoz2Bx72WDLyWwctD3DKQtYeHXswXXtXwKfjQ
+    7Fy4+Bf5IPh76dA8NJ6UtjjLIDlKqdxLW4atHe6xWFaJ+XdLUtsAroZcXBeWDCPa
+    buXCDscJcLJRKZVc62gOZXXtPfoHqvUPp3nuLA4YjH9bphbrMWMf810Wxz9JTd3v
+    yWgGqNY0zbBqeZoGv+TuExlRHT8ASGFS9SVDABEBAAG0NUdpdEh1YiAod2ViLWZs
+    b3cgY29tbWl0IHNpZ25pbmcpIDxub3JlcGx5QGdpdGh1Yi5jb20+iQEiBBMBCAAW
+    BQJZlGhBCRBK7hj4Ov3rIwIbAwIZAQAAmQEH/iATWFmi2oxlBh3wAsySNCNV4IPf
+    DDMeh6j80WT7cgoX7V7xqJOxrfrqPEthQ3hgHIm7b5MPQlUr2q+UPL22t/I+ESF6
+    9b0QWLFSMJbMSk+BXkvSjH9q8jAO0986/pShPV5DU2sMxnx4LfLfHNhTzjXKokws
+    +8ptJ8uhMNIDXfXuzkZHIxoXk3rNcjDN5c5X+sK8UBRH092BIJWCOfaQt7v7wig5
+    4Ra28pM9GbHKXVNxmdLpCFyzvyMuCmINYYADsC848QQFFwnd4EQnupo6QvhEVx1O
+    j7wDwvuH5dCrLuLwtwXaQh0onG4583p0LGms2Mf5F+Ick6o/4peOlBoZz48=
+    =Bvzs
+    -----END PGP PUBLIC KEY BLOCK-----
+  D95D3BE9260E76EA: |
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    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
+    =ptU5
+    -----END PGP PUBLIC KEY BLOCK-----
