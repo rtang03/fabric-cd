@@ -7,7 +7,21 @@ Below are instruction for the deployment with Argo CD and Argo Workflow
 - GCP KMS
 - sops
 
-### Deployment Workflow
+### Development and Deployment Workflow
+*Naming Convention*
+- "Deployment for Development Env": [dev-0.0.1]
+- The development branch of "Deployment for Development Environment": [dev-0.0.1]-a
+- "Deployment for Production Env": [prod-0.0.1]
+
+*Chart Development*
+All CD charts development and ArgoCD development should happen at [dev-0.0.1]-a. It should perform pull request
+FROM [dev-0.0.1]-a ---> [dev-0.0.1]
+
+*Deployment*
+- ArgoCD server will pull changes from [dev-0.0.1] for DEV deployment.
+- ArgoCD server will pull changes from [prod-0.0.1] for PROD deployment.
+
+The `master` branch is always is in line with DEV latest.
 
 ### Pre-requisite: GCP KMS
 You create new GCP keyring, and one key resource `sops-key`. This key will encrypt and decrypt the `secrets.yaml`, when running `sops`
