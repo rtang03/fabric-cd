@@ -3,4 +3,5 @@
 .DS_Store
 download/
 secrets.yaml.dec
+values-argocd.key.yaml
 
