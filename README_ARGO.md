@@ -187,4 +187,3 @@ sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKe
 - [helm-secrets plugin](https://github.com/zendesk/helm-secrets)
 - [How to prepare custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
-
