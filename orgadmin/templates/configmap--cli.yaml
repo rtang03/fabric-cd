@@ -22,4 +22,3 @@ data:
   GODEBUG: "netdns=go"
   TZ: {{ .Values.global.TZ }}
   CHANNEL_NAME: "loanapp"
-  foo: {{ $.Values.foo }}
