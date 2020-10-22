@@ -14,8 +14,8 @@ spec:
   ttlStrategy:
     secondsAfterCompletion: 86400
   # delete all pods as soon as they complete
-{{/*  podGC:*/}}
-{{/*    strategy: OnPodCompletion*/}}
+  podGC:
+    strategy: OnPodCompletion
   serviceAccountName: workflow
   entrypoint: channels
   {{- if .Values.hostAlias }}

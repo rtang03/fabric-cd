@@ -9,7 +9,6 @@ global:
   caName: rca0
 
 caAdmin: rca0-admin
-caAdminPW: rca0-adminPW
 
 ### Default
 #image:

@@ -6,7 +6,6 @@ global:
   caName: org1-ca
 
 caAdmin: admin
-caAdminPW: adminPW
 
 image:
   repository: hyperledger/fabric-ca

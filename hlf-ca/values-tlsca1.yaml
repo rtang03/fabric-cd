@@ -9,7 +9,6 @@ global:
   caName: tlsca1
 
 caAdmin: tlsca1-admin
-caAdminPW: tlsca1-adminPW
 
 ### Default
 #image:

@@ -42,7 +42,7 @@ postgresql-0:
   #   1-createdb.sql: |
   #   CREATE DATABASE "tls_ca_db";
   #   CREATE DATABASE "rca_db";
-  postgresqlPassword: password
+#  postgresqlPassword: password
   service:
     type: NodePort
     nodePort: 31432

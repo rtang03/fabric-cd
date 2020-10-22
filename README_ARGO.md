@@ -74,9 +74,13 @@ creation_rules:
 # example sops command: if local pgp is used instead
 sops -e -i -p 33DBB14071110A8F093B29E7D95D3BE9260E76EA hlf-ca/secrets.yaml
 
-# based on .sops.yaml
-sops -e -i hlf-ca/secrets.yaml
-sops -d -i hlf-ca/secrets.yaml
+# based on .sops.yaml, encrypt:
+sops -e -i hlf-ca/secrets-rca0.yaml
+sops -e -i hlf-ca/secrets-rca1.yaml
+sops -e -i hlf-ca/secrets-tlsca1.yaml
+sops -e -i hlf-ca/secrets-tlsca0.yaml
+sops -e -i orgadmin/secrets-admin0.yaml
+sops -d -i orgadmin/secrets-admin1.yaml
 ```
 
 
@@ -162,9 +166,7 @@ kubectl create ns argo
 # TODO: need to revisit how to customize the Argo workflow installation.
 kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/quick-start-postgres.yaml
 
-# OR
-
-kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
+# kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
 
 # CREATE SERVICE ACCOUNT (for each application namespace)
 kubectl -n n0 apply -f ./argocd/service-account.yaml
@@ -175,6 +177,20 @@ kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
 
 ### Bootstrapping Installation
+In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application.
+
+```yaml
+project: my-project
+targetRevision: dev-0.0.1-a
+repoURL: git@github.com:rtang03/fabric-cd.git
+server: https://kubernetes.default.svc
+ns: n1
+path: orgadmin
+rel: admin1
+file: values-admin1.yaml
+```
+
+
 ```shell script
 # Optional: remove all deployments via ArgoCD. This command is often used for CD development.
 ./uninstall.argo.sh org1
@@ -208,3 +224,5 @@ sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKe
 - [How to prepare custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
+
+echo -n 'admin' | base64
