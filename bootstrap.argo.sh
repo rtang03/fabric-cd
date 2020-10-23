@@ -31,7 +31,7 @@ echo "#################################"
 echo "### Step 2: Install $REL_TLSCA1"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS1,rel=$REL_TLSCA1,file=values-$REL_TLSCA1.yaml,path=hlf-ca,target=$TARGET | argocd app create -f -
+helm template ./argo-app --set ns=$NS1,rel=$REL_TLSCA1,file=values-$REL_TLSCA1.yaml,secret=secrets.org1.yaml,path=hlf-ca,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create apps: $REL_TLSCA1" $res
@@ -46,7 +46,7 @@ echo "#################################"
 echo "### Step 3: Install $REL_RCA1"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS1,rel=$REL_RCA1,file=values-$REL_RCA1.yaml,secret=secrets.$REL_RCA1.yaml,path=hlf-ca | argocd app create -f -
+helm template ./argo-app --set ns=$NS1,rel=$REL_RCA1,file=values-$REL_RCA1.yaml,secret=secrets.org1.yaml,path=hlf-ca,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create apps: $REL_RCA1" $res

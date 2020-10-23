@@ -8,8 +8,6 @@ global:
   mspId: Org1MSP
   caName: tlsca1
 
-#caAdmin: tlsca1-admin
-
 ### Default
 #image:
 #  repository: hyperledger/fabric-ca
@@ -23,10 +21,6 @@ service:
 
 config:
   type: tls
-  # can remove
-  #  caServerHome: /var/hyperledger/crypto-config/Org1MSP/tls/server
-  #  caClientHome: /var/hyperledger/crypto-config/Org1MSP/tls/admin
-  #  caClientTlsCertfiles: /var/hyperledger/crypto-config/Org1MSP/tls/server/ca-cert.pem
   ### Default
   # debug: false
   csr:
@@ -51,11 +45,12 @@ persistence:
 
 externalDatabase:
   type: postgres
+  # [Release Name]-postgresql-0
   host: admin1-postgresql-0
   port: 5432
   database: tls_ca_db
-  username: postgres
-  password: password
+#  username: postgres
+#  password: password
 
 ### Default
 #db:

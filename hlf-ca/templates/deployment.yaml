@@ -66,33 +66,32 @@ spec:
             - sh
             - -c
             - |
-              if [ -n "$DB_TYPE" ]; then
-                while [ -z ${DB_PASSWORD+x} ];
-                do
-                  echo "\033[0;31mDB_PASSWORD environmental variable must contain a value \033[0m"
-                  sleep 60
-                done
-                  # export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
-                  export DB_DATASOURCE="host=$DB_HOST port=$DB_PORT user=$db_username password=$db_password dbname=$DB_DATABASE sslmode=$DB_SSL"
-              fi
-
+              # if [ -n "$DB_TYPE" ]; then
+              #   while [ -z ${DB_PASSWORD+x} ];
+              #   do
+              #     echo "\033[0;31mDB_PASSWORD environmental variable must contain a value \033[0m"
+              #     sleep 60
+              #   done
+              #     # export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
+              # fi
+              export DB_DATASOURCE="host=$DB_HOST port=$DB_PORT user=$db_username password=$db_password dbname=$DB_DATABASE sslmode=$DB_SSL"
               mkdir -p $FABRIC_CA_HOME
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               if [ {{ .Values.config.type }} = "tls" ]; then
                 # Below 2 lines is a workaround. I don't know why $tlsca_caadmin and $tlsca_caadminpw from "crypto-material"
                 # is added with /n at end of the string.
-                CA_ADMIN=$(echo $tlsca_caadmin | sed -e 's/[\r\n]//g')
-                CA_PASSWORD=$(echo $tlsca_caadminpw | sed -e 's/[\r\n]//g')
-                sed -i "s|<<<ADMIN>>>|${CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-                sed -i "s|<<<ADMINPW>>>|${CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+                export CA_ADMIN=$(echo $tlsca_caadmin | sed -e 's/[\r\n]//g')
+                export CA_PASSWORD=$(echo $tlsca_caadminpw | sed -e 's/[\r\n]//g')
               else
-                sed -i "s|<<<ADMIN>>>|${rca_caadmin}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
-                sed -i "s|<<<ADMINPW>>>|${rca_caadminpw}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
+                export CA_ADMIN=$(echo $rca_caadmin | sed -e 's/[\r\n]//g')
+                export CA_PASSWORD=$(echo $rca_caadminpw | sed -e 's/[\r\n]//g')
               fi
+              sed -i "s|<<<ADMIN>>>|$CA_ADMIN|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              sed -i "s|<<<ADMINPW>>>|$CA_PASSWORD|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<DB_TYPE>>>|${DB_TYPE:-"sqlite3"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<DB_DATASOURCE>>>|${DB_DATASOURCE:-"fabric-ca-server.db"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # {{- if .Values.config.intermediate }}
-              # echo ">\033[0;33m Adding Parent CA (typically a Root CA) values to $FABRIC_CA_HOME/fabric-ca-server-config.yaml\033[0m"
+              # echo "Adding Parent CA (typically a Root CA) values to $FABRIC_CA_HOME/fabric-ca-server-config.yaml"
               # sed -i "s|<<<PARENT_ADMIN>>>|${PARENT_CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # sed -i "s|<<<PARENT_ADMINPW>>>|${PARENT_CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # {{- end}}
