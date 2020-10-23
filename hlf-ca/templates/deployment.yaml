@@ -107,14 +107,14 @@ spec:
             - secretRef:
                 name: "crypto-material"
           env:
-            {{- if .Values.externalDatabase.type }}
-            # External Database
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "hlf-ca.fullname" . }}--db
-                  key: db-password
-                    {{- end }}
+            # {{- if .Values.externalDatabase.type }}
+            # # External Database
+            # - name: DB_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: {{ include "hlf-ca.fullname" . }}--db
+            #       key: db-password
+            #         {{- end }}
             # {{- if .Values.config.intermediate }}
             # # Intermediate CA is not properly implemented, fix it later
             # - name: PARENT_CA_ADMIN
