@@ -86,8 +86,8 @@ spec:
               mkdir -p $FABRIC_CA_HOME
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               if [ {{ .Values.config.type }} = "tls" ]; then
-                echo "========= CA_ADMIN: $tlsca_caadmin"
-                echo "========= CA PASSWORD: $tlsca_caadminpw"
+                # Below 2 lines is a workaround. I don't know why $tlsca_caadmin and $tlsca_caadminpw from "crypto-material"
+                # is added with /n at end of the string.
                 CA_ADMIN=$(echo $tlsca_caadmin | sed -e 's/[\r\n]//g')
                 CA_PASSWORD=$(echo $tlsca_caadminpw | sed -e 's/[\r\n]//g')
                 set -x
@@ -95,8 +95,6 @@ spec:
                 sed -i "s|<<<ADMINPW>>>|${CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
                 set +x
               else
-                echo "========= CA_ADMIN: $rca_caadmin"
-                echo "========= CA PASSWORD: $rca_caadminpw"
                 sed -i "s|<<<ADMIN>>>|${rca_caadmin}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
                 sed -i "s|<<<ADMINPW>>>|${rca_caadminpw}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
               fi
@@ -107,7 +105,7 @@ spec:
               # sed -i "s|<<<PARENT_ADMIN>>>|${PARENT_CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # sed -i "s|<<<PARENT_ADMINPW>>>|${PARENT_CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # {{- end}}
-              echo ">\033[0;35m fabric-ca-server start \033[0m"
+              echo "🚀   fabric-ca-server start"
               fabric-ca-server start
           envFrom:
             - configMapRef:
