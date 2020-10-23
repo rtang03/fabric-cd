@@ -85,7 +85,7 @@ spec:
 
               mkdir -p $FABRIC_CA_HOME
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-              if [[ {{ .Values.config.type }} == "tls" ]]; then
+              if [ {{ .Values.config.type }} = "tls" ]; then
                 echo "========= CA_ADMIN: $tlsca_caadmin"
                 echo "========= CA PASSWORD: $tlsca_caadminpw"
                 sed -i "s|<<<ADMIN>>>|$tlsca_caadmin|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
