@@ -176,10 +176,12 @@ kubectl -n n1 apply -f ./argocd/service-account.yaml
 kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
 
-### Bootstrapping Installation
-In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application.
+### ArgoCD Application manifest
+In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application. Make sure you are working
+on the desired `targetRevision`, i.e., github development branch.
 
 ```yaml
+# argo-app/templates/application.yaml
 project: my-project
 targetRevision: dev-0.0.1-a
 repoURL: git@github.com:rtang03/fabric-cd.git
@@ -189,6 +191,36 @@ path: orgadmin
 rel: admin1
 file: values-admin1.yaml
 ```
+
+You need not edit this templated file directly; you should override its values via cli, shown later.
+
+### Secrets file
+Credentials, secrets, and passwords are re-located to `secrets.*.yaml`, in corresponding Helm chart directories. For example,
+see `orgadmin/secrets.admin1-example.yaml`, `tlsca_caadmin` must be a base64 encoded value, and created as k8s Secret resource.
+
+```shell script
+# encode ==> dGxzY2ExLWFkbWluCg==
+echo -n 'tlsca1-admin' | base64
+
+# decode => tlsca1-admin
+echo -n 'dGxzY2ExLWFkbWluCg==' | base64 -d
+```
+
+`orgadmin/secrets.admin1-example.yaml` is an encoded yaml. You copy its file content into `orgadmin/secrets.admin1.yaml`;
+and then run below command to perform sops encryption. `-i` means in-place replacement; the previous unencrypted/encoded
+yaml will be replaced. Repeat the same steps for every `secrets.*.yaml`. The yaml property ending with "_unencrypted" will skip encryption.
+
+```shell script
+# encrypt
+sops -e -i orgadmin/secrets.admin1.yaml
+
+# decrypt
+sops -d orgadmin/secrets.admin1.yaml
+```
+
+
+### Bootstrapping
+See `bootstrap.argo.sh`
 
 
 ```shell script
