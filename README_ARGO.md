@@ -46,7 +46,7 @@ gcloud kms keys list --location us-central1 --keyring fdi
 
 ### Pre-requisite: sops or helm-secrets
 In GitOps, you use [sops](https://github.com/mozilla/sops) to encrpyt the `secrets.yaml` before commiting. You may use either
-`sops` or `helm-secrets` cli to encrypt/decrypt local file.
+`sops` or `helm-secrets` cli to encrypt/decrypt local file. The naming convention is either `secrets.yaml` or `secrets.[RELEASE-NAME].yaml`.
 
 *Installing helm-secrets*
 ```shell script

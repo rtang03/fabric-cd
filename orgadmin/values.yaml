@@ -57,6 +57,7 @@ persistence:
 # Detail configuration
 # https://github:com/bitnami/charts/tree/master/bitnami/postgresql
 postgresql-0:
+#  postgresqlPassword should not be uncomment. It is relocated to 'secrets.*.yaml'
 #  postgresqlPassword: password
   initdbScripts:
     1-createdb.sql: |

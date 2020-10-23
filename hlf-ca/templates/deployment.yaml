@@ -84,27 +84,39 @@ spec:
               fi
 
               mkdir -p $FABRIC_CA_HOME
+              if [ {{ .Values.config.type }} == "tls" ]
+              then
+                CA_ADMIN=$tlsca_caadmin
+                CA_PASSWORD=$tlsca_caadminpw
+                echo "========= CA_ADMIN: $CA_ADMIN"
+                echo "========= CA PASSWORD: $CA_PASSWORD"
+              else
+                CA_ADMIN=$rca_caadmin
+                CA_PASSWORD=$rca_caadminpw
+                echo "========= CA_ADMIN: $CA_ADMIN"
+                echo "========= CA PASSWORD: $CA_PASSWORD"
+              fi
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<ADMIN>>>|${CA_ADMIN}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
               sed -i "s|<<<ADMINPW>>>|${CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<DB_TYPE>>>|${DB_TYPE:-"sqlite3"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<DB_DATASOURCE>>>|${DB_DATASOURCE:-"fabric-ca-server.db"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-
-              {{- if .Values.config.intermediate }}
-              echo ">\033[0;33m Adding Parent CA (typically a Root CA) values to $FABRIC_CA_HOME/fabric-ca-server-config.yaml\033[0m"
-              sed -i "s|<<<PARENT_ADMIN>>>|${PARENT_CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-              sed -i "s|<<<PARENT_ADMINPW>>>|${PARENT_CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-              {{- end}}
-
+              # {{- if .Values.config.intermediate }}
+              # echo ">\033[0;33m Adding Parent CA (typically a Root CA) values to $FABRIC_CA_HOME/fabric-ca-server-config.yaml\033[0m"
+              # sed -i "s|<<<PARENT_ADMIN>>>|${PARENT_CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              # sed -i "s|<<<PARENT_ADMINPW>>>|${PARENT_CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              # {{- end}}
               echo ">\033[0;35m fabric-ca-server start \033[0m"
               fabric-ca-server start
           envFrom:
-            - secretRef:
-                name: {{ include "hlf-ca.fullname" . }}--ca
             - configMapRef:
                 name: {{ include "hlf-ca.fullname" . }}--db
-            - configMapRef:
-                name: {{ include "hlf-ca.fullname" . }}--ca
+            # - secretRef:
+            #     name: {{ include "hlf-ca.fullname" . }}--ca
+            # - configMapRef:
+            #     name: {{ include "hlf-ca.fullname" . }}--ca
+            - secretRef:
+                name: "crypto-material"
           env:
             {{- if .Values.externalDatabase.type }}
             # External Database
@@ -114,19 +126,19 @@ spec:
                   name: {{ include "hlf-ca.fullname" . }}--db
                   key: db-password
                     {{- end }}
-            {{- if .Values.config.intermediate }}
-            # Intermediate CA
-            - name: PARENT_CA_ADMIN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.config.intermediate.parent.chart }}--ca
-                  key: CA_ADMIN
-            - name: PARENT_CA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.config.intermediate.parent.chart }}--ca
-                  key: CA_PASSWORD
-          {{- end}}
+            # {{- if .Values.config.intermediate }}
+            # # Intermediate CA is not properly implemented, fix it later
+            # - name: PARENT_CA_ADMIN
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: {{ .Values.config.intermediate.parent.chart }}--ca
+            #       key: CA_ADMIN
+            # - name: PARENT_CA_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: {{ .Values.config.intermediate.parent.chart }}--ca
+            #       key: CA_PASSWORD
+          {{# - end}}
           ports:
             - name: http
               containerPort: 7054
