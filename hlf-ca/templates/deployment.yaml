@@ -72,16 +72,7 @@ spec:
                   echo "\033[0;31mDB_PASSWORD environmental variable must contain a value \033[0m"
                   sleep 60
                 done
-
-                case "$DB_TYPE" in
-                  postgres)
-                    export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}";;
-                  # mysql is removed
-                  mysql)
-                    export DB_DATASOURCE="${DB_USERNAME}:${DB_PASSWORD}@tcp(${DB_HOST}:${DB_PORT})/${DB_DATABASE}?parseTime=true" ;;
-                  *)
-                    echo "\033[0;31m Database type '$DB_TYPE' not supported\033[0m"; exit 1;;
-                esac
+                  export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
               fi
 
               mkdir -p $FABRIC_CA_HOME
@@ -149,14 +140,14 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           volumeMounts:
             - name: data
