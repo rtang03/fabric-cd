@@ -10,4 +10,3 @@ data:
   DB_HOST: {{ .Values.externalDatabase.host | quote }}
   DB_PORT: {{ .Values.externalDatabase.port | default "5432" | quote }}
   DB_DATABASE: {{ .Values.externalDatabase.database  | quote }}
-  # DB_USERNAME: {{ .Values.externalDatabase.username | quote }}

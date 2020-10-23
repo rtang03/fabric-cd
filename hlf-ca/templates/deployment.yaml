@@ -150,7 +150,7 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 60
+            initialDelaySeconds: 50
             periodSeconds: 10
           volumeMounts:
             - name: data

@@ -5,8 +5,6 @@ global:
   logging: info
   caName: org1-ca
 
-caAdmin: admin
-
 image:
   repository: hyperledger/fabric-ca
   tag: 1.4.7
@@ -83,8 +81,6 @@ externalDatabase:
   host: admin0-postgresql-0
   port: 5432
   database: tls_ca_db
-  username: postgres
-  password: password
 
 resources:
   ## We usually recommend not to specify default resources and to leave this as a conscious

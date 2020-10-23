@@ -49,8 +49,6 @@ externalDatabase:
   host: admin1-postgresql-0
   port: 5432
   database: tls_ca_db
-#  username: postgres
-#  password: password
 
 ### Default
 #db:
