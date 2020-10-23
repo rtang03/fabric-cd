@@ -88,8 +88,8 @@ spec:
               if [ {{ .Values.config.type }} = "tls" ]; then
                 echo "========= CA_ADMIN: $tlsca_caadmin"
                 echo "========= CA PASSWORD: $tlsca_caadminpw"
-                CA_ADMIN=$tlsca_caadmin
-                CA_PASSWORD=$tlsca_caadminpw
+                CA_ADMIN=$(echo $tlsca_caadmin | tr -d '\r' | tr -d '\n')
+                CA_PASSWORD=$(echo $tlsca_caadminpw | tr -d '\r' | tr -d '\n')
                 set -x
                 sed -i "s|<<<ADMIN>>>|${CA_ADMIN}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
                 sed -i "s|<<<ADMINPW>>>|${CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
