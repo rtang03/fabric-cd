@@ -8,7 +8,7 @@ global:
   mspId: Org1MSP
   caName: tlsca1
 
-caAdmin: tlsca1-admin
+#caAdmin: tlsca1-admin
 
 ### Default
 #image:

@@ -72,7 +72,8 @@ spec:
                   echo "\033[0;31mDB_PASSWORD environmental variable must contain a value \033[0m"
                   sleep 60
                 done
-                  export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
+                  # export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
+                  export DB_DATASOURCE="host=$DB_HOST port=$DB_PORT user=$db_username password=$db_password dbname=$DB_DATABASE sslmode=$DB_SSL"
               fi
 
               mkdir -p $FABRIC_CA_HOME
@@ -100,10 +101,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "hlf-ca.fullname" . }}--db
-            # - secretRef:
-            #     name: {{ include "hlf-ca.fullname" . }}--ca
             - configMapRef:
                 name: {{ include "hlf-ca.fullname" . }}--ca
+            - secretRef:
+                name: {{ include "hlf-ca.fullname" . }}--db
             - secretRef:
                 name: "crypto-material"
           env:
