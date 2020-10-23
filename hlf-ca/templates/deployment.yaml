@@ -84,21 +84,18 @@ spec:
               fi
 
               mkdir -p $FABRIC_CA_HOME
-              if [ {{ .Values.config.type }} == "tls" ]
-              then
-                CA_ADMIN=$tlsca_caadmin
-                CA_PASSWORD=$tlsca_caadminpw
-                echo "========= CA_ADMIN: $CA_ADMIN"
-                echo "========= CA PASSWORD: $CA_PASSWORD"
-              else
-                CA_ADMIN=$rca_caadmin
-                CA_PASSWORD=$rca_caadminpw
-                echo "========= CA_ADMIN: $CA_ADMIN"
-                echo "========= CA PASSWORD: $CA_PASSWORD"
-              fi
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
-              sed -i "s|<<<ADMIN>>>|${CA_ADMIN}|g" ${FABRIC_CA_HOME}/fabric-ca-server-config.yaml
-              sed -i "s|<<<ADMINPW>>>|${CA_PASSWORD}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              if [[ {{ .Values.config.type }} == "tls" ]]; then
+                echo "========= CA_ADMIN: $tlsca_caadmin"
+                echo "========= CA PASSWORD: $tlsca_caadminpw"
+                sed -i "s|<<<ADMIN>>>|$tlsca_caadmin|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+                sed -i "s|<<<ADMINPW>>>|$tlsca_caadminpw|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              else
+                echo "========= CA_ADMIN: $rca_caadmin"
+                echo "========= CA PASSWORD: $rca_caadminpw"
+                sed -i "s|<<<ADMIN>>>|$rca_caadmin|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+                sed -i "s|<<<ADMINPW>>>|$rca_caadminpw|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
+              fi
               sed -i "s|<<<DB_TYPE>>>|${DB_TYPE:-"sqlite3"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               sed -i "s|<<<DB_DATASOURCE>>>|${DB_DATASOURCE:-"fabric-ca-server.db"}|g" $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               # {{- if .Values.config.intermediate }}
