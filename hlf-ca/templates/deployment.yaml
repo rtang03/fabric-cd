@@ -74,7 +74,10 @@ spec:
               #   done
               #     # export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
               # fi
+              set -x
               export DB_DATASOURCE="host=$DB_HOST port=$DB_PORT user=$db_username password=$db_password dbname=$DB_DATABASE sslmode=$DB_SSL"
+              echo "$DB_DATASOURCE"
+              set +x
               mkdir -p $FABRIC_CA_HOME
               cp /var/hyperledger/ca_config/ca.yaml $FABRIC_CA_HOME/fabric-ca-server-config.yaml
               if [ {{ .Values.config.type }} = "tls" ]; then
