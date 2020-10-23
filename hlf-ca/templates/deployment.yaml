@@ -72,7 +72,7 @@ spec:
                   echo "\033[0;31mDB_PASSWORD environmental variable must contain a value \033[0m"
                   sleep 60
                 done
-                export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}";;
+                export DB_DATASOURCE="host=${DB_HOST} port=${DB_PORT} user=${DB_USERNAME} password=${DB_PASSWORD} dbname=${DB_DATABASE} sslmode=${DB_SSL}"
               fi
 
               mkdir -p $FABRIC_CA_HOME
