@@ -7,11 +7,13 @@ hlfCaReleaseName: rca1
 # if deploying RCA, orgAdmin = true
 # Or otherwise deploying TLSCA, orgAdmin = false
 orgAdmin: true
-podGC: false
+podGC: true
 # Defining input parameters, used by step "Register-Member"
 items:
   - id: peer0.org1.net
     type: peer
     csrHosts: "p0o1-hlf-peer,peer0.org1.net,gupload.org1.net"
 pvcName: pvc-org1
-
+outputArtifact:
+  enabled: true
+  bucket: fabric-cd-dev

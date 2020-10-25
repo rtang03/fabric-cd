@@ -360,15 +360,15 @@ spec:
           - name: setup-script
             mountPath: /script/setup.sh
             subPath: setup.sh
-      {{- if .Values.orgAdmin }}
+      {{- if .Values.outputArtifact.enabled }}
       outputs:
         artifacts:
           - name: {{ .Values.mspId }}-crypto-config
             path: /var/hyperledger/crypto-config
             s3:
               endpoint: storage.googleapis.com
-              bucket: fabric-cd-dev
-              key: path/in/bucket/crypto-config.tgz
+              bucket: {{ .Values.outputArtifact.bucket }}
+              key: workflow/cryptogen/{{ .Values.mspId | lower }}-crypto-config.tgz
               accessKeySecret:
                 name: gcp-s3-credentials
                 key: accessKey

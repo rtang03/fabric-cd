@@ -28,6 +28,10 @@ items:
 pvcName: pvc-org1
 # use for debug mode. If set false, Pod will remain
 podGC: true
+outputArtifact:
+  enabled: false
+  bucket: fabric-cd-dev
+
 # Below are fixture. Should not modify.
 # see example https://github.com/argoproj/argo/blob/stable/examples/loops-maps.yaml
 # this is tweak of outputing helm template to Argo Workflow template

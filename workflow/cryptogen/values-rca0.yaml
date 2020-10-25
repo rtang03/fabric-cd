@@ -8,6 +8,9 @@ hlfCaReleaseName: rca0
 # Or otherwise deploying TLSCA, orgAdmin = false
 orgAdmin: true
 podGC: true
+outputArtifact:
+  enabled: true
+  bucket: fabric-cd-dev
 # Defining input parameters, used by step "Register-Member"
 items:
   - id: orderer0.org0.com
