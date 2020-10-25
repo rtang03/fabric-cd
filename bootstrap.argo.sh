@@ -140,28 +140,22 @@ set +x
 printMessage "$REL_TLSCA0 | $REL_RCA0 is healthy and sync" $res
 
 echo "#################################"
-echo "### Step 9: crypto-$REL_TLSCA0"
+echo "### Step 9: Workflow: crypto-$REL_TLSCA0"
 echo "#################################"
-helm install crypto-$REL_TLSCA0 -n $NS0 -f $RELEASE_DIR0/tlsca-cryptogen.$CLOUD.yaml ./cryptogen
-printMessage "install crypto-tlsca0" $?
-
 set -x
-kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_TLSCA0-cryptogen -n $NS0
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_TLSCA0.yaml | argo -n $NS0 submit - --generate-name cryptogen-$REL_TLSCA0- --watch --request-timeout 120s
 res=$?
 set +x
-printMessage "job/crypto-$REL_TLSCA0-cryptogen" $res
+printMessage "run workflow crypto-tlsca0" $res
 
 echo "#################################"
-echo "### Step 10: crypto-$REL_RCA0"
+echo "### Step 10: Workflow: crypto-$REL_RCA0"
 echo "#################################"
-helm install crypto-$REL_RCA0 -n $NS0 -f $RELEASE_DIR0/rca-cryptogen.$CLOUD.yaml ./cryptogen
-printMessage "install crypto-$REL_RCA0" $?
-
 set -x
-kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_RCA0-cryptogen -n $NS0
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA0.yaml | argo -n $NS0 submit - --generate-name cryptogen-$REL_RCA0- --watch --request-timeout 120s
 res=$?
 set +x
-printMessage "job/crypto-$REL_RCA0-cryptogen" $res
+printMessage "run workflow crypto-$REL_RCA0" $res
 
 echo "#################################"
 echo "### Step 11: Create secrets"
