@@ -261,3 +261,5 @@ sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKe
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
 
 echo -n 'admin' | base64
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 lint
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 submit - --server-dry-run --output yaml

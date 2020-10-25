@@ -68,34 +68,25 @@ echo "#################################"
 echo "### Step 4: Workflow: crypto-$REL_TLSCA1"
 echo "#################################"
 set -x
-helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_TLSCA1.yaml | argo -n $NS1 submit - --watch
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_TLSCA1.yaml | argo -n $NS1 submit - --generate-name cryptogen-$REL_TLSCA1 --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "run workflow cryptogen-$REL_TLSCA1" $res
 
+echo "#################################"
+echo "### Step 5: Workflow crypto-$REL_RCA1"
+echo "#################################"
 set -x
-kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_TLSCA1-cryptogen -n $NS1
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 submit - --generate-name cryptogen-$REL_RCA1 --watch --request-timeout 120s
 res=$?
 set +x
-printMessage "job/crypto-$REL_TLSCA1-cryptogen" $res
-
-echo "#################################"
-echo "### Step 5: Job crypto-$REL_RCA1"
-echo "#################################"
-helm install crypto-$REL_RCA1 -n $NS1 -f $RELEASE_DIR1/rca-cryptogen.$CLOUD.yaml ./cryptogen
-printMessage "install crypto-$REL_RCA1" $?
-
-set -x
-kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_RCA1-cryptogen -n $NS1
-res=$?
-set +x
-printMessage "job/crypto-$REL_RCA1-cryptogen" $res
+printMessage "run workflow crypto-$REL_RCA1" $res
 
 echo "#################################"
 echo "### Step 6: Install $REL_ORGADMIN0"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_ORGADMIN0,file=values-$REL_ORGADMIN0.yaml,secret=secrets.$REL_ORGADMIN0.yaml,path=orgadmin | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_ORGADMIN0,file=values-$REL_ORGADMIN0.yaml,secret=secrets.$REL_ORGADMIN0.yaml,path=orgadmin,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_ORGADMIN0" $res
@@ -116,7 +107,7 @@ echo "#################################"
 echo "### Step 7: Install $REL_TLSCA0"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_TLSCA0,file=values-$REL_TLSCA0.yaml,secret=secrets.$REL_TLSCA0.yaml,path=hlf-ca | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_TLSCA0,file=values-$REL_TLSCA0.yaml,secret=secrets.$REL_TLSCA0.yaml,path=hlf-ca,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_TLSCA0" $res
@@ -131,7 +122,7 @@ echo "#################################"
 echo "### Step 8: Install $REL_RCA0"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_RCA0,file=values-$REL_RCA0.yaml,secret=secrets.$REL_RCA0.yaml,path=hlf-ca | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_RCA0,file=values-$REL_RCA0.yaml,secret=secrets.$REL_RCA0.yaml,path=hlf-ca,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_RCA0" $res

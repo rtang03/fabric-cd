@@ -1,0 +1,16 @@
+caName: rca1
+domain: org1.net
+# MUST conform mspId from configtx.yaml
+mspId: Org1MSP
+# ReleaseName of deployed "hlf-ca" application
+hlfCaReleaseName: rca1
+# if deploying RCA, orgAdmin = true
+# Or otherwise deploying TLSCA, orgAdmin = false
+orgAdmin: true
+# Defining input parameters, used by step "Register-Member"
+items:
+  - id: peer0.org1.net
+    type: peer
+    csrHosts: "p0o1-hlf-peer,peer0.org1.net,gupload.org1.net"
+pvcName: pvc-org1
+

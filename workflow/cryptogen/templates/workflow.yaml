@@ -12,8 +12,10 @@ spec:
   ttlStrategy:
     secondsAfterCompletion: 86400
   # delete all pods as soon as they complete
-{{/*  podGC:*/}}
-{{/*    strategy: OnPodCompletion*/}}
+  {{- if .Values.podGC }}
+  podGC:
+    strategy: OnPodCompletion
+  {{- end }}
   serviceAccountName: workflow
   entrypoint: cryptogen-tmpl
 
@@ -37,7 +39,7 @@ spec:
         - - name: register-enroll-org-admin
             template: register-enroll-org-admin
         {{- end }}
-        - - name: register-member
+        - - name: register-enroll-member
             template: register-member
             arguments:
               parameters:
@@ -217,7 +219,7 @@ spec:
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
-    - name: register-member
+    - name: register-enroll-member
       ### register-member register new peer or orderer
       ### it is only required for initial bootstrapping step, OR subsequent registration
       inputs:
