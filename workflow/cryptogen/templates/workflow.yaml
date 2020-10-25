@@ -21,19 +21,19 @@ spec:
     # helper shell script
     - name: setup-script
       configMap:
-        name: {{ .Values.setupsh }}
+        name: orgadmin--setupsh
         defaultMode: 0777
     # pvc for organization's crypto-config
     - name: fabricfiles
       persistentVolumeClaim:
-        claimName: {{ .Values.persistence.pvcName }}
+        claimName: {{ .Values.pvcName }}
 
   templates:
     - name: cryptogen-tmpl
       steps:
         - - name: enroll-ca-server-admin
             template: enroll-ca-server-admin
-        {{- if .Values.orgAdmin.enabled }}
+        {{- if .Values.orgAdmin }}
         - - name: register-enroll-org-admin
             template: register-enroll-org-admin
         {{- end }}
@@ -41,15 +41,15 @@ spec:
             template: register-member
             arguments:
               parameters:
-                - name: id
-                  value: {{ .Values.input.id }}
-                - name: type
-                  value: {{ .Values.input.type }}
-                - name: csr
-                  value: {{ .Values.input.csr }}
+              - name: id
+                value: {{ .Values.itemAlias.id | quote }}
+              - name: type
+                value: {{ .Values.itemAlias.type | quote }}
+              - name: csr
+                value: {{ .Values.itemAlias.csr | quote }}
             withItems:
               {{- range .Values.items }}
-              - { id: {{ .id }}, type: {{ .type }}, csr: {{ .csrHosts }} }
+              - { id: {{ .id | quote }}, type: {{ .type }}, csr: {{ .csrHosts | quote }} }
               {{- end }}
         - - name: create-admin-folder
             template: create-admin-folder
@@ -79,17 +79,22 @@ spec:
               exit -1
             fi
             printHeader "enroll ca server admin"
-            {{- if .Values.tlsProfile }}
-            SERVERHOME=$BASE/{{ .Values.mspId }}/tls/server
-            {{- else }}
+            {{- if .Values.orgAdmin }}
             SERVERHOME=$BASE/{{ .Values.mspId }}/ca/server
+            {{- else }}
+            SERVERHOME=$BASE/{{ .Values.mspId }}/tls/server
             {{- end }}
             export CONFIG=$SERVERHOME/fabric-ca-server-config.yaml
             sleep 5s
             if [ -f "$CONFIG" ]; then
               echo "$CONFIG exists"
-              CA_ADMIN=$(echo ${{ .Values.secret.caAdmin }} | sed -e 's/[\r\n]//g')
-              CA_ADMINPW=$(echo ${{ .Values.secret.caAdminPW }} | sed -e 's/[\r\n]//g')
+              {{- if .Values.orgAdmin }}
+              CA_ADMIN=$(echo $_RCA_CAADMIN | sed -e 's/[\r\n]//g')
+              CA_ADMINPW=$(echo $_RCA_CAADMINPW | sed -e 's/[\r\n]//g')
+              {{- else }}
+              CA_ADMIN=$(echo $_TLSCA_CAADMIN | sed -e 's/[\r\n]//g')
+              CA_ADMINPW=$(echo $_TLSCA_CAADMINPW | sed -e 's/[\r\n]//g')
+              {{- end }}
               # if caAdmin and caAdminPW is not found, exit (-1)
               preventEmptyValue "CA Admin" $CA_ADMIN
               preventEmptyValue "CA Admin PW" $CA_ADMINPW
@@ -98,7 +103,7 @@ spec:
                 echo "❗️ fabric ca server already enrolled"
               else
                 # Enroll CA ADMIN
-                ./fabric-ca-client enroll -u http://$CA_ADMIN:$CA_ADMINPW@{{ .Values.endpoint }}
+                ./fabric-ca-client enroll -u http://$CA_ADMIN:$CA_ADMINPW@{{ .Values.hlfCaReleaseName }}-hlf-ca:7054
                 printMessage "enroll admin" $?
                 set -x
                 mv $SERVERHOME/msp/keystore/*_sk $SERVERHOME/msp/keystore/key.pem
@@ -111,20 +116,13 @@ spec:
               exit -1
             fi
         env:
-        {{- range .Values.env }}
-          - name: {{ .name }}
-            value: {{ .value }}
-        {{- end }}
-          - name: _TLSCA_CAADMIN
-            valueFrom:
-              secretKeyRef:
-                name: crypto-material
-                key: tlsca_caadmin
-          - name: _TLSCA_CAADMINPW
-            valueFrom:
-              secretKeyRef:
-                name: crypto-material
-                key: tlsca_caadminpw
+          - name: FABRIC_CA_SERVER_CA_NAME
+            value: {{ .Values.caName }}
+        {{- if .Values.orgAdmin }}
+          - name: FABRIC_CA_CLIENT_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/admin
+          - name: FABRIC_CA_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/server
           - name: _RCA_CAADMIN
             valueFrom:
               secretKeyRef:
@@ -135,6 +133,22 @@ spec:
               secretKeyRef:
                 name: crypto-material
                 key: rca_caadminpw
+        {{- else }}
+          - name: FABRIC_CA_CLIENT_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/tls/admin
+          - name: FABRIC_CA_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/tls/server
+          - name: _TLSCA_CAADMIN
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: tlsca_caadmin
+          - name: _TLSCA_CAADMINPW
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: tlsca_caadminpw
+        {{- end }}
         volumeMounts:
           - mountPath: /var/hyperledger
             name: fabricfiles
@@ -163,13 +177,13 @@ spec:
             ORG_ADMINPW=$(echo $_ORGADMINPW | sed -e 's/[\r\n]//g')
             preventEmptyValue "ORG_ADMIN" $ORG_ADMIN
             preventEmptyValue "ORG_ADMINPW" $ORG_ADMINPW
-            ./fabric-ca-client register --id.name $ORG_ADMIN --id.secret $ORG_ADMINPW --id.type admin --id.attrs "hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert" -u http://{{ .Values.endpoint }} > /dev/null
+            ./fabric-ca-client register --id.name $ORG_ADMIN --id.secret $ORG_ADMINPW --id.type admin --id.attrs "hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert" -u http://{{ .Values.hlfCaReleaseName }}-hlf-ca:7054 > /dev/null
             printMessage "register org admin" $?
             printHeader "enroll org admin"
             if [ -f "$BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem" ]; then
               echo "❗️ org admin already enrolled"
             else
-              FABRIC_CA_CLIENT_HOME=$BASE/{{ .Values.mspId }}/admin ./fabric-ca-client enroll -u http://$ORG_ADMIN:$ORG_ADMINPW@{{ .Values.endpoint }}
+              FABRIC_CA_CLIENT_HOME=$BASE/{{ .Values.mspId }}/admin ./fabric-ca-client enroll -u http://$ORG_ADMIN:$ORG_ADMINPW@{{ .Values.hlfCaReleaseName }}-hlf-ca:7054
               printMessage "enroll org admin" $?
               set -x
               mv $BASE/{{ .Values.mspId }}/admin/msp/keystore/*_sk $BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem
@@ -178,10 +192,12 @@ spec:
               printMessage "rename private key for $BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem" $res
             fi
         env:
-          {{- range .Values.env }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
+          - name: FABRIC_CA_SERVER_CA_NAME
+            value: {{ .Values.caName }}
+          - name: FABRIC_CA_CLIENT_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/admin
+          - name: FABRIC_CA_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/server
           - name: _ORGADMIN
             valueFrom:
               secretKeyRef:
@@ -220,29 +236,29 @@ spec:
             apk upgrade
             apk --no-cache add libc6-compat libstdc++
             SECRET=$(echo $_SECRET | sed -e 's/[\r\n]//g')
-            ID={{ .Values.input.id }}
-            CSR={{ .Values.input.csr }}
-            TYPE={{ .Values.input.type }}
+            ID={{ .Values.inputAlias.id | quote }}
+            CSR={{ .Values.inputAlias.csr }}
+            TYPE={{ .Values.inputAlias.type }}
             BASE=/var/hyperledger/crypto-config/{{ .Values.mspId }}/$ID
-            {{- if .Values.tlsProfile }}
-            MSPDIR=tls-msp
-            {{- else }}
+            {{- if .Values.orgAdmin }}
             MSPDIR=msp
+            {{- else }}
+            MSPDIR=tls-msp
             {{- end }}
             printHeader "register $ID"
-            ./fabric-ca-client register --id.name $ID --id.secret $SECRET --id.type $TYPE -u http://{{ $.Values.endpoint }} > /dev/null
+            ./fabric-ca-client register --id.name $ID --id.secret $SECRET --id.type $TYPE -u http://{{ $.Values.hlfCaReleaseName }}-hlf-ca:7054 > /dev/null
             printMessage "register $ID" $?
             printHeader "enroll $ID"
             if [ -f "$BASE/$MSPDIR/keystore/key.pem" ]; then
               echo "❗️ $ID already enrolled"
             else
-              {{- if .Values.tlsProfile }}
-              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.endpoint }} --enrollment.profile tls --csr.hosts $CSR
+              {{- if .Values.orgAdmin }}
+              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.hlfCaReleaseName }}-hlf-ca:7054 --csr.hosts $CSR
               {{- else }}
-              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.endpoint }} --csr.hosts $CSR
+              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.hlfCaReleaseName }}-hlf-ca:7054 --enrollment.profile tls --csr.hosts $CSR
               {{- end }}
               printMessage "enroll $ID" $?
-              {{- if .Values.orgAdmin.enabled }}
+              {{- if .Values.orgAdmin }}
               printHeader "copy {{ $.Values.domain }}-ca-cert"
               set -x
               cp /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/{{ .Values.domain }}-ca-cert.pem
@@ -260,7 +276,7 @@ spec:
               res=$?
               set +x
               printMessage "rename private key" $res
-              {{- if .Values.orgAdmin.enabled }}
+              {{- if .Values.orgAdmin }}
               printHeader "copy admincert"
               mkdir -p $BASE/msp/admincerts
               printMessage "mkdir $BASE/msp/admincerts" $?
@@ -278,15 +294,24 @@ spec:
             mountPath: /script/setup.sh
             subPath: setup.sh
         env:
-          {{- range .Values.env }}
-          - name: {{ .name }}
-            value: {{ .value }}
+          - name: FABRIC_CA_SERVER_CA_NAME
+            value: {{ .Values.caName }}
+          {{- if .Values.orgAdmin }}
+          - name: FABRIC_CA_CLIENT_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/admin
+          - name: FABRIC_CA_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/server
+          {{- else }}
+          - name: FABRIC_CA_CLIENT_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/tls/admin
+          - name: FABRIC_CA_HOME
+            value: /var/hyperledger/crypto-config/{{ .Values.mspId }}/tls/server
           {{- end }}
           - name: _SECRET
             valueFrom:
               secretKeyRef:
                 name: crypto-material
-                key: {{ .Values.input.id }}
+                key: {{ .Values.inputAlias.id | quote }}
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
@@ -303,7 +328,7 @@ spec:
             apk --no-cache add libc6-compat libstdc++
             BASE=/var/hyperledger/crypto-config
             printHeader "copy cacerts to admin"
-            {{- if .Values.orgAdmin.enabled }}
+            {{- if .Values.orgAdmin }}
             set -x
             cp $BASE/{{ .Values.mspId }}/ca/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/{{ .Values.mspId }}/msp/cacerts/{{ .Values.domain }}-ca-cert.pem
             res=$?
@@ -333,11 +358,6 @@ spec:
           - name: setup-script
             mountPath: /script/setup.sh
             subPath: setup.sh
-        env:
-          {{- range .Values.env }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"

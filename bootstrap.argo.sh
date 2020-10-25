@@ -64,14 +64,14 @@ set +x
 printMessage "$REL_TLSCA1 | $REL_RCA1 is healthy and sync" $res
 
 
-helm template workflow/cryptogen | argo -n n1 submit -
-
-
 echo "#################################"
-echo "### Step 4: Job: crypto-$REL_TLSCA1"
+echo "### Step 4: Workflow: crypto-$REL_TLSCA1"
 echo "#################################"
-helm install crypto-$REL_TLSCA1 -n $NS1 -f $RELEASE_DIR1/tlsca-cryptogen.$CLOUD.yaml ./cryptogen
-printMessage "install crypto-tlsca1" $?
+set -x
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_TLSCA1.yaml | argo -n $NS1 submit - --watch
+res=$?
+set +x
+printMessage "run workflow cryptogen-$REL_TLSCA1" $res
 
 set -x
 kubectl wait --for=condition=complete --timeout 180s job/crypto-$REL_TLSCA1-cryptogen -n $NS1

@@ -1,39 +1,44 @@
-mspId: Org1MSP
+##################
+### IMPORTANT NOTE:
+### Cryptogen create initial crypto-material; is an essential fixture,
+### for defining Hyperledger identities for peers and orderers
+### Once they are created, its values CANNOT be changed.
+### For production deployment, please plan carefully.
+##################
+# ca name
 caName: tlsca1
+# domain name for current Organization.
+# this domain is NOT necessarily a public-known domain. Later, you can define Istio Service Entry, and Cloud DNS
+# in order to do proper routing. Hence, we will keep using "orgX.net" naming convention.
 domain: org1.net
-# name of configMap [release-name]-[app]-setupsh
-setupsh: admin1-orgadmin--setupsh
-
+# MUST conform mspId from configtx.yaml.
+mspId: Org1MSP
+# ReleaseName of deployed "hlf-ca" application
 hlfCaReleaseName: tlsca1
-# k8s service name
-endpoint: tlsca1-hlf-ca:7054
-
-orgAdmin:
-  enabled: false
-
+# if deploying RCA, orgAdmin = true
+# Or otherwise deploying TLSCA, orgAdmin = false
+orgAdmin: false
+# Defining input parameters, used by step "Register-Member"
+# IMPORTANT: id, and csr MUST use the same domain name as abvoe
 items:
   - id: peer0.org1.net
     type: peer
     csrHosts: "p0o1-hlf-peer,peer0.org1.net,gupload.org1.net"
+# Mount the same pvc, as defined in orgAdmin
+pvcName: pvc-org1
 
-persistence:
-  pvcName: pvc-org1
+# Below are fixture. Should not modify.
+# see example https://github.com/argoproj/argo/blob/stable/examples/loops-maps.yaml
+# this is tweak of outputing helm template to Argo Workflow template
+# {{item.id}} is the templating syntax of Argo Workflow, for defining the looping input argument
+itemAlias:
+  id: "{{item.id}}"
+  type: "{{item.type}}"
+  csr: "{{item.csr}}"
 
-tlsProfile: true
-
-secret:
-  caAdmin: _TLSCA_CAADMIN
-  caAdminPW: _TLSCA_CAADMINPW
-
-input:
+# "{{inputs.parameters.id}}" is the templating syntax of Argo Workflow, for consuming input argument
+inputAlias:
   id: "{{inputs.parameters.id}}"
   type: "{{inputs.parameters.type}}"
   csr: "{{inputs.parameters.csr}}"
 
-env:
-  - name: FABRIC_CA_CLIENT_HOME
-    value: /var/hyperledger/crypto-config/Org1MSP/tls/admin
-  - name: FABRIC_CA_HOME
-    value: /var/hyperledger/crypto-config/Org1MSP/tls/server
-  - name: FABRIC_CA_SERVER_CA_NAME
-    value: tlsca1
