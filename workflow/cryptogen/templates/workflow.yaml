@@ -368,6 +368,7 @@ spec:
             s3:
               endpoint: storage.googleapis.com
               bucket: fabric-cd-dev
+              key: path/in/bucket/crypto-config.tgz
               accessKeySecret:
                 name: gcp-s3-credentials
                 key: accessKey
