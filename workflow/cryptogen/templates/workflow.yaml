@@ -40,7 +40,7 @@ spec:
             template: register-enroll-org-admin
         {{- end }}
         - - name: register-enroll-member
-            template: register-member
+            template: register-enroll-member
             arguments:
               parameters:
               - name: id

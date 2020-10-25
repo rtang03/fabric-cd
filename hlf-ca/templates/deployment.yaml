@@ -124,7 +124,7 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 60
+            initialDelaySeconds: 70
             periodSeconds: 10
           readinessProbe:
             httpGet:

@@ -79,12 +79,15 @@ postgresql-0:
       memory: 256Mi
       cpu: 50m
 
-tlsca_caadmin: admin
-tlsca_caadminpw: password
-rca_caadmin: admin
-rca_caadminpw: password
-orgadmin: admin-orderer0.org0.com
-orgadminpw: password
+gcpS3Bucket: true
+
+# Below key will be stored in secrets.*.yaml
+#tlsca_caadmin: admin
+#tlsca_caadminpw: password
+#rca_caadmin: admin
+#rca_caadminpw: password
+#orgadmin: admin-orderer0.org0.com
+#orgadminpw: password
 
 # should not uncomment it. This is FYI
 #peers:

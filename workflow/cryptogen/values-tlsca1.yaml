@@ -7,6 +7,7 @@ hlfCaReleaseName: tlsca1
 # if deploying RCA, orgAdmin = true
 # Or otherwise deploying TLSCA, orgAdmin = false
 orgAdmin: false
+podGC: true
 # Defining input parameters, used by step "Register-Member"
 items:
   - id: peer0.org1.net
