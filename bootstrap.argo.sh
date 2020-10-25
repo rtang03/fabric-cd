@@ -58,7 +58,7 @@ set +x
 printMessage "$REL_RCA1 sync starts" $res
 
 set -x
-argocd app wait $REL_TLSCA1 $REL_RCA1 --timeout 240
+argocd app wait $REL_TLSCA1 $REL_RCA1 --timeout 300
 res=$?
 set +x
 printMessage "$REL_TLSCA1 | $REL_RCA1 is healthy and sync" $res
@@ -134,7 +134,7 @@ set +x
 printMessage "$REL_RCA0 sync starts" $res
 
 set -x
-argocd app wait $REL_TLSCA0 $REL_RCA0 --timeout 240
+argocd app wait $REL_TLSCA0 $REL_RCA0 --timeout 300
 res=$?
 set +x
 printMessage "$REL_TLSCA0 | $REL_RCA0 is healthy and sync" $res

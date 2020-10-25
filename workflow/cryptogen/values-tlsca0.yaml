@@ -7,7 +7,7 @@ hlfCaReleaseName: tlsca0
 # if deploying RCA, orgAdmin = true
 # Or otherwise deploying TLSCA, orgAdmin = false
 orgAdmin: false
-podGC: false
+podGC: true
 # Defining input parameters, used by step "Register-Member"
 items:
   - id: orderer0.org0.com

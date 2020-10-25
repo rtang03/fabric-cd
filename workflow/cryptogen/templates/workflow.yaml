@@ -360,6 +360,21 @@ spec:
           - name: setup-script
             mountPath: /script/setup.sh
             subPath: setup.sh
+      {{- if .Values.orgAdmin }}
+      outputs:
+        artifacts:
+          - name: {{ .Values.mspId }}-crypto-config
+            path: /var/hyperledger/crypto-config
+            s3:
+              endpoint: storage.googleapis.com
+              bucket: fabric-cd-dev
+              accessKeySecret:
+                name: gcp-s3-credentials
+                key: accessKey
+              secretKeySecret:
+                name: gcp-s3-credentials
+                key: secretKey
+      {{- end }}
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
