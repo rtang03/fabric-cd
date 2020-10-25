@@ -66,6 +66,7 @@ printMessage "$REL_TLSCA1 | $REL_RCA1 is healthy and sync" $res
 
 helm template workflow/cryptogen | argo -n n1 submit -
 
+
 echo "#################################"
 echo "### Step 4: Job: crypto-$REL_TLSCA1"
 echo "#################################"
