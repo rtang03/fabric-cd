@@ -124,14 +124,14 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 100
+            initialDelaySeconds: 20
             periodSeconds: 10
           volumeMounts:
             - name: data
