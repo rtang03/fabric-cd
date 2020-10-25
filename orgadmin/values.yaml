@@ -83,6 +83,9 @@ tlsca_caadmin: admin
 tlsca_caadminpw: password
 rca_caadmin: admin
 rca_caadminpw: password
+orgadmin: admin-orderer0.org0.com
+orgadminpw: password
+
 # should not uncomment it. This is FYI
 #peers:
 #  - id_unencrypted: peer0.org1.net

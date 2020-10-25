@@ -164,8 +164,11 @@ kubectl create ns argo
 
 # Note: We choose to use "cluster-install"
 # TODO: need to revisit how to customize the Argo workflow installation.
+# Seems to namespace scope
 kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/quick-start-postgres.yaml
 
+
+# ClusterScope
 # kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
 
 # CREATE SERVICE ACCOUNT (for each application namespace)

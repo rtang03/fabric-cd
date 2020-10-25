@@ -1,0 +1,39 @@
+mspId: Org1MSP
+caName: tlsca1
+domain: org1.net
+# name of configMap [release-name]-[app]-setupsh
+setupsh: admin1-orgadmin--setupsh
+
+hlfCaReleaseName: tlsca1
+# k8s service name
+endpoint: tlsca1-hlf-ca:7054
+
+orgAdmin:
+  enabled: false
+
+items:
+  - id: peer0.org1.net
+    type: peer
+    csrHosts: "p0o1-hlf-peer,peer0.org1.net,gupload.org1.net"
+
+persistence:
+  pvcName: pvc-org1
+
+tlsProfile: true
+
+secret:
+  caAdmin: _TLSCA_CAADMIN
+  caAdminPW: _TLSCA_CAADMINPW
+
+input:
+  id: "{{inputs.parameters.id}}"
+  type: "{{inputs.parameters.type}}"
+  csr: "{{inputs.parameters.csr}}"
+
+env:
+  - name: FABRIC_CA_CLIENT_HOME
+    value: /var/hyperledger/crypto-config/Org1MSP/tls/admin
+  - name: FABRIC_CA_HOME
+    value: /var/hyperledger/crypto-config/Org1MSP/tls/server
+  - name: FABRIC_CA_SERVER_CA_NAME
+    value: tlsca1

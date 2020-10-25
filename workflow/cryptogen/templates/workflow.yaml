@@ -1,0 +1,343 @@
+# Cryptogen is the bootstrapping steps to produce initial crypto-config
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: cryptogen-
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+spec:
+  # must complete in 10 min (600 seconds)
+  activeDeadlineSeconds: 600
+  # keep workflows for 1d (86,400 seconds)
+  ttlStrategy:
+    secondsAfterCompletion: 86400
+  # delete all pods as soon as they complete
+{{/*  podGC:*/}}
+{{/*    strategy: OnPodCompletion*/}}
+  serviceAccountName: workflow
+  entrypoint: cryptogen-tmpl
+
+  volumes:
+    # helper shell script
+    - name: setup-script
+      configMap:
+        name: {{ .Values.setupsh }}
+        defaultMode: 0777
+    # pvc for organization's crypto-config
+    - name: fabricfiles
+      persistentVolumeClaim:
+        claimName: {{ .Values.persistence.pvcName }}
+
+  templates:
+    - name: cryptogen-tmpl
+      steps:
+        - - name: enroll-ca-server-admin
+            template: enroll-ca-server-admin
+        {{- if .Values.orgAdmin.enabled }}
+        - - name: register-enroll-org-admin
+            template: register-enroll-org-admin
+        {{- end }}
+        - - name: register-member
+            template: register-member
+            arguments:
+              parameters:
+                - name: id
+                  value: {{ .Values.input.id }}
+                - name: type
+                  value: {{ .Values.input.type }}
+                - name: csr
+                  value: {{ .Values.input.csr }}
+            withItems:
+              {{- range .Values.items }}
+              - { id: {{ .id }}, type: {{ .type }}, csr: {{ .csrHosts }} }
+              {{- end }}
+        - - name: create-admin-folder
+            template: create-admin-folder
+
+    - name: enroll-ca-server-admin
+      ### enroll-ca-server-admin does initial admin enrollment
+      ### it is only required for initial bootstrapping step
+      ### all bootstraping step should not repeat
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger/bin
+        args:
+          - |-
+            . /script/setup.sh
+            # this fixes the "sh: not found" issue
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            printHeader "check binary exists"
+            BIN=/var/hyperledger/bin/fabric-ca-client
+            BASE=/var/hyperledger/crypto-config
+            if [ -f "$BIN" ]; then
+              echo "$BIN exists"
+            else
+              echo "⚠️  fabric-ca-client does not exist"
+              exit -1
+            fi
+            printHeader "enroll ca server admin"
+            {{- if .Values.tlsProfile }}
+            SERVERHOME=$BASE/{{ .Values.mspId }}/tls/server
+            {{- else }}
+            SERVERHOME=$BASE/{{ .Values.mspId }}/ca/server
+            {{- end }}
+            export CONFIG=$SERVERHOME/fabric-ca-server-config.yaml
+            sleep 5s
+            if [ -f "$CONFIG" ]; then
+              echo "$CONFIG exists"
+              CA_ADMIN=$(echo ${{ .Values.secret.caAdmin }} | sed -e 's/[\r\n]//g')
+              CA_ADMINPW=$(echo ${{ .Values.secret.caAdminPW }} | sed -e 's/[\r\n]//g')
+              # if caAdmin and caAdminPW is not found, exit (-1)
+              preventEmptyValue "CA Admin" $CA_ADMIN
+              preventEmptyValue "CA Admin PW" $CA_ADMINPW
+              # check private key exist
+              if [ -f "$SERVERHOME/msp/keystore/key.pem" ]; then
+                echo "❗️ fabric ca server already enrolled"
+              else
+                # Enroll CA ADMIN
+                ./fabric-ca-client enroll -u http://$CA_ADMIN:$CA_ADMINPW@{{ .Values.endpoint }}
+                printMessage "enroll admin" $?
+                set -x
+                mv $SERVERHOME/msp/keystore/*_sk $SERVERHOME/msp/keystore/key.pem
+                res=$?
+                set +x
+                printMessage "rename private key for $SERVERHOME" $res
+              fi
+            else
+              echo "⚠️  fabric ca server does not exist"
+              exit -1
+            fi
+        env:
+        {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+        {{- end }}
+          - name: _TLSCA_CAADMIN
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: tlsca_caadmin
+          - name: _TLSCA_CAADMINPW
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: tlsca_caadminpw
+          - name: _RCA_CAADMIN
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: rca_caadmin
+          - name: _RCA_CAADMINPW
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: rca_caadminpw
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+    - name: register-enroll-org-admin
+      ### register-enroll-org-admin does initial organization admin registration and enrollment
+      ### it is only required for initial bootstrapping step
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger/bin
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            printHeader "register org admin"
+            BASE=/var/hyperledger/crypto-config
+            ORG_ADMIN=$(echo $_ORGADMIN | sed -e 's/[\r\n]//g')
+            ORG_ADMINPW=$(echo $_ORGADMINPW | sed -e 's/[\r\n]//g')
+            preventEmptyValue "ORG_ADMIN" $ORG_ADMIN
+            preventEmptyValue "ORG_ADMINPW" $ORG_ADMINPW
+            ./fabric-ca-client register --id.name $ORG_ADMIN --id.secret $ORG_ADMINPW --id.type admin --id.attrs "hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert" -u http://{{ .Values.endpoint }} > /dev/null
+            printMessage "register org admin" $?
+            printHeader "enroll org admin"
+            if [ -f "$BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem" ]; then
+              echo "❗️ org admin already enrolled"
+            else
+              FABRIC_CA_CLIENT_HOME=$BASE/{{ .Values.mspId }}/admin ./fabric-ca-client enroll -u http://$ORG_ADMIN:$ORG_ADMINPW@{{ .Values.endpoint }}
+              printMessage "enroll org admin" $?
+              set -x
+              mv $BASE/{{ .Values.mspId }}/admin/msp/keystore/*_sk $BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem
+              res=$?
+              set +x
+              printMessage "rename private key for $BASE/{{ .Values.mspId }}/admin/msp/keystore/key.pem" $res
+            fi
+        env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+          - name: _ORGADMIN
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: orgadmin
+          - name: _ORGADMINPW
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: orgadminpw
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+    - name: register-member
+      ### register-member register new peer or orderer
+      ### it is only required for initial bootstrapping step, OR subsequent registration
+      inputs:
+        parameters:
+          - name: id
+          - name: type
+          - name: csr
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger/bin
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            SECRET=$(echo $_SECRET | sed -e 's/[\r\n]//g')
+            ID={{ .Values.input.id }}
+            CSR={{ .Values.input.csr }}
+            TYPE={{ .Values.input.type }}
+            BASE=/var/hyperledger/crypto-config/{{ .Values.mspId }}/$ID
+            {{- if .Values.tlsProfile }}
+            MSPDIR=tls-msp
+            {{- else }}
+            MSPDIR=msp
+            {{- end }}
+            printHeader "register $ID"
+            ./fabric-ca-client register --id.name $ID --id.secret $SECRET --id.type $TYPE -u http://{{ $.Values.endpoint }} > /dev/null
+            printMessage "register $ID" $?
+            printHeader "enroll $ID"
+            if [ -f "$BASE/$MSPDIR/keystore/key.pem" ]; then
+              echo "❗️ $ID already enrolled"
+            else
+              {{- if .Values.tlsProfile }}
+              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.endpoint }} --enrollment.profile tls --csr.hosts $CSR
+              {{- else }}
+              FABRIC_CA_CLIENT_MSPDIR=$MSPDIR FABRIC_CA_CLIENT_HOME=$BASE ./fabric-ca-client enroll -u http://$ID:$SECRET@{{ .Values.endpoint }} --csr.hosts $CSR
+              {{- end }}
+              printMessage "enroll $ID" $?
+              {{- if .Values.orgAdmin.enabled }}
+              printHeader "copy {{ $.Values.domain }}-ca-cert"
+              set -x
+              cp /var/hyperledger/crypto-config/{{ .Values.mspId }}/ca/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/{{ .Values.domain }}-ca-cert.pem
+              {{- else }}
+              printHeader "copy tls-ca-cert"
+              set -x
+              cp /var/hyperledger/crypto-config/{{ .Values.mspId }}/tls/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/tls-ca-cert.pem
+              {{- end }}
+              res=$?
+              set +x
+              printMessage "copy ca-cert for $ID" $res
+              printHeader "rename private key"
+              set -x
+              mv $BASE/$MSPDIR/keystore/*_sk $BASE/$MSPDIR/keystore/key.pem
+              res=$?
+              set +x
+              printMessage "rename private key" $res
+              {{- if .Values.orgAdmin.enabled }}
+              printHeader "copy admincert"
+              mkdir -p $BASE/msp/admincerts
+              printMessage "mkdir $BASE/msp/admincerts" $?
+              set -x
+              cp /var/hyperledger/crypto-config/{{ .Values.mspId }}/admin/msp/signcerts/cert.pem $BASE/msp/admincerts/{{ .Values.domain }}-admin-cert.pem
+              res=$?
+              set +x
+              printMessage "cp $BASE/msp/admincerts/{{ .Values.domain }}-admin-cert.pem" $res
+              {{- end }}
+            fi
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+        env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+          - name: _SECRET
+            valueFrom:
+              secretKeyRef:
+                name: crypto-material
+                key: {{ .Values.input.id }}
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+    - name: create-admin-folder
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger/bin
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            BASE=/var/hyperledger/crypto-config
+            printHeader "copy cacerts to admin"
+            {{- if .Values.orgAdmin.enabled }}
+            set -x
+            cp $BASE/{{ .Values.mspId }}/ca/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/{{ .Values.mspId }}/msp/cacerts/{{ .Values.domain }}-ca-cert.pem
+            res=$?
+            set +x
+            printMessage "copy cacert for admin" $res
+            printHeader "copy admincert to admin folder"
+            set -x
+            cp $BASE/{{ .Values.mspId }}/admin/msp/signcerts/cert.pem $BASE/{{ .Values.mspId }}/admin/msp/admincerts/{{ .Values.domain }}-admin-cert.pem
+            res=$?
+            set +x
+            printMessage "copy admincert to admin folder" $res
+            set -x
+            cp $BASE/{{ .Values.mspId }}/admin/msp/signcerts/cert.pem $BASE/{{.Values.mspId}}/msp/admincerts/{{ .Values.domain }}-admin-cert.pem
+            res=$?
+            set +x
+            printMessage "copy admincert to org msp" $res
+            {{- else }}
+            set -x
+            cp $BASE/{{ .Values.mspId }}/tls/admin/msp/cacerts/{{ .Values.hlfCaReleaseName }}-hlf-ca-7054.pem $BASE/{{ .Values.mspId }}/msp/tlscacerts/tls-ca-cert.pem
+            res=$?
+            set +x
+            printMessage "copy cacert for admin" $res
+            {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+        env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
