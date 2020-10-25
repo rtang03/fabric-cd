@@ -124,15 +124,15 @@ spec:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 60
-            periodSeconds: 15
+            initialDelaySeconds: 45
+            periodSeconds: 10
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /healthz
               port: 9443
-            initialDelaySeconds: 60
-            periodSeconds: 15
+            initialDelaySeconds: 45
+            periodSeconds: 10
           volumeMounts:
             - name: data
               mountPath: /var/hyperledger
