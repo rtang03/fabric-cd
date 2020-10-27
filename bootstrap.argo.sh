@@ -169,24 +169,28 @@ printMessage "create secret rca1" $?
 echo "#################################"
 echo "### Step 12: Create genesis block and channeltx"
 echo "#################################"
-set -x
-POD_CLI0=$(kubectl get pods -n $NS0 -l "app=orgadmin,release=$REL_ORGADMIN0" -o jsonpath="{.items[0].metadata.name}")
-set +x
-preventEmptyValue "pod unavailable" $POD_CLI0
+helm template workflow/genesis | argo -n $NS0 submit - --watch --request-timeout 60s
 
-sleep 30
+helm template workflow/secrets | argo -n n1 submit -
 
-######## 2. Create genesis.block / channel.tx / anchor.tx
-set -x
-kubectl -n $NS0 exec -it $POD_CLI0 -- sh -c "/var/hyperledger/bin/configtxgen -configPath /var/hyperledger/cli/configtx -profile OrgsOrdererGenesis -outputBlock /var/hyperledger/crypto-config/genesis.block -channelID ordererchannel"
-res=$?
-set +x
-printMessage "create genesis block" $res
-set -x
-kubectl -n $NS0 exec -it $POD_CLI0 -- sh -c "/var/hyperledger/bin/configtxgen -configPath /var/hyperledger/cli/configtx -profile OrgsChannel -outputCreateChannelTx /var/hyperledger/crypto-config/channel.tx -channelID loanapp"
-res=$?
-set +x
-printMessage "create channel.tx" $res
+#set -x
+#POD_CLI0=$(kubectl get pods -n $NS0 -l "app=orgadmin,release=$REL_ORGADMIN0" -o jsonpath="{.items[0].metadata.name}")
+#set +x
+#preventEmptyValue "pod unavailable" $POD_CLI0
+#
+#sleep 30
+#
+######### 2. Create genesis.block / channel.tx / anchor.tx
+#set -x
+#kubectl -n $NS0 exec -it $POD_CLI0 -- sh -c "/var/hyperledger/bin/configtxgen -configPath /var/hyperledger/cli/configtx -profile OrgsOrdererGenesis -outputBlock /var/hyperledger/crypto-config/genesis.block -channelID ordererchannel"
+#res=$?
+#set +x
+#printMessage "create genesis block" $res
+#set -x
+#kubectl -n $NS0 exec -it $POD_CLI0 -- sh -c "/var/hyperledger/bin/configtxgen -configPath /var/hyperledger/cli/configtx -profile OrgsChannel -outputCreateChannelTx /var/hyperledger/crypto-config/channel.tx -channelID loanapp"
+#res=$?
+#set +x
+#printMessage "create channel.tx" $res
 
 ######## 3. Create configmap: genesis.block
 set -x

@@ -1,0 +1,6 @@
+podGC: false
+pvcName: pvc-org0
+bucket: fabric-cd-dev
+channelID: loanapp
+org1domain: org1.net
+mspId: Org1MSP

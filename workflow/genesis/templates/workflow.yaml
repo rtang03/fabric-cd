@@ -1,0 +1,124 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: genesis-
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+spec:
+  # must complete in 10 min (600 seconds)
+  activeDeadlineSeconds: 600
+  # keep workflows for 1d (86,400 seconds)
+  ttlStrategy:
+    secondsAfterCompletion: 86400
+  # delete all pods as soon as they complete
+  {{- if .Values.podGC }}
+  podGC:
+    strategy: OnPodCompletion
+  {{- end }}
+  serviceAccountName: workflow
+  entrypoint: genesis-tmpl
+
+  volumes:
+    # helper shell script
+    - name: setup-script
+      configMap:
+        name: orgadmin--setupsh
+        defaultMode: 0777
+    # pvc for organization's crypto-config
+    - name: fabricfiles
+      persistentVolumeClaim:
+        claimName: {{ .Values.pvcName }}
+    - name: configtx
+      configMap:
+        name: admin0-orgadmin--configtx
+    - name: org1mspcacerts
+      secret:
+        secretName: {{ .Values.org1domain }}-cacert
+    - name: org1mspadmincerts
+      secret:
+        secretName: {{ .Values.org1domain }}-admincert
+    - name: org1msptlscacerts
+      secret:
+        secretName: {{ .Values.org1domain }}-tlscacert
+
+  templates:
+    - name: genesis-tmpl
+      steps:
+        - - name: create-genesis
+            template: create-genesis
+
+    - name: create-genesis
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            mkdir -p /tmp/data
+            set -x
+            ./bin/configtxgen -configPath ./cli/configtx -profile OrgsOrdererGenesis -outputBlock ./crypto-config/genesis.block -channelID ordererchannel >& ./crypto-config/create-genesis.log
+            res=$?
+            set +x
+            cat ./crypto-config/create-genesis.log
+            printMessage "create genesis block" $res
+            set -x
+            ./bin/configtxgen -configPath ./cli/configtx -profile OrgsChannel -outputCreateChannelTx ./crypto-config/channel.tx -channelID {{ .Values.channelID }} >& ./crypto-config/create-channeltx.log
+            res=$?
+            set +x
+            cat ./crypto-config/create-channeltx.log
+            printMessage "create channel.tx" $res
+            if [ -f "./crypto-config/genesis.block" ]; then
+              echo "genesis.block exists"
+            else
+              echo "genesis.block not found. ./crypto-config/create-genesis.log"
+              exit 1
+            fi
+            if [ -f "./crypto-config/channel.tx" ]; then
+              echo "channel.tx exists"
+            else
+              echo "channel.tx not found. Check ./crypto-config/create-channeltx.log"
+              exit 1
+            fi
+            cp ./crypto-config/genesis.block /tmp/data
+            cp ./crypto-config/channel.tx /tmp/data
+            cp ./crypto-config/create-genesis.log /tmp/data
+            cp ./crypto-config/create-channeltx.log /tmp/data
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /var/hyperledger/cli/configtx
+            name: configtx
+          - mountPath: /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/cacerts
+            name: org1mspcacerts
+          - mountPath: /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/admincerts
+            name: org1mspadmincerts
+          - mountPath: /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/tlscacerts
+            name: org1msptlscacerts
+      outputs:
+        artifacts:
+          - name: genesis-block
+            path: /tmp/data
+            archive:
+              none: {}
+            s3:
+              endpoint: storage.googleapis.com
+              bucket: {{ .Values.bucket }}
+              key: workflow/genesis
+              accessKeySecret:
+                name: gcp-s3-credentials
+                key: accessKey
+              secretKeySecret:
+                name: gcp-s3-credentials
+                key: secretKey
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+
+
