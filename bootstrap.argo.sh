@@ -160,10 +160,17 @@ printMessage "run workflow crypto-$REL_RCA0" $res
 echo "#################################"
 echo "### Step 11: Create secrets"
 echo "#################################"
-./scripts/create-secret.rca0.sh
-printMessage "create secret rca0" $?
+# should not use --watch
+set -x
+helm template workflow/secrets -f workflow/secrets/values-$REL_RCA0.yaml | argo -n $NS0 submit - --wait
+res=$?
+set +x
+printMessage "create secret rca0" $res
 
-./scripts/create-secret.rca1.sh
+set -x
+helm template workflow/secrets -f workflow/secrets/values-$REL_RCA1.yaml | argo -n $NS1 submit - --wait
+res=$?
+set +x
 printMessage "create secret rca1" $?
 
 echo "#################################"
@@ -171,7 +178,6 @@ echo "### Step 12: Create genesis block and channeltx"
 echo "#################################"
 helm template workflow/genesis | argo -n $NS0 submit - --watch --request-timeout 60s
 
-helm template workflow/secrets | argo -n n1 submit -
 
 #set -x
 #POD_CLI0=$(kubectl get pods -n $NS0 -l "app=orgadmin,release=$REL_ORGADMIN0" -o jsonpath="{.items[0].metadata.name}")

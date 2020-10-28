@@ -65,6 +65,7 @@ kubectl -n n1 delete secret peer0.org1.net-adminkey
 kubectl -n n1 create secret generic peer0.org1.net-adminkey --from-literal=org1.net-admin-key.pem="$CONTENT"
 printMessage "create secret peer0.org1.net-adminkey" $?
 
+# Below 3 secrets is required for producing genesis block by cryptogen command
 echo "######## 8. create secret org1.net-cacert.pem for Org0"
 export CERT=$(kubectl -n n1 exec $POD_RCA -c ca -- cat ./Org1MSP/msp/cacerts/org1.net-ca-cert.pem)
 preventEmptyValue "./Org1MSP/msp/cacerts/org1.net-ca-cert.pem" $CONTENT
