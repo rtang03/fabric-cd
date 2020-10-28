@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-repositories
+data:
+  gcp_dev: |
+    s3:
+      endpoint: storage.googleapis.com
+      bucket: fabric-cd-dev
+      accessKeySecret:
+        name: gcp-s3-credentials
+        key: accessKey
+      secretKeySecret:
+        name: gcp-s3-credentials
+        key: secretKey

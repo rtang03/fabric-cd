@@ -175,6 +175,9 @@ kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/
 kubectl -n n0 apply -f ./argocd/service-account.yaml
 kubectl -n n1 apply -f ./argocd/service-account.yaml
 
+# configure artifact repo
+kubectl -n argo apply -f ./argocd/argo-cm.yaml
+
 # PORT-FORWARD
 kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
