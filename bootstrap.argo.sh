@@ -222,7 +222,7 @@ echo "#################################"
 echo "### Step 13: Install orderers"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O0,file=values-$REL_O0.yaml,path=hlf-ord,secret=secrets.org0.yaml,target=$TARGET | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O0,file=values-$REL_O0.yaml,path=hlf-ord,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O0" $res
