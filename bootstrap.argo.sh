@@ -234,7 +234,7 @@ set +x
 printMessage "$REL_O0 sync starts" $res
 
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O1,file=values-$REL_O1.yaml,path=hlf-ord | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O1,file=values-$REL_O1.yaml,path=hlf-ord,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O1" $res
@@ -246,7 +246,7 @@ set +x
 printMessage "$REL_O1 sync starts" $res
 
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O2,file=values-$REL_O2.yaml,path=hlf-ord | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O2,file=values-$REL_O2.yaml,path=hlf-ord,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O2" $res
@@ -258,7 +258,7 @@ set +x
 printMessage "$REL_O2 sync starts" $res
 
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O3,file=values-$REL_O3.yaml,path=hlf-ord | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O3,file=values-$REL_O3.yaml,path=hlf-ord,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O3" $res
@@ -270,7 +270,7 @@ set +x
 printMessage "$REL_O3 sync starts" $res
 
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O4,file=values-$REL_O4.yaml,path=hlf-ord | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O4,file=values-$REL_O4.yaml,path=hlf-ord,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O4" $res
