@@ -160,8 +160,10 @@ printMessage "run workflow crypto-$REL_RCA0" $res
 echo "#################################"
 echo "### Step 11: Create secrets"
 echo "#################################"
-# intentionally split, to avoid too many pods running parallel
-# should not use --watch
+# Note:
+# 1. It will not detect if the gcs bucket has genesis. If already exist, this workflow will fail.
+# 2. intentionally split, to avoid too many pods running parallel
+# 3. should not use --watch
 set -x
 helm template workflow/secrets -f workflow/secrets/values-$REL_RCA0-a.yaml | argo -n $NS0 submit - --wait
 res=$?
@@ -178,41 +180,49 @@ set -x
 helm template workflow/secrets -f workflow/secrets/values-$REL_RCA1.yaml | argo -n $NS1 submit - --wait
 res=$?
 set +x
-printMessage "create secret rca1" $?
+printMessage "create secret rca1" $res
 
 echo "#################################"
 echo "### Step 12: Create genesis block and channeltx"
 echo "#################################"
+# Note: It will not detect if the gcs bucket has genesis. If already exist, this workflow will fail.
+set -x
 helm template workflow/genesis | argo -n $NS0 submit - --watch --request-timeout 60s
-
+res=$?
+set +x
+printMessage "create genesis.block in $NS0" $res
 
 ######## 3. Create configmap: genesis.block
+POD_CLI0=$(kubectl get pods -n $NS0 -l "app=orgadmin,release=$REL_ORGADMIN0" -o jsonpath="{.items[0].metadata.name}")
 set -x
-kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/genesis.block > genesis.block
+kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/genesis.block > download/genesis.block
 res=$?
 set +x
 printMessage "obtain genesis block" $res
 
 kubectl -n $NS0 delete secret genesis
-kubectl -n $NS0 create secret generic genesis --from-file=genesis=./genesis.block
+kubectl -n $NS0 create secret generic genesis --from-file=genesis=./download/genesis.block
 printMessage "create secret genesis" $?
 
-rm genesis.block
+rm download/genesis.block
 
 ######## 4. Create configmap: channel.tx for $ORG1, with namespace $NS1
-kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/channel.tx > channel.tx
+set -x
+kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/channel.tx > download/channel.tx
+res=$?
+set +x
+printMessage "obtain channeltx" $res
 
 kubectl -n $NS1 delete secret channeltx
-
-kubectl -n $NS1 create secret generic channeltx --from-file=channel.tx=./channel.tx
+kubectl -n $NS1 create secret generic channeltx --from-file=channel.tx=./download/channel.tx
 printMessage "create secret channeltx" $?
-rm channel.tx
+rm download/channel.tx
 
 echo "#################################"
 echo "### Step 13: Install orderers"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS0,rel=$REL_O0,file=values-$REL_O0.yaml,path=hlf-ord | argocd app create -f -
+helm template ./argo-app --set ns=$NS0,rel=$REL_O0,file=values-$REL_O0.yaml,path=hlf-ord,secret=secrets.org0.yaml,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_O0" $res
@@ -282,7 +292,7 @@ echo "### Step 14: Install $REL_PEER"
 echo "#################################"
 set -x
 helm template ./argo-app --set ns=$NS1,rel=$REL_PEER,file=values-$REL_PEER.yaml,path=hlf-peer | argocd app create -f -
-helm template ./argo-app --set ns=n1,rel=p0o1,file=values-p0o1.yaml,path=hlf-peer | argocd app create -f -
+# helm template ./argo-app --set ns=n1,rel=p0o1,file=values-p0o1.yaml,path=hlf-peer | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_PEER" $res

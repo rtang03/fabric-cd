@@ -134,7 +134,7 @@ kubectl wait --for=condition=Ready --timeout 180s pod/$(kubectl get pods -n argo
 # INSTALL CLI ON MAC
 brew install argocd
 
-# CONFIGURE
+# CONFIGURE, see NOTE1 below
 kubectl -n argocd apply -f ./argocd/project.yaml
 kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
 
@@ -147,7 +147,7 @@ argocd login localhost:8080 --insecure --username admin --password $POD
 argocd account update-password --current-password $POD --new-password password
 
 # Argocd connect to github with ssh key. Private key of github ssh login is located at `.ssh/id_rsa`
-# Note that this will modify argcd-cm configmap. Hence, after each time 'kubectl -n argocd apply -f ./argocd/argocd-cm.yaml'
+# NOTE1: that this will modify argcd-cm configmap. Hence, after each time 'kubectl -n argocd apply -f ./argocd/argocd-cm.yaml'
 # below add-repo needs rerun
 argocd repo add git@github.com:rtang03/fabric-cd.git --insecure-ignore-host-key --ssh-private-key-path ~/.ssh/id_rsa
 

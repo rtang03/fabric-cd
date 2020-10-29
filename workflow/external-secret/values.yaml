@@ -1,0 +1,9 @@
+mspId: Org1MSP
+bucket: fabric-cd-dev
+secretName: genesis
+artifactKey: workflow/genesis/genesis.block
+key: genesis
+inputAlias:
+  secretName: "{{inputs.parameters.secretName}}"
+  retrieveStep: "{{steps.retrieve.outputs.parameters.encoded-file}}"
+  encodedContent: "{{inputs.parameters.content}}"
