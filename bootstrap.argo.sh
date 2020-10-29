@@ -291,7 +291,7 @@ echo "#################################"
 echo "### Step 14: Install $REL_PEER"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS1,rel=$REL_PEER,file=values-$REL_PEER.yaml,path=hlf-peer | argocd app create -f -
+helm template ./argo-app --set ns=$NS1,rel=$REL_PEER,file=values-$REL_PEER.yaml,path=hlf-peer,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_PEER" $res

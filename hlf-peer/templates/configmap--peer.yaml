@@ -64,7 +64,6 @@ data:
   CORE_PEER_TLS_CLIENTROOTCAS_FILES: "[{{ include "hlf-peer.home" . }}/tls-msp/tlscacerts/tlscacert.pem]"
   CORE_PEER_TLS_CLIENTCERT_FILE: "{{ include "hlf-peer.home" . }}/tls-msp/tls/tls.crt"
   CORE_PEER_TLS_CLIENTKEY_FILE: "{{ include "hlf-peer.home" . }}/tls-msp/tls/tls.key"
-  # CORE_VM_ENDPOINT: http://localhost:2375 # unix:///host/var/run/docker.sock
   CORE_VM_ENDPOINT: unix:///host/var/run/docker.sock
   CORE_LEDGER_STATE_STATEDATABASE: {{ .Values.peer.databaseType | quote }}
   # Containers in the same pod share the host
@@ -78,6 +77,6 @@ data:
   GODEBUG: "netdns=go"
   # GODEBUG: "http2debug=1"
   ADMIN_MSP_PATH: "{{ include "hlf-peer.home" . }}/admin/msp"
-  ORD_TLS_PATH: "{{ include "hlf-peer.home" . }}/ord/org0/tlscacerts"
+  # ORD_TLS_PATH: "{{ include "hlf-peer.home" . }}/ord/org0/tlscacerts"
   CORE_METRICS_PROVIDER: prometheus
   CORE_OPERATIONS_LISTENADDRESS: ":9443"
