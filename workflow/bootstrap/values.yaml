@@ -7,7 +7,10 @@ hostAlias:
 pvcName: pvc-org1
 # TODO: should be later refactor to orgadmin--core
 coreyaml: admin1-orgadmin--core
-dir: /var/hyperledger
+bucket: fabric-cd-dev
+keyChanneltx: workflow/genesis/channel.tx
+mspId: Org1MSP
+
 secret:
   - name: org0-tls-ca-cert
     secret: org0.com-tlscacert
@@ -15,8 +18,10 @@ secret:
   - name: org1-tls-ca-cert
     secret: org1.net-tlscacert
     path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
-# Default should be no channelTx
-channeltx: channeltx
+
+alias:
+  workflow_name: "{{workflow.name}}"
+
 conf:
   - name: TZ
     value: "Asia/HongKong"
@@ -44,12 +49,8 @@ conf:
     value: /etc/hyperledger
   - name: BIN
     value: /var/hyperledger/bin
-  - name: DIR
-    value: /var/hyperledger/crypto-config/channel-artifacts
   - name: GODEBUG
     value: "netdns=go"
-
-templatedTask: "{{inputs.parameters.task}}"
 
 connection_json: |
   {
@@ -64,3 +65,13 @@ connection_json: |
 
 metadata_json: |
   {"path":"","type":"external","label":"eventstorev1"}
+
+s3:
+  endpoint: storage.googleapis.com
+  bucket: fabric-cd-dev
+  accessKeySecret:
+    name: gcp-s3-credentials
+    key: accessKey
+  secretKeySecret:
+    name: gcp-s3-credentials
+    key: secretKey

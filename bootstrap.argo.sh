@@ -207,16 +207,16 @@ printMessage "create secret genesis" $?
 rm download/genesis.block
 
 ######## 4. Create configmap: channel.tx for $ORG1, with namespace $NS1
-set -x
-kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/channel.tx > download/channel.tx
-res=$?
-set +x
-printMessage "obtain channeltx" $res
-
-kubectl -n $NS1 delete secret channeltx
-kubectl -n $NS1 create secret generic channeltx --from-file=channel.tx=./download/channel.tx
-printMessage "create secret channeltx" $?
-rm download/channel.tx
+# set -x
+# kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/channel.tx > download/channel.tx
+# res=$?
+# set +x
+# printMessage "obtain channeltx" $res
+#
+# kubectl -n $NS1 delete secret channeltx
+# kubectl -n $NS1 create secret generic channeltx --from-file=channel.tx=./download/channel.tx
+# printMessage "create secret channeltx" $?
+# rm download/channel.tx
 
 echo "#################################"
 echo "### Step 13: Install orderers"
