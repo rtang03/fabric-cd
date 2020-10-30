@@ -1,6 +1,3 @@
-{{- $vars := dict }}
-{{- $_ := set $vars "templated" "" }}
-
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
@@ -14,9 +11,11 @@ spec:
   ttlStrategy:
     secondsAfterCompletion: 86400
   # delete all pods as soon as they complete
-  podGC:
-    strategy: OnPodCompletion
+  # podGC:
+  #   strategy: OnPodCompletion
   serviceAccountName: workflow
+  artifactRepositoryRef:
+    key: gcp_dev
   entrypoint: channels
   {{- if .Values.hostAlias }}
   hostAliases:
@@ -35,7 +34,7 @@ spec:
        claimName: {{ .Values.pvcName }}
    - name: setup-script
      configMap:
-       name: {{ .Values.setupsh }}
+       name: "orgadmin--setupsh"
        defaultMode: 0777
    - name: core-yaml
      configMap:

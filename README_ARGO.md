@@ -226,7 +226,12 @@ sops -d orgadmin/secrets.admin1.yaml
 
 
 ### Bootstrapping
-See `bootstrap.argo.sh`
+Make sure the gcs storage `workflow/cryptogen`, `workflow/genesis`, `workflow/secrets` are empty. The workflows in `bootstrap.argo.sh`
+will output artifacts to `fabric-cd-dev` bucket. The non-empty paths will fail the workflow.
+
+```shell script
+bootstrap.argo.sh
+```
 
 
 ```shell script

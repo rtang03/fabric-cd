@@ -306,7 +306,7 @@ echo "#################################"
 echo "### Step 15: Install $REL_GUPLOAD"
 echo "#################################"
 set -x
-helm template ./argo-app --set ns=$NS1,rel=$REL_GUPLOAD,file=values-$REL_GUPLOAD.yaml,path=gupload | argocd app create -f -
+helm template ./argo-app --set ns=$NS1,rel=$REL_GUPLOAD,file=values-$REL_GUPLOAD.yaml,path=gupload,target=$TARGET | argocd app create -f -
 res=$?
 set +x
 printMessage "create app: $REL_GUPLOAD" $res
@@ -326,8 +326,11 @@ printMessage "$REL_PEER | $REL_GUPLOAD are healthy and sync" $res
 echo "#################################"
 echo "### Step 16: Bootstrap part 1"
 echo "#################################"
-#helm template ./bootstrap-flow | argo -n n1 submit -
-#helm template ./bootstrap-flow | argo -n n1 submit - --watch
+set -x
+helm template workflow/bootstrap | argo -n $NS1 submit - --watch --request-timeout 60s
+res=$?
+set +x
+printMessage "bootstrap part 1" $res
 
 #echo "#################################"
 #echo "### Step 17: Install chaincode"
