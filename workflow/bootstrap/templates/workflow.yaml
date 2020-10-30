@@ -49,15 +49,18 @@ spec:
     - name: channels
       steps:
         - - name: create-channel
-            template: create-ch-tmpl
-        # - - name: join-channel
-        #     template: join-ch-tmpl
-        #     arguments:
-        #       parameters:
-        #         - name: task
-        #           value: join
+            template: create-channel-tmpl
+        - - name: join-channel
+            template: join-channel-tmpl
+            arguments:
+              artifacts:
+                - name: channel-block
+                  from: {{ .Values.alias.step_create_channel_outputs | quote }}
 
-    - name: create-ch-tmpl
+    - name: create-channel-tmpl
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
       inputs:
         artifacts:
           - name: channeltx
@@ -85,8 +88,7 @@ spec:
             . /script/setup.sh
             apk update
             apk upgrade
-            apk --no-cache add libc6-compat libstdc++ jq tzdata
-            ./bin/peer version
+            apk --no-cache add libc6-compat libstdc++ tzdata
             printHeader "Create channel"
             echo "Fetch block to see if channel has already been created..."
             set -x
@@ -94,7 +96,7 @@ spec:
             set +x
             if [ -f "/tmp/$CHANNEL_NAME.block" ]
             then
-              echo "Channel ${CHANNEL_NAME} is already created. create-channel skipped." | tee /tmp/createchannel.log
+              echo "Channel ${CHANNEL_NAME} is already created. create-channel skipped" | tee /tmp/createchannel.log
             else
               echo "Creating channel $CHANNEL_NAME"
               set -x
@@ -104,15 +106,6 @@ spec:
               cat /tmp/createchannel.log
               printMessage "generate $CHANNEL_NAME.block" $res
             fi
-            # if [ {{ .Values.templatedTask }} = "join" ]
-            # then
-            #   printHeader "Join channel"
-            #   set -x
-            #   $BIN/peer channel getinfo -c $CHANNEL_NAME
-            #   res=$?
-            #   set +x
-            #   echo $res
-            # fi
         env:
         {{- range .Values.conf }}
           - name: {{ .name }}
@@ -141,7 +134,71 @@ spec:
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
+    - name: join-channel-tmpl
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
+      inputs:
+        artifacts:
+          - name: channel-block
+            path: /tmp/{{ .Values.channelName }}.block
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel/{{ .Values.channelName }}.block
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq tzdata
+            printHeader "Join channel"
+            sleep 1s
+            set -x
+            $BIN/peer channel getinfo -c $CHANNEL_NAME >& /tmp/getinfo.log
+            res=$?
+            set +x
+            if [ $res = 1 ]; then
+              set -x
+              $BIN/peer channel join -b /tmp/$CHANNEL_NAME.block >& /tmp/joinchannel.log
+              res=$?
+              set +x
+              cat /tmp/joinchannel.log
+              printMessage "join channel" $res
+            else
+              echo "channel already joined. join-channel skipped" | tee /tmp/joinchannel.log
+            fi
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+          {{- end }}
+      outputs:
+        artifacts:
+          - name: join-channel-log
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/join-channel/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
 

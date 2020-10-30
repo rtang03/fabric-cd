@@ -10,6 +10,7 @@ coreyaml: admin1-orgadmin--core
 bucket: fabric-cd-dev
 keyChanneltx: workflow/genesis/channel.tx
 mspId: Org1MSP
+channelName: loanapp
 
 secret:
   - name: org0-tls-ca-cert
@@ -21,6 +22,7 @@ secret:
 
 alias:
   workflow_name: "{{workflow.name}}"
+  step_create_channel_outputs: "{{steps.create-channel.outputs.artifacts.channel-block}}"
 
 conf:
   - name: TZ
