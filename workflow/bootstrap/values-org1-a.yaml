@@ -1,0 +1,16 @@
+bootstrap:
+  tasks:
+    create_channel:
+      enabled: true
+    join_channel:
+      enabled: true
+    update_anchor_peer:
+      enabled: true
+      host: peer0.org1.net
+      port: 15443
+    package_install:
+      enabled: true
+    delete_ccid:
+      enabled: true
+    create_ccid:
+      enabled: true

@@ -29,13 +29,16 @@ spec:
   {{- end }}
 
   volumes:
+   # binaries: peer, etc.
    - name: fabricfiles
      persistentVolumeClaim:
        claimName: {{ .Values.pvcName }}
+   # setup.sh
    - name: setup-script
      configMap:
        name: "orgadmin--setupsh"
        defaultMode: 0777
+   # core.yaml
    - name: core-yaml
      configMap:
        name: {{ .Values.coreyaml }}
@@ -56,11 +59,31 @@ spec:
               artifacts:
                 - name: channel-block
                   from: {{ .Values.alias.step_create_channel_outputs | quote }}
+        - - name: update-anchor-peer
+            template: update-anchor-tmpl
+            # can run the update-anchor repeatedly
+            continueOn:
+              error: true
+              failed: true
+        - - name: package-install
+            template: package-cc-tmpl
+        - - name: delete-chaincode-id
+            template: del-ccid-tmpl
+            continueOn:
+              error: true
+              failed: true
+        - - name: create-chaincode-id
+            template: create-ccid-tmpl
+            arguments:
+              parameters:
+                - name: packageid
+                  value: {{ .Values.alias.step_package_outputs | quote }}
 
+    #####################
+    ### create-channel-tmpl
+    #####################
     - name: create-channel-tmpl
-      metadata:
-        annotations:
-          sidecar.istio.io/inject: "false"
+{{ toYaml .Values.no_istio | indent 6 }}
       inputs:
         artifacts:
           - name: channeltx
@@ -70,15 +93,6 @@ spec:
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-          - name: collection-json
-            path: /builders/packaging/connection.json
-            raw:
-              data: {{ .Values.connection_json | quote }}
-          - name: metadata-json
-            path: /builders/packaging/metadata.json
-            raw:
-              data: |
-                {{ .Values.metadata_json }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -134,10 +148,11 @@ spec:
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
+    #####################
+    ### join-channel-tmpl
+    #####################
     - name: join-channel-tmpl
-      metadata:
-        annotations:
-          sidecar.istio.io/inject: "false"
+{{ toYaml .Values.no_istio | indent 6 }}
       inputs:
         artifacts:
           - name: channel-block
@@ -201,4 +216,595 @@ spec:
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-
+    #####################
+    ### update-anchor-tmpl
+    #####################
+    - name: update-anchor-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq tzdata
+            printHeader "Update anchor peer"
+            set -x
+            $BIN/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
+            res=$?
+            set +x
+            printMessage "fetch config_block.pb" $res
+            cat /tmp/fetchconfig.log
+            set -x
+            $BIN/configtxlator proto_decode --input /tmp/config_block.pb --type common.Block --output /tmp/config_block.json
+            res=$?
+            set +x
+            printMessage "decode block0" $res
+            set -x
+            jq .data.data[0].payload.data.config /tmp/config_block.json > /tmp/config.json
+            res=$?
+            set +x
+            printMessage "jq extract channel" $res
+            set -x
+            cp /tmp/config.json /tmp/config_copy.json
+            res=$?
+            set +x
+            printMessage "cp block" $res
+            set -x
+            jq ".channel_group.groups.Application.groups.{{ .Values.mspId }}.values += {\"AnchorPeers\":{\"mod_policy\":\"Admins\",\"value\":{\"anchor_peers\":[{\"host\":\"{{ .Values.bootstrap.tasks.update_anchor_peer.host }}\",\"port\":{{ .Values.bootstrap.tasks.update_anchor_peer.port }}}]},\"version\":\"0\"}}" /tmp/config_copy.json > /tmp/modified_config.json
+            res=$?
+            set +x
+            printMessage "jq add anchorpeer" $res
+            set -x
+            $BIN/configtxlator proto_encode --input /tmp/config.json --type common.Config --output /tmp/config.pb
+            res=$?
+            set +x
+            printMessage "encode current block" $res
+            set -x
+            $BIN/configtxlator proto_encode --input /tmp/modified_config.json --type common.Config --output /tmp/modified_config.pb
+            res=$?
+            set +x
+            printMessage "encode new block" $res
+            set -x
+            $BIN/configtxlator compute_update --channel_id $CHANNEL_NAME --original /tmp/config.pb --updated /tmp/modified_config.pb --output /tmp/config_update.pb
+            res=$?
+            set +x
+            # NOTE: if the anchor peer is already made, the compute_update will return below error:
+            # "configtxlator: error: Error computing update: error computing config update: no differences detected between original and updated config"
+            printMessage "compute update block" $res
+            set -x
+            $BIN/configtxlator proto_decode --input /tmp/config_update.pb --type common.ConfigUpdate --output /tmp/config_update.json
+            res=$?
+            set +x
+            printMessage "decode update block" $res
+            echo "{\"payload\":{\"header\":{\"channel_header\":{\"channel_id\":\"$CHANNEL_NAME\", \"type\":2}},\"data\":{\"config_update\":$(cat /tmp/config_update.json)}}}" | jq . > /tmp/config_update_in_envelope.json
+            res=$?
+            set +x
+            printMessage "create update_envelope" $res
+            set -x
+            $BIN/configtxlator proto_encode --input /tmp/config_update_in_envelope.json --type common.Envelope --output /tmp/config_update_in_envelope.pb
+            res=$?
+            set +x
+            printMessage "encode update_envelope" $res
+            set -x
+            $BIN/peer channel update -f /tmp/config_update_in_envelope.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/updateanchorpeer.log
+            res=$?
+            set +x
+            printMessage "send update_envelope proposal" $res
+            cat /tmp/updateanchorpeer.log
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+          {{- end }}
+      outputs:
+        artifacts:
+          - name: update-anchor-peer
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/update-anchor/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    #####################
+    ### package-cc-tmpl
+    #####################
+    - name: package-cc-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: collection-json
+            path: /builders/packaging/connection.json
+            raw:
+              data: {{ .Values.connection_json | quote }}
+          - name: metadata-json
+            path: /builders/packaging/metadata.json
+            raw:
+              data: |
+                {{ .Values.metadata_json }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /tmp
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq tzdata
+            printHeader "package chaincode"
+            if [ -f "/builders/packaging/connection.json" ]; then
+              echo "/builders/packaging/connection.json found"
+            else
+              printMessage "connection.json not found" -1
+            fi
+            if [ -f "/builders/packaging/metadata.json" ]; then
+              echo "/builders/packaging/metadata.json found"
+            else
+              printMessage "metadata.json not found" -1
+            fi
+            set -x
+            cp /builders/packaging/connection.json .
+            res=$?
+            set +x
+            printMessage "copy connection.json" $res
+            set -x
+            cp /builders/packaging/metadata.json .
+            res=$?
+            set +x
+            printMessage "copy metadata.json" $res
+            set -x
+            tar cfz code.tar.gz connection.json
+            res=$?
+            set +x
+            printMessage "tar code.tar.gz" $res
+            set -x
+            tar cfz {{ .Values.bootstrap.chaincode.id }}.tgz code.tar.gz metadata.json
+            res=$?
+            set +x
+            printMessage "package chaincode" $res
+            set -x
+            printHeader "queryinstalled"
+            set -x
+            $BIN/peer lifecycle chaincode queryinstalled >& /tmp/installed.log
+            res=$?
+            set +x
+            cat /tmp/installed.log
+            # NOTE: currently, this installation assumes one chaincode per channel. If later, more chaincode
+            # is required per channel, below logic need modify
+            if [ $res = 0 ]; then
+              echo "chaincode already installed"
+              set -x
+              sed -n "/{{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" /tmp/installed.log > /tmp/packageid.txt
+              res=$?
+              set +x
+              cat /tmp/packageid.txt
+              printMessage "1: make packageid.txt" $res
+            else
+              echo "installation will take a few minutes"
+              $BIN/peer lifecycle chaincode install /tmp/{{ .Values.bootstrap.chaincode.id }}.tgz >& /tmp/installcc.log
+              res=$?
+              set +x
+              cat /tmp/installcc.log
+              printMessage "install chaincode" $res
+              set -x
+              sed -n "/{{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" /tmp/installed.log > /tmp/packageid.txt
+              res=$?
+              set +x
+              cat /tmp/packageid.txt
+              printMessage "2: make packageid.txt" $res
+            fi
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+          {{- end }}
+      outputs:
+        parameters:
+          - name: packageid
+            valueFrom:
+              path: /tmp/packageid.txt
+        artifacts:
+          - name: chaincode
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/package-cc
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    #####################
+    ### del-ccid-tmpl
+    #####################
+    - name: del-ccid-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      resource:
+        action: delete
+        manifest: |
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: "chaincode-ccid"
+    #####################
+    ### create-ccid-tmpl
+    #####################
+    - name: create-ccid-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: packageid
+      resource:
+        action: create
+        manifest: |
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: "chaincode-ccid"
+          data:
+            CHAINCODE_CCID: {{ .Values.alias.input_packageid | quote }}
+    #####################
+    ### create-ccid-tmpl
+    #####################
+    - name: query-installed-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: approve-cc-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: query-approve-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: checkcommitreadiness-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: commit-cc-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: querycommitted-cc-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: init-cc-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: dev-invoke-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+      {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+    - name: dev-query-impl
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+        env:
+          {{- range .Values.conf }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          {{- range .Values.secret }}
+          - name: {{ .name }}
+            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
+          {{- end }}
+      outputs:
+        artifacts:
+          - name: packaged-cc
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}

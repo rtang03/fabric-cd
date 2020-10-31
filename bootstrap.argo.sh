@@ -206,18 +206,6 @@ printMessage "create secret genesis" $?
 
 rm download/genesis.block
 
-######## 4. Create configmap: channel.tx for $ORG1, with namespace $NS1
-# set -x
-# kubectl -n $NS0 exec $POD_CLI0 -- cat /var/hyperledger/crypto-config/channel.tx > download/channel.tx
-# res=$?
-# set +x
-# printMessage "obtain channeltx" $res
-#
-# kubectl -n $NS1 delete secret channeltx
-# kubectl -n $NS1 create secret generic channeltx --from-file=channel.tx=./download/channel.tx
-# printMessage "create secret channeltx" $?
-# rm download/channel.tx
-
 echo "#################################"
 echo "### Step 13: Install orderers"
 echo "#################################"
@@ -327,7 +315,7 @@ echo "#################################"
 echo "### Step 16: Bootstrap part 1"
 echo "#################################"
 set -x
-helm template workflow/bootstrap | argo -n $NS1 submit - --watch --request-timeout 60s
+helm template workflow/bootstrap -f workflow/bootstrap/values-org1-a.yaml | argo -n $NS1 submit - --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "bootstrap part 1" $res
@@ -335,10 +323,32 @@ printMessage "bootstrap part 1" $res
 #echo "#################################"
 #echo "### Step 17: Install chaincode"
 #echo "#################################"
-#
+set -x
+helm template ./argo-app --set ns=$NS1,rel=eventstore,file=values-org1.yaml,path=hlf-cc,target=$TARGET | argocd app create -f -
+res=$?
+set +x
+printMessage "create app: eventstore" $res
+
+set -x
+argocd app sync eventstore
+res=$?
+set +x
+printMessage "eventstore sync starts" $res
+
+set -x
+argocd app wait eventstore --timeout 120
+res=$?
+set +x
+printMessage "eventstore is healthy and sync" $res
+
 #echo "#################################"
 #echo "### Step 18: Bootstrap part 2"
 #echo "#################################"
+set -x
+helm template workflow/bootstrap -f workflow/bootstrap/values-org1-b.yaml | argo -n $NS1 submit - --watch --request-timeout 300s
+res=$?
+set +x
+printMessage "bootstrap part 2" $res
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

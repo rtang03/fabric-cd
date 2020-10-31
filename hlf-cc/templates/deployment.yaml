@@ -29,12 +29,13 @@ spec:
           ports:
             - containerPort: 7052
           env:
-            - name: CHAINCODE_CCID
-              value: {{ .Values.ccid | quote}}
             - name: CHAINCODE_ADDRESS
               value: "0.0.0.0:7052"
             - name: TZ
               value: {{ .Values.global.TZ | quote }}
+          envFrom:
+            - configMapRef:
+                name: "chaincode-ccid"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
