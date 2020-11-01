@@ -129,9 +129,9 @@ spec:
           secret:
             secretName: {{ .Values.secrets.adminKey }}
         {{- end }}
-        - name: org0-tls-ca-cert
-          secret:
-            secretName: {{ .Values.secrets.ordOrg0Tlscacert }}
+        # - name: org0-tls-ca-cert
+        #   secret:
+        #     secretName: {{ .Values.secrets.ordOrg0Tlscacert }}
       containers:
         - name: peer
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -275,8 +275,8 @@ spec:
             - mountPath: {{ include "hlf-peer.home" . }}/admin/msp/keystore
               name: admin-key
             {{- end }}
-            - mountPath: {{ include "hlf-peer.home" . }}/ord/org0/tlscacerts
-              name: org0-tls-ca-cert
+            # - mountPath: {{ include "hlf-peer.home" . }}/ord/org0/tlscacerts
+            #   name: org0-tls-ca-cert
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

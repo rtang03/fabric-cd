@@ -187,7 +187,7 @@ echo "### Step 12: Create genesis block and channeltx"
 echo "#################################"
 # Note: It will not detect if the gcs bucket has genesis. If already exist, this workflow will fail.
 set -x
-helm template workflow/genesis | argo -n $NS0 submit - --watch --request-timeout 60s
+helm template workflow/genesis | argo -n $NS0 submit - --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "create genesis.block in $NS0" $res

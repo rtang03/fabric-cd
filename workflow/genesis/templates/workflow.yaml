@@ -37,7 +37,7 @@ spec:
       inputs:
         artifacts:
           - name: org1mspcacerts
-            path: /tmp/org1.net-ca-cert.pem
+            path: /tmp/org1.net-cacert.pem
             s3:
               endpoint: storage.googleapis.com
               bucket: {{ .Values.bucket }}
@@ -49,7 +49,7 @@ spec:
                 name: gcp-s3-credentials
                 key: secretKey
           - name: org1mspadmincerts
-            path: /tmp/org1.net-admin-cert.pem
+            path: /tmp/org1.net-admincert.pem
             s3:
               endpoint: storage.googleapis.com
               bucket: {{ .Values.bucket }}
@@ -61,11 +61,11 @@ spec:
                 name: gcp-s3-credentials
                 key: secretKey
           - name: org1msptlscacerts
-            path: /tmp/tls-ca-cert.pem
+            path: /tmp/org1.net-tlscacert.pem
             s3:
               endpoint: storage.googleapis.com
               bucket: {{ .Values.bucket }}
-              key: workflow/secrets/n1/org1.net-tlscacert/tls-ca-cert.pem
+              key: workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
               accessKeySecret:
                 name: gcp-s3-credentials
                 key: accessKey
@@ -87,17 +87,17 @@ spec:
             mkdir -p /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/admincerts
             mkdir -p /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/tlscacerts
             mkdir -p /tmp/data
-            cat /tmp/org1.net-ca-cert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/cacerts/org1.net-ca-cert.pem
+            cat /tmp/org1.net-cacert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/cacerts/org1.net-ca-cert.pem
             res=$?
             set +x
             printMessage "cp org1.net-ca-cert.pem" $res
             set -x
-            cat /tmp/org1.net-admin-cert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/admincerts/org1.net-admin-cert.pem
+            cat /tmp/org1.net-admincert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/admincerts/org1.net-admin-cert.pem
             res=$?
             set +x
             printMessage "cp org1.net-admin-cert.pem" $res
             set -x
-            cat /tmp/org1.net-ca-cert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/tlscacerts/org1.net-ca-cert.pem
+            cat /tmp/org1.net-tlscacert.pem | base64 -d > /var/hyperledger/crypto-config/{{ .Values.mspId }}/msp/tlscacerts/org1.net-ca-cert.pem
             res=$?
             set +x
             printMessage "cp org1.net-ca-cert.pem" $res

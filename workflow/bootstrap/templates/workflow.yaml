@@ -120,6 +120,13 @@ spec:
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -130,6 +137,8 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            # retrieve o0 tlscacert from artifact repo, and decode it
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "Create channel"
             echo "Fetch block to see if channel has already been created..."
             set -x
@@ -248,6 +257,15 @@ spec:
     #####################
     - name: update-anchor-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -258,6 +276,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ jq tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "Update anchor peer"
             set -x
             $BIN/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
@@ -357,6 +376,13 @@ spec:
 {{ toYaml .Values.no_istio | indent 6 }}
       inputs:
         artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
           - name: collection-json
             path: /builders/packaging/connection.json
             raw:
@@ -375,7 +401,8 @@ spec:
             . /script/setup.sh
             apk update
             apk upgrade
-            apk --no-cache add libc6-compat libstdc++ jq tzdata
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "package chaincode"
             if [ -f "/builders/packaging/connection.json" ]; then
               echo "/builders/packaging/connection.json found"
@@ -504,6 +531,15 @@ spec:
     #####################
     - name: approve-cc-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -514,6 +550,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             set -x
             $BIN/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.bootstrap.chaincode.id }}
             res=$?
@@ -583,6 +620,15 @@ spec:
     #####################
     - name: commit-cc-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -593,6 +639,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "checkcommitreadiness"
             set -x
             $BIN/peer lifecycle chaincode checkcommitreadiness \
@@ -678,6 +725,15 @@ spec:
     #####################
     - name: dev-invoke-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -688,6 +744,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "dev-invoke"
             set -x
             $BIN/peer chaincode invoke -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
@@ -734,6 +791,15 @@ spec:
     #####################
     - name: dev-query-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        artifacts:
+          - name: org0tlscacert
+            path: /tmp/org0.com-tlscacert_encoded.pem
+            s3:
+              key: {{ .Values.keyOrg0Tlscacert | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -744,6 +810,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             printHeader "dev-query"
             set -x
             $BIN/peer chaincode query -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
