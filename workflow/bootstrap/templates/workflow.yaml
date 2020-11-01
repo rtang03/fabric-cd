@@ -41,7 +41,7 @@ spec:
    # core.yaml
    - name: core-yaml
      configMap:
-       name: {{ .Values.coreyaml }}
+       name: "core-yaml"
   {{- range .Values.secret }}
    - name: {{ .name }}
      secret:

@@ -5,8 +5,6 @@ hostAlias:
     ip: 35.202.107.80
 
 pvcName: pvc-org1
-# TODO: should be later refactor to orgadmin--core
-coreyaml: admin1-orgadmin--core
 bucket: fabric-cd-dev
 keyChanneltx: workflow/genesis/channel.tx
 mspId: Org1MSP
@@ -36,7 +34,9 @@ conf:
   - name: CORE_PEER_TLS_ENABLED
     value: "true"
   - name: CORE_PEER_TLS_ROOTCERT_FILE
-    value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tls-ca-cert.pem
+    # TODO: remove it
+    # value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tls-ca-cert.pem
+    value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
   - name: ORDERER_CA
     value: /var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert/tlscacert.pem
   - name: ORDERER_URL
