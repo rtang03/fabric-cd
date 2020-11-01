@@ -318,10 +318,9 @@ spec:
                 --waitForEvent >& $DIR/initcc.log
               res=$?
               set +x
-              # printMessage "init chaincode" $res
               cat $DIR/initcc.log
-              #  -c '{"function":"{{ .Values.bootstrap.chaincode.contract }}:Init","Args":[]}' \
-              {{- end }}
+              printMessage "init chaincode" $res
+          {{- end }}
           {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
               sleep 30s
               printHeader "dev-invoke"
@@ -336,8 +335,8 @@ spec:
                 --waitForEventTimeout 300s >& $DIR/devinvoke.log
               res=$?
               set +x
-              printMessage "dev-invoke" $res
               cat $DIR/devinvoke.log
+              printMessage "dev-invoke" $res
           {{- end }}
           {{- if .Values.bootstrap.tasks.dev_query.enabled }}
               printHeader "dev-query"
@@ -346,8 +345,8 @@ spec:
                 -c '{"Args":["eventstore:queryByEntityName","dev_entity"]}' >& $DIR/devquery.log
               res=$?
               set +x
-              printMessage "dev-query" $res
               cat $DIR/devquery.log
+              printMessage "dev-query" $res
           {{- end }}
           workingDir: {{ .Values.global.workingDir }}
           envFrom:

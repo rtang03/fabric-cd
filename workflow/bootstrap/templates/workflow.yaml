@@ -51,33 +51,60 @@ spec:
   templates:
     - name: channels
       steps:
+        {{- if .Values.bootstrap.tasks.create_channel.enabled }}
         - - name: create-channel
             template: create-channel-tmpl
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.join_channel.enabled }}
         - - name: join-channel
             template: join-channel-tmpl
             arguments:
               artifacts:
                 - name: channel-block
                   from: {{ .Values.alias.step_create_channel_outputs | quote }}
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.update_anchor_peer.enabled }}
         - - name: update-anchor-peer
             template: update-anchor-tmpl
-            # can run the update-anchor repeatedly
             continueOn:
               error: true
               failed: true
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.package_install.enabled }}
         - - name: package-install
             template: package-cc-tmpl
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.delete_ccid.enabled }}
         - - name: delete-chaincode-id
             template: del-ccid-tmpl
             continueOn:
               error: true
               failed: true
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.create_ccid.enabled }}
         - - name: create-chaincode-id
             template: create-ccid-tmpl
             arguments:
               parameters:
                 - name: packageid
                   value: {{ .Values.alias.step_package_outputs | quote }}
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.approve_chaincode.enabled }}
+        - - name: approve-chaincode
+            template: approve-cc-tmpl
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.commit_chaincode.enabled }}
+        - - name: commit-chaincode
+            template: commit-cc-tmpl
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
+        - - name: dev-invoke
+            template: dev-invoke-tmpl
+        {{- end }}
+        {{- if .Values.bootstrap.tasks.dev_query.enabled }}
+        - - name: dev-query
+            template: dev-query-tmpl
+        {{- end }}
 
     #####################
     ### create-channel-tmpl
@@ -473,45 +500,8 @@ spec:
           data:
             CHAINCODE_CCID: {{ .Values.alias.input_packageid | quote }}
     #####################
-    ### create-ccid-tmpl
+    ### approve-cc-tmpl
     #####################
-    - name: query-installed-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-      {{- end }}
-      outputs:
-        artifacts:
-          - name: packaged-cc
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
     - name: approve-cc-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       container:
@@ -521,11 +511,50 @@ spec:
         args:
           - |-
             . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            set -x
+            $BIN/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.bootstrap.chaincode.id }}
+            res=$?
+            set +x
+            if [ $res = 0 ]; then
+              echo "queryapproved successful. approve-chaincode skipped."
+              exit 0
+            else
+              echo "fail to queryapproved"
+            fi
+            printHeader "approve chaincode"
+            echo "package-id: $CHAINCODE_CCID"
+            set -x
+            # Note: signature-policy is not currently used
+            $BIN/peer lifecycle chaincode approveformyorg -o $ORDERER_URL -C $CHANNEL_NAME \
+              --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
+            {{- if .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }}
+              --signature-policy {{ .Values.bootstrap.tasks.approve_chaincode.signaturePolicy }} \
+            {{- end }}
+              --version {{ .Values.bootstrap.chaincode.version }} --package-id $CHAINCODE_CCID \
+              --init-required --sequence {{ .Values.bootstrap.tasks.approve_chaincode.sequence }} \
+              --waitForEvent >& /tmp/approvecc.log
+            res=$?
+            set +x
+            cat  /tmp/approvecc.log
+            printMessage "approve chaincode" $res
+            printHeader "queryapproved"
+            set -x
+            $BIN/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.bootstrap.chaincode.id }} >& /tmp/queryapproved.log
+            res=$?
+            set +x
+            cat /tmp/queryapproved.log
+            printMessage "queryapproved" $res
         env:
           {{- range .Values.conf }}
           - name: {{ .name }}
             value: {{ .value }}
           {{- end }}
+        envFrom:
+          - configMapRef:
+              name: "chaincode-ccid"
         volumeMounts:
           - mountPath: /var/hyperledger
             name: fabricfiles
@@ -540,89 +569,18 @@ spec:
       {{- end }}
       outputs:
         artifacts:
-          - name: packaged-cc
+          - name: approve-cc
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/approve-cc/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-    - name: query-approve-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-      {{- end }}
-      outputs:
-        artifacts:
-          - name: packaged-cc
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
-    - name: checkcommitreadiness-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-      {{- end }}
-      outputs:
-        artifacts:
-          - name: packaged-cc
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
+    #####################
+    ### commit-cc-tmpl
+    #####################
     - name: commit-cc-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       container:
@@ -632,6 +590,61 @@ spec:
         args:
           - |-
             . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            printHeader "checkcommitreadiness"
+            set -x
+            $BIN/peer lifecycle chaincode checkcommitreadiness \
+              -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA \
+              --name {{ .Values.bootstrap.chaincode.id }} --version {{ .Values.bootstrap.chaincode.version }} \
+              --init-required --sequence {{ .Values.bootstrap.tasks.commit_chaincode.sequence }} >& /tmp/commitreadiness.log
+            res=$?
+            set +x
+            cat /tmp/commitreadiness.log
+            printMessage "checkcommitreadiness" $res
+            printHeader "commit chaincode"
+            set -x
+            $BIN/peer lifecycle chaincode commit \
+              -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA \
+              --name {{ .Values.bootstrap.chaincode.id }} --version {{ .Values.bootstrap.chaincode.version }} \
+              --init-required --sequence {{ .Values.bootstrap.tasks.commit_chaincode.sequence }} \
+            {{- range .Values.bootstrap.tasks.commit_chaincode.targets }}
+              --peerAddresses {{ .peerAddress }} \
+              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+            {{- end }}
+              --waitForEvent >& /tmp/commitcc.log
+            res=$?
+            set +x
+            cat /tmp/commitcc.log
+            printMessage "commit chaincode" $res
+            printHeader "querycommitted chaincode"
+            set -x
+            $BIN/peer lifecycle chaincode querycommitted \
+              -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA \
+            {{- range .Values.bootstrap.tasks.commit_chaincode.targets }}
+              --peerAddresses {{ .peerAddress }} \
+              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+            {{- end }}
+              --name {{ .Values.bootstrap.chaincode.id }} >& /tmp/querycommitted.log
+            res=$?
+            set +x
+            cat /tmp/querycommitted.log
+            printMessage "querycommitted chaincode" $res
+            printHeader "init chaincode"
+            set -x
+            $BIN/peer chaincode invoke --isInit \
+              -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA \
+              --name {{ .Values.bootstrap.chaincode.id }} -c '{"Args":["Init"]}' \
+            {{- range .Values.bootstrap.tasks.commit_chaincode.targets }}
+              --peerAddresses {{ .peerAddress }} \
+              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+            {{- end }}
+              --waitForEvent >& /tmp/initcc.log
+            res=$?
+            set +x
+            cat /tmp/initcc.log
+            printMessage "init chaincode" $res
         env:
           {{- range .Values.conf }}
           - name: {{ .name }}
@@ -651,89 +664,18 @@ spec:
       {{- end }}
       outputs:
         artifacts:
-          - name: packaged-cc
+          - name: commit-cc
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/commit-cc/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-    - name: querycommitted-cc-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-      {{- end }}
-      outputs:
-        artifacts:
-          - name: packaged-cc
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
-    - name: init-cc-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-      {{- end }}
-      outputs:
-        artifacts:
-          - name: packaged-cc
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
+    #####################
+    ### dev-invoke-tmpl
+    #####################
     - name: dev-invoke-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       container:
@@ -743,6 +685,22 @@ spec:
         args:
           - |-
             . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            printHeader "dev-invoke"
+            set -x
+            $BIN/peer chaincode invoke -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
+              -c '{"Args":["createCommit", "dev_entity", "ent_dev", "0","[]", "ent_dev"]}' \
+            {{- range .Values.bootstrap.tasks.dev_invoke.targets }}
+              --peerAddresses {{ .peerAddress }} \
+              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+            {{- end }}
+              --waitForEvent --waitForEventTimeout 300s >& /tmp/devinvoke.log
+            res=$?
+            set +x
+            cat /tmp/devinvoke.log
+            printMessage "dev-invoke" $res
         env:
           {{- range .Values.conf }}
           - name: {{ .name }}
@@ -762,16 +720,19 @@ spec:
       {{- end }}
       outputs:
         artifacts:
-          - name: packaged-cc
+          - name: dev-invoke
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/dev-invoke/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-    - name: dev-query-impl
+    #####################
+    ### dev-query-tmpl
+    #####################
+    - name: dev-query-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       container:
         image: library/alpine:3.12.0
@@ -780,6 +741,17 @@ spec:
         args:
           - |-
             . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            printHeader "dev-query"
+            set -x
+            $BIN/peer chaincode query -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
+              -c '{"Args":["eventstore:queryByEntityName","dev_entity"]}' >& /tmp/devquery.log
+            res=$?
+            set +x
+            cat /tmp/devquery.log
+            printMessage "dev-query" $res
         env:
           {{- range .Values.conf }}
           - name: {{ .name }}
@@ -799,12 +771,12 @@ spec:
           {{- end }}
       outputs:
         artifacts:
-          - name: packaged-cc
+          - name: dev-query
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/packaged-cc/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/dev-query/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}

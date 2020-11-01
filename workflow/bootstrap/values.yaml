@@ -95,37 +95,37 @@ bootstrap:
     contract: eventstore
     version: 1
     lang: node
-#  tasks:
-#    create_channel:
-#      enabled: false
-#    join_channel:
-#      enabled: false
-#    update_anchor_peer:
-#      enabled: false
-#      host: peer0.org1.net
-#      port: 15443
-#    package_install:
-#      enabled: false
-#    delete_ccid:
-#      enabled: false
-#    create_ccid:
-#      enabled: false
-#    approve_chaincode:
-#      enabled: false
-#    queryapproved:
-#      enabled: false
-#    checkcommitreadiness:
-#      enabled: false
-#    commit_chaincode:
-#      enabled: false
-#    querycommitted:
-#      enabled: false
-#    init_chaincode:
-#      enabled: false
-#    dev_invoke:
-#      enabled: false
-#    dev_query:
-#      enabled: false
+  tasks:
+    create_channel:
+      enabled: false
+    join_channel:
+      enabled: false
+    update_anchor_peer:
+      enabled: false
+      host: peer0.org1.net
+      port: 15443
+    package_install:
+      enabled: false
+    delete_ccid:
+      enabled: false
+    create_ccid:
+      enabled: false
+    approve_chaincode:
+      enabled: false
+      sequence: 1
+    commit_chaincode:
+      enabled: false
+      sequence: 1
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+    dev_invoke:
+      enabled: false
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+    dev_query:
+      enabled: false
 
 # DON'T MODIFY
 alias:
