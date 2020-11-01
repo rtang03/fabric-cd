@@ -226,8 +226,10 @@ sops -d orgadmin/secrets.admin1.yaml
 
 
 ### Bootstrapping
-Make sure the gcs storage `workflow/cryptogen`, `workflow/genesis`, `workflow/secrets` are empty. The workflows in `bootstrap.argo.sh`
-will output artifacts to `fabric-cd-dev` bucket. The non-empty paths will fail the workflow.
+*IMPORTANT NOTE*
+1. Make sure the gcs storage `workflow/` and its sub-directory are empty. The workflows in `bootstrap.argo.sh` will output artifacts to `fabric-cd-dev` bucket. The non-empty paths will fail the workflow.
+1. ensure no running applications `./uninstall.argo.sh`
+1. ensure the empty PVC is ready, run `./recreate-pvc.sh org1`
 
 ```shell script
 bootstrap.argo.sh

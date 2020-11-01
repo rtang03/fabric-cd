@@ -62,7 +62,7 @@ spec:
         {{- end }}
         - name: core
           configMap:
-            name: {{ include "orgadmin.fullname" . }}--core
+            name: core-yaml
         {{- if .Values.orderer.enabled }}
         {{- range .Values.orderer.channels }}
         - name: {{ . }}
