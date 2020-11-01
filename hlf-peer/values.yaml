@@ -59,15 +59,14 @@ peer:
       ip: 35.202.107.80
   ledgerPath: /var/hyperledger/production
   peerName: peer0
-  # orgPath: /var/hyperledger/crypto-config/Org1MSP
-  # Type of database ("goleveldb" or "CouchDB"):
-  databaseType: CouchDB
+  # Type of database ("goleveldb" or "CouchDB"). CouchDB need fix
+  databaseType: goleveldb
   # If CouchDB is used, which chart holds it
-  couchdbInstance: p0o1db
+  # couchdbInstance: p0o1db
   ## Database username
-  couchdbUsername: couchdb
+  # couchdbUsername: couchdb
   ## Database password (default: random 24 character string)
-  couchdbPassword: password
+  # couchdbPassword: password
   ## MSP ID of the Peer
   gossip:
     bootstrap: "p0o1-hlf-peer:7051"

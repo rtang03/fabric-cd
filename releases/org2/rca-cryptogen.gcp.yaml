@@ -21,7 +21,7 @@ orgAdmin:
   attrs: "hf.Registrar.Attributes=*,hf.Revoker=true,hf.GenCRL=true,admin=true:ecert"
 
 items:
-  - type: type
+  - type: peer
     id: peer0.org2.net
     secret: peer0.org2.netPW
     caClientMspDir: msp

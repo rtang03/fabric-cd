@@ -1,8 +1,9 @@
 project: my-project
-targetRevision: dev-0.0.1
+target: dev-0.0.1
 repoURL: git@github.com:rtang03/fabric-cd.git
 server: https://kubernetes.default.svc
 ns: n1
 path: orgadmin
 rel: admin1
 file: values-admin1.yaml
+#secret: secrets.yaml

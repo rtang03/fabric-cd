@@ -8,9 +8,6 @@ global:
   mspId: Org0MSP
   caName: tlsca0
 
-caAdmin: tlsca0-admin
-caAdminPW: tlsca0-adminPW
-
 ### Default
 #image:
 #  repository: hyperledger/fabric-ca
@@ -59,8 +56,6 @@ externalDatabase:
   host: admin0-postgresql-0
   port: 5432
   database: tls_ca_db
-  username: postgres
-  password: password
 
 ### Default
 #db:

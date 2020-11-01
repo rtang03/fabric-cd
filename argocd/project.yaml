@@ -39,6 +39,9 @@ spec:
 #      kind: Deployment
 #    - group: 'apps'
 #      kind: StatefulSet
+#  signatureKeys:
+#    - keyID: 4AEE18F83AFDEB23
+#    - keyID: D95D3BE9260E76EA
   roles:
     # A role which provides read-only access to all applications in the project
     - name: read-only

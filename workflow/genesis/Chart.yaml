@@ -1,0 +1,5 @@
+apiVersion: v2
+appVersion: 0.6.3
+description: "create genesis.block and channel.tx; output to artifact repo"
+name: genesis-flow
+version: 0.1.0

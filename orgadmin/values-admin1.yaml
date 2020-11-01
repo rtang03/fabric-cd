@@ -32,7 +32,6 @@ peer:
   config:
     peerAddress: "p0o1-hlf-peer:7051"
     peerTlsRootcertFile: /var/hyperledger/crypto-config/Org1MSP/msp/tlscacerts/tls-ca-cert.pem
-#    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem
   ### certs provider by org0, to peer
   secret:
     ordTlsCaCert: org0.com-tlscacert
@@ -52,7 +51,6 @@ postgresql-0:
   #   1-createdb.sql: |
   #   CREATE DATABASE "tls_ca_db";
   #   CREATE DATABASE "rca_db";
-  postgresqlPassword: password
   master:
     podAnnotations:
       sidecar.istio.io/proxyCPU: "10m"

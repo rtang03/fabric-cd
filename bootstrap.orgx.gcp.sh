@@ -387,7 +387,6 @@ set +x
 printMessage "pod/eventstore chaincode" $res
 
 ## NOTE: there is an unknonw timeslapse between the chaincode server starts, and container.
-## TODO: research how to use readiness probe for chaincode server.
 sleep 30
 
 echo "######## [$MSPID] ==> Approve chaincode and run smoke test"
