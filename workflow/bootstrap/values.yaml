@@ -1,0 +1,142 @@
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+    ip: 35.202.107.80
+
+pvcName: pvc-org1
+bucket: fabric-cd-dev
+keyChanneltx: workflow/genesis/channel.tx
+keyOrg0Tlscacert: workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem
+mspId: Org1MSP
+channelName: loanapp
+
+secret:
+#  - name: org0-tls-ca-cert
+#    secret: org0.com-tlscacert
+#    path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+  - name: org1-tls-ca-cert
+    secret: org1.net-tlscacert
+    path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+
+conf:
+  - name: TZ
+    value: "Asia/HongKong"
+  - name: CHANNEL_NAME
+    value: loanapp
+  - name: FABRIC_LOGGING_SPEC
+    value: info
+  - name: CORE_PEER_ID
+    value: cli
+  - name: CORE_PEER_ADDRESS
+    value: "p0o1-hlf-peer:7051"
+  - name: CORE_PEER_LOCALMSPID
+    value: Org1MSP
+  - name: CORE_PEER_TLS_ENABLED
+    value: "true"
+  - name: CORE_PEER_TLS_ROOTCERT_FILE
+    # TODO: remove it
+    # value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tls-ca-cert.pem
+    value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+  - name: ORDERER_CA
+    value: /tmp/org0.com-tlscacert.pem
+#    value: /var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert/tlscacert.pem
+  - name: ORDERER_URL
+    value: "orderer0.org0.com:15443"
+  - name: CORE_PEER_MSPCONFIGPATH
+    value: /var/hyperledger/crypto-config/Org1MSP/admin/msp
+  - name: FABRIC_CFG_PATH
+    value: /etc/hyperledger
+  - name: BIN
+    value: /var/hyperledger/bin
+  - name: GODEBUG
+    value: "netdns=go"
+
+connection_json: |
+  {
+                  "address": "eventstore-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
+metadata_json: |
+  {"path":"","type":"external","label":"eventstorev1"}
+
+s3:
+  endpoint: storage.googleapis.com
+  bucket: fabric-cd-dev
+  accessKeySecret:
+    name: gcp-s3-credentials
+    key: accessKey
+  secretKeySecret:
+    name: gcp-s3-credentials
+    key: secretKey
+
+bootstrap:
+  enabled: true
+  hostAlias:
+    - hostnames:
+        - peer0.org1.net
+        - orderer0.org0.com
+      ip: 35.202.107.80
+  pvcName: pvc-org1
+  secret:
+    - name: org0-tls-ca-cert
+      secret: org0.com-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+    - name: org1-tls-ca-cert
+      secret: org1.net-tlscacert
+      path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+  channeltx: channeltx
+  chaincode:
+    id: eventstore
+    contract: eventstore
+    version: 1
+    lang: node
+  tasks:
+    create_channel:
+      enabled: false
+    join_channel:
+      enabled: false
+    update_anchor_peer:
+      enabled: false
+      host: peer0.org1.net
+      port: 15443
+    package_install:
+      enabled: false
+    delete_ccid:
+      enabled: false
+    create_ccid:
+      enabled: false
+    approve_chaincode:
+      enabled: false
+      sequence: 1
+    commit_chaincode:
+      enabled: false
+      sequence: 1
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+    dev_invoke:
+      enabled: false
+      targets:
+        - peerAddress: peer0.org1.net:15443
+          tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
+    dev_query:
+      enabled: false
+
+# DON'T MODIFY
+alias:
+  workflow_name: "{{workflow.name}}"
+  step_create_channel_outputs: "{{steps.create-channel.outputs.artifacts.channel-block}}"
+  step_package_outputs: "{{steps.package-install.outputs.parameters.packageid}}"
+  input_packageid: "{{inputs.parameters.packageid}}"
+
+no_istio:
+  metadata:
+    annotations:
+      sidecar.istio.io/inject: "false"

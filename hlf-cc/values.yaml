@@ -2,7 +2,6 @@ global:
   TZ: Asia/Hong_Kong
 
 image: "ghcr.io/rtang03/eventstore:0.0.4"
-ccid: "eventstorev1:1690e452d040fce92201149e0a384f465791d279b9cfb75961d131e42b6194ca"
 
 resources:
   ## We usually recommend not to specify default resources and to leave this as a conscious

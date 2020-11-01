@@ -57,7 +57,8 @@ persistence:
 # Detail configuration
 # https://github:com/bitnami/charts/tree/master/bitnami/postgresql
 postgresql-0:
-  postgresqlPassword: password
+#  postgresqlPassword should not be uncomment. It is relocated to 'secrets.*.yaml'
+  # postgresqlPassword: password
   initdbScripts:
     1-createdb.sql: |
       CREATE DATABASE "tls_ca_db";
@@ -77,6 +78,21 @@ postgresql-0:
     requests:
       memory: 256Mi
       cpu: 50m
+
+gcpS3Bucket: true
+
+# Below key will be stored in secrets.*.yaml
+#tlsca_caadmin: admin
+#tlsca_caadminpw: password
+#rca_caadmin: admin
+#rca_caadminpw: password
+#orgadmin: admin-orderer0.org0.com
+#orgadminpw: password
+
+# should not uncomment it. This is FYI
+#peers:
+#  - id_unencrypted: peer0.org1.net
+#    secret: password
 
 resources:
   ## We usually recommend not to specify default resources and to leave this as a conscious

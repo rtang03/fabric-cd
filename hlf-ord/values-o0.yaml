@@ -57,8 +57,6 @@ ord:
 
 secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
-  ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-  cred: "rca0-hlf-ca--ca"
   ## Certificate, saved under key 'cert.pem'
   ## /var/hyperledger/crypto-config/Org0MSP/orderer0.org0.com/msp/signcerts
   cert: "orderer0.org0.com-cert"

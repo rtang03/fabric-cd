@@ -8,9 +8,6 @@ global:
   mspId: Org1MSP
   caName: rca1
 
-caAdmin: rca1-admin
-caAdminPW: rca1-adminPW
-
 ### Default
 #image:
 #  repository: hyperledger/fabric-ca
@@ -49,11 +46,10 @@ persistence:
 
 externalDatabase:
   type: postgres
+  # [Release Name]-postgresql-0
   host: admin1-postgresql-0
   port: 5432
   database: rca_db
-  username: postgres
-  password: password
 
 ### Default
 #db:

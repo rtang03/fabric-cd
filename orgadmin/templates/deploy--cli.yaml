@@ -62,7 +62,7 @@ spec:
         {{- end }}
         - name: core
           configMap:
-            name: {{ include "orgadmin.fullname" . }}--core
+            name: core-yaml
         {{- if .Values.orderer.enabled }}
         {{- range .Values.orderer.channels }}
         - name: {{ . }}
@@ -92,13 +92,13 @@ spec:
             - -c
             - |
               set -x
+              apk update
+              apk upgrade
+              apk --no-cache add curl bash libc6-compat libstdc++
               BIN=/var/hyperledger/bin/configtxgen
               if [ -f "$BIN" ]; then
                 echo "$BIN exists"
               else
-                apk update
-                apk upgrade
-                apk --no-cache add curl bash libc6-compat libstdc++
                 curl -sSL https://bit.ly/2ysbOFE > bootstrap.sh
                 chmod +x ./bootstrap.sh
                 ./bootstrap.sh {{ .Values.cli.fabricBinary }} {{ .Values.cli.fabricCABinary }} -s -d

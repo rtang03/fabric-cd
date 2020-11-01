@@ -151,12 +151,6 @@ spec:
               echo ">\033[0;35m orderer \033[0m"
               orderer
           envFrom:
-            {{- if .Values.secrets.cred }}
-            - secretRef:
-                # Environmental variables CA_ADMIN and CA_PASSWORD
-                # Obsolete: Environmental variables CA_USERNAME and CA_PASSWORD
-                name: {{ .Values.secrets.cred }}
-            {{- end }}
             - configMapRef:
                 name: {{ include "hlf-ord.fullname" . }}--ord
           volumeMounts:
