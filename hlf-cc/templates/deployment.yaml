@@ -22,6 +22,19 @@ spec:
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
+      initContainers:
+        - name: check
+          image: library/busybox:1.32
+          command: ["sh", "-c"]
+          args:
+            - |-
+              if [ $CHAINCODE_CCID = "" ]; then
+                echo "🚫  CHAINCODE_CCID is empty"
+                exit 1
+              fi
+          envFrom:
+            - configMapRef:
+                name: "chaincode-ccid"
       containers:
         - image: {{ .Values.image }}
           name: chaincode

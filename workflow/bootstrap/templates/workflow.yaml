@@ -434,7 +434,6 @@ spec:
             res=$?
             set +x
             printMessage "package chaincode" $res
-            set -x
             printHeader "queryinstalled"
             set -x
             $BIN/peer lifecycle chaincode queryinstalled >& /tmp/installed.log
@@ -443,6 +442,8 @@ spec:
             cat /tmp/installed.log
             # NOTE: currently, this installation assumes one chaincode per channel. If later, more chaincode
             # is required per channel, below logic need modify
+            grep -q eventstore /tmp/installed.log
+            res=$?
             if [ $res = 0 ]; then
               echo "chaincode already installed"
               set -x
@@ -459,11 +460,21 @@ spec:
               cat /tmp/installcc.log
               printMessage "install chaincode" $res
               set -x
+              $BIN/peer lifecycle chaincode queryinstalled >& /tmp/installed.log
               sed -n "/{{ .Values.bootstrap.chaincode.id }}v{{ .Values.bootstrap.chaincode.version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" /tmp/installed.log > /tmp/packageid.txt
               res=$?
               set +x
               cat /tmp/packageid.txt
               printMessage "2: make packageid.txt" $res
+            fi
+            # ensure packageid.txt is valid
+            [ -s /tmp/packageid.txt ]
+            res=$?
+            if [ $res = 0 ]; then
+              cat /tmp/packageid.txt
+            else
+              echo "packageid.txt is empty"
+              exit 1
             fi
         env:
           {{- range .Values.conf }}
@@ -550,6 +561,7 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
+            # decode org0 tlscacert
             cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
             set -x
             $BIN/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.bootstrap.chaincode.id }}
@@ -563,6 +575,10 @@ spec:
             fi
             printHeader "approve chaincode"
             echo "package-id: $CHAINCODE_CCID"
+            if [ $CHAINCODE_CCID = "" ]; then
+              echo "CHAINCODE_CCID is empty, exit(1)"
+              exit 1
+            fi
             set -x
             # Note: signature-policy is not currently used
             $BIN/peer lifecycle chaincode approveformyorg -o $ORDERER_URL -C $CHANNEL_NAME \

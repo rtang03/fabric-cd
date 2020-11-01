@@ -77,6 +77,5 @@ data:
   GODEBUG: "netdns=go"
   # GODEBUG: "http2debug=1"
   ADMIN_MSP_PATH: "{{ include "hlf-peer.home" . }}/admin/msp"
-  # ORD_TLS_PATH: "{{ include "hlf-peer.home" . }}/ord/org0/tlscacerts"
   CORE_METRICS_PROVIDER: prometheus
   CORE_OPERATIONS_LISTENADDRESS: ":9443"
