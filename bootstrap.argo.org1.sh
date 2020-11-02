@@ -4,7 +4,7 @@
 . "env.org1.sh"
 
 SECONDS=0
-TARGET=dev-0.0.1-b
+TARGET=dev-0.1
 
 echo "#################################"
 echo "### Step 1: Install $REL_ORGADMIN1"

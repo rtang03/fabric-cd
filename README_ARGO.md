@@ -14,12 +14,12 @@ Below are instruction for the deployment with Argo CD and Argo Workflow
 - "Deployment for Production Env": [prod-0.0.1]
 
 *Chart Development*
-All CD charts development and ArgoCD development should happen at [dev-0.0.1]-a. It should perform pull request
-FROM [dev-0.0.1]-a ---> [dev-0.0.1]
+All CD charts development and ArgoCD development should happen at [dev-0.1]. It should perform pull request
+FROM [dev-0.1] ---> master.
 
 *Deployment*
-- ArgoCD server will pull changes from [dev-0.0.1] for DEV deployment.
-- ArgoCD server will pull changes from [prod-0.0.1] for PROD deployment.
+- ArgoCD server will pull changes from [test-0.0] for continuous testing.
+- ArgoCD server will pull changes from [prod-0.0] for PROD deployment.
 
 The `master` branch is always is in line with DEV latest.
 
@@ -126,6 +126,7 @@ kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 
 # INSTALL COMMUNITY HELM CHART
+# see https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
 helm -n argocd install argocd -f argocd/values-argocd.yaml -f argocd/values-argocd.key.yaml argo/argo-cd
 
 # WAIT
@@ -162,18 +163,20 @@ To validate installation, open browswer `http://localhost:8080`
 # CREATE DEFAULT NS
 kubectl create ns argo
 
-# Note: We choose to use "cluster-install"
-# TODO: need to revisit how to customize the Argo workflow installation.
-# Seems to namespace scope
-kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/quick-start-postgres.yaml
-
+# INSTALL COMMUNITY HELM CHART
+# see https://github.com/argoproj/argo-helm/tree/master/charts/argo
+helm -n kube-system install argo -f argo/values-argo.yaml argo/argo
 
 # ClusterScope
-# kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
+# kubectl delete -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
 
 # CREATE SERVICE ACCOUNT (for each application namespace)
-kubectl -n n0 apply -f ./argocd/service-account.yaml
-kubectl -n n1 apply -f ./argocd/service-account.yaml
+kubectl -n $NS0 apply -f ./argo/service-account-argo.yaml
+kubectl -n $NS1 apply -f ./argo/service-account-argo.yaml
+kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
+
+SECRET=$(kubectl -n n1 get sa orgadmin -o=jsonpath='{.secrets[0].name}')
+ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 
 # configure artifact repo
 kubectl -n argo apply -f ./argocd/argo-cm.yaml
@@ -255,6 +258,9 @@ gpg --export-secret-keys --armor 33DBB14071110A8F093B29E7D95D3BE9260E76EA
 
 # sops encryption command, -i means in-place replacement
 sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key test.yaml
+
+# out argo workflow manifest for debugging
+helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 submit - --server-dry-run --output yaml
 ```
 
 ### Reference Information
@@ -269,7 +275,5 @@ sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKe
 - [How to prepare custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
+- [Argo CD - enable ingress](https://argoproj.github.io/argo-cd/operator-manual/ingress)
 
-echo -n 'admin' | base64
-helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 lint
-helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 submit - --server-dry-run --output yaml

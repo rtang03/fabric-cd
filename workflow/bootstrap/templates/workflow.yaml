@@ -5,11 +5,8 @@ metadata:
   labels:
     workflows.argoproj.io/archive-strategy: "false"
 spec:
-  # must complete in 15 min (900 seconds)
-  activeDeadlineSeconds: 900
-  # keep workflows for 1d (86,400 seconds)
-  ttlStrategy:
-    secondsAfterCompletion: 86400
+  # must complete in 15 min (3600 seconds)
+  activeDeadlineSeconds: 3600
   # delete all pods as soon as they complete
   # podGC:
   #   strategy: OnPodCompletion
@@ -100,10 +97,6 @@ spec:
         {{- if .Values.bootstrap.tasks.dev_invoke.enabled }}
         - - name: dev-invoke
             template: dev-invoke-tmpl
-        {{- end }}
-        {{- if .Values.bootstrap.tasks.dev_query.enabled }}
-        - - name: dev-query
-            template: dev-query-tmpl
         {{- end }}
 
     #####################
@@ -774,6 +767,14 @@ spec:
             set +x
             cat /tmp/devinvoke.log
             printMessage "dev-invoke" $res
+            printHeader "dev-query"
+            set -x
+            $BIN/peer chaincode query -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
+              -c '{"Args":["eventstore:queryByEntityName","dev_entity"]}' >& /tmp/devquery.log
+            res=$?
+            set +x
+            cat /tmp/devquery.log
+            printMessage "dev-query" $res
         env:
           {{- range .Values.conf }}
           - name: {{ .name }}
@@ -799,67 +800,6 @@ spec:
               none: {}
             s3:
               key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/dev-invoke/
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
-    #####################
-    ### dev-query-tmpl
-    #####################
-    - name: dev-query-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      inputs:
-        artifacts:
-          - name: org0tlscacert
-            path: /tmp/org0.com-tlscacert_encoded.pem
-            s3:
-              key: {{ .Values.keyOrg0Tlscacert | quote }}
-              {{- with .Values.s3 }}
-{{ toYaml . | indent 14 }}
-              {{- end }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /var/hyperledger
-        args:
-          - |-
-            . /script/setup.sh
-            apk update
-            apk upgrade
-            apk --no-cache add libc6-compat libstdc++ tzdata
-            cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
-            printHeader "dev-query"
-            set -x
-            $BIN/peer chaincode query -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.bootstrap.chaincode.id }} \
-              -c '{"Args":["eventstore:queryByEntityName","dev_entity"]}' >& /tmp/devquery.log
-            res=$?
-            set +x
-            cat /tmp/devquery.log
-            printMessage "dev-query" $res
-        env:
-          {{- range .Values.conf }}
-          - name: {{ .name }}
-            value: {{ .value }}
-          {{- end }}
-        volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
-          - mountPath: /etc/hyperledger
-            name: core-yaml
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-          {{- range .Values.secret }}
-          - name: {{ .name }}
-            mountPath: /var/hyperledger/crypto-config/channel-artifacts/{{ .secret }}
-          {{- end }}
-      outputs:
-        artifacts:
-          - name: dev-query
-            path: /tmp/
-            archive:
-              none: {}
-            s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/dev-query/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}

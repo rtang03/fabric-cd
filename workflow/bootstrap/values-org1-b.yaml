@@ -15,5 +15,3 @@ bootstrap:
       targets:
         - peerAddress: peer0.org1.net:15443
           tlsRootCertFiles: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
-    dev_query:
-      enabled: true
