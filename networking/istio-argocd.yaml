@@ -1,0 +1,44 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: argocd-gateway
+  namespace: argocd
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "argocd.server"
+# Uncomment below to enable HTTPS
+#      tls:
+#        httpsRedirect: true
+#    - port:
+#        number: 443
+#        name: https
+#        protocol: HTTPS
+#      hosts:
+#        - "argocd.kube"
+#      tls:
+#        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  hosts:
+    - argocd.server
+  gateways:
+    - argocd-gateway
+  http:
+    - route:
+        - destination:
+            host: argocd-server.argocd.svc.cluster.local
+            port:
+              number: 80
