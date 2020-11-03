@@ -20,3 +20,15 @@ repoServer:
   volumeMounts:
     - name: "gcp-service-account"
       mountPath: "/app/config/gcp"
+
+server:
+  config:
+    # https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#helm-chart-repositories
+    # need to add non standard helm chart for istio, in order for argocd to work
+    helm.repositories: |
+      - url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+        name: istio.io
+    repositories: |
+      - type: helm
+        url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+        name: istio.io

@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/proxyCPU: "50m"
+        sidecar.istio.io/proxyCPU: "10m"
         sidecar.istio.io/proxyCPULimit: "50m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
@@ -120,6 +120,8 @@ spec:
               containerPort: 9443
               protocol: TCP
           livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
               scheme: HTTP
               path: /healthz
@@ -127,6 +129,8 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 10
           readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
               scheme: HTTP
               path: /healthz

@@ -137,7 +137,8 @@ brew install argocd
 
 # CONFIGURE, see NOTE1 below
 kubectl -n argocd apply -f ./argocd/project.yaml
-kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
+# NOTE: CAN DELETE
+# kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
 
 # PORT-FORWARD
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -163,20 +164,28 @@ To validate installation, open browswer `http://localhost:8080`
 # CREATE DEFAULT NS
 kubectl create ns argo
 
+kubectl label namespace argo istio-injection=enabled
+kubectl -n argo apply -f argo/istio.yaml
+
 # INSTALL COMMUNITY HELM CHART
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo
-helm -n kube-system install argo -f argo/values-argo.yaml argo/argo
+helm -n argo install argo -f argo/values-argo.yaml argo/argo
 
-# ClusterScope
-# kubectl delete -n argo -f https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
+# As reference info, below is the standard installation.
+# https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
 
 # CREATE SERVICE ACCOUNT (for each application namespace)
 kubectl -n $NS0 apply -f ./argo/service-account-argo.yaml
 kubectl -n $NS1 apply -f ./argo/service-account-argo.yaml
-kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
 
-SECRET=$(kubectl -n n1 get sa orgadmin -o=jsonpath='{.secrets[0].name}')
+kubectl -n $NS1 delete -f ./argo/service-account-orgadmin.yaml
+
+# see https://argoproj.github.io/argo/rest-api/
+
+SECRET=$(kubectl -n n1 get sa workflow -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+
+curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
 
 # configure artifact repo
 kubectl -n argo apply -f ./argocd/argo-cm.yaml
@@ -192,7 +201,7 @@ on the desired `targetRevision`, i.e., github development branch.
 ```yaml
 # argo-app/templates/application.yaml
 project: my-project
-targetRevision: dev-0.0.1-a
+targetRevision: dev-0.1
 repoURL: git@github.com:rtang03/fabric-cd.git
 server: https://kubernetes.default.svc
 ns: n1
@@ -235,13 +244,14 @@ sops -d orgadmin/secrets.admin1.yaml
 1. ensure the empty PVC is ready, run `./recreate-pvc.sh org1`
 
 ```shell script
-bootstrap.argo.sh
+bootstrap.argo.org1.sh
+bootstrap.argo.orgx.sh
 ```
 
 
 ```shell script
 # Optional: remove all deployments via ArgoCD. This command is often used for CD development.
-./uninstall.argo.sh org1
+./uninstall.argo.sh
 
 # Optional: remove existing pvc, and recreate new ones. This command is often used for CD development.
 ./recreate-pvc.sh org1
@@ -276,4 +286,4 @@ helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | a
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
 - [Argo CD - enable ingress](https://argoproj.github.io/argo-cd/operator-manual/ingress)
-
+- [Argo CD/istio compatibility issue](https://github.com/argoproj/argo-cd/issues/2784)

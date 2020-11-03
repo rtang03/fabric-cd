@@ -1,4 +1,5 @@
 # see https://argoproj.github.io/argo/workflow-controller-configmap.yaml
+# NOTE: NO LONGER REQUIRED
 apiVersion: v1
 kind: ConfigMap
 metadata:

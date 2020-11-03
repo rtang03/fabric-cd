@@ -37,7 +37,11 @@ controller:
     # Overrides .images.tag if defined.
     tag: ""
   # podAnnotations is an optional map of annotations to be applied to the controller Pods
-  podAnnotations: {}
+  podAnnotations:
+#    sidecar.istio.io/proxyCPU: "50m"
+#    sidecar.istio.io/proxyCPULimit: "50m"
+#    sidecar.istio.io/rewriteAppHTTPProbers: "false"
+    sidecar.istio.io/inject: "false"
   # Optional labels to add to the controller pods
   podLabels: {}
   # SecurityContext to set on the controller pods
@@ -156,15 +160,22 @@ server:
     # Overrides .images.tag if defined.
     tag: ""
   # optional map of annotations to be applied to the ui Pods
-  podAnnotations: {}
+  podAnnotations:
+    sidecar.istio.io/proxyCPU: "10m"
+    sidecar.istio.io/proxyCPULimit: "50m"
+    sidecar.istio.io/rewriteAppHTTPProbers: "false"
+    sidecar.istio.io/logLevel: "info"
   # Optional labels to add to the UI pods
-  podLabels: {}
+  podLabels:
+  # required for istio routing
+    version: v1
   # SecurityContext to set on the server pods
   podSecurityContext: {}
   name: server
   serviceType: ClusterIP
   servicePort: 2746
-  # servicePortName: http
+  # need to follow istio service port name's naming convention
+  servicePortName: http-argo-server
   serviceAccount: argo-server
   # Whether to create the service account with the name specified in
   # server.serviceAccount and bind it to the server role.
@@ -200,7 +211,8 @@ server:
   priorityClassName: ""
 
   # Extra arguments to provide to the Argo server binary.
-  extraArgs: []
+  extraArgs:
+    - --auth-mode=client
 
   ## Additional volumes to the server main container.
   volumeMounts: []
@@ -258,7 +270,7 @@ server:
     # redirectUrl: https://argo/oauth2/callback
 
 # Influences the creation of the ConfigMap for the workflow-controller itself.
-useDefaultArtifactRepo: false
+useDefaultArtifactRepo: true
 useStaticCredentials: true
 artifactRepository:
   # archiveLogs will archive the main container logs as an artifact
