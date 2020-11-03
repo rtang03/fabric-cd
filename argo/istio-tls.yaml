@@ -13,6 +13,16 @@ spec:
         protocol: HTTP
       hosts:
         - "argo.server"
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: PASSTHROUGH
+      hosts:
+        - "argo.server"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -24,8 +34,12 @@ spec:
     - argo.server
   gateways:
     - argo-gateway
-  http:
-    - route:
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - argo.server
+      route:
         - destination:
             host: argo-server.argo.svc.cluster.local
             port:
