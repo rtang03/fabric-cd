@@ -3,9 +3,13 @@ global:
   image:
     repository: "ghcr.io/rtang03/argocd"
     tag: "1.7.7-rel.1"
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
   securityContext:
     fsGroup: 2000
+
+#controller:
+#  podAnnotations:
+#    sidecar.istio.io/inject: "false"
 
 repoServer:
   logLevel: info
@@ -21,7 +25,20 @@ repoServer:
     - name: "gcp-service-account"
       mountPath: "/app/config/gcp"
 
+#dex:
+#  podAnnotations:
+#    sidecar.istio.io/inject: "false"
+
+#redis:
+#  podAnnotations:
+#    sidecar.istio.io/inject: "false"
+
 server:
+  extraArgs:
+    - --insecure
+  podAnnotations:
+    sidecar.istio.io/rewriteAppHTTPProbers: "false"
+    sidecar.istio.io/logLevel: "info"
   config:
     # https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#helm-chart-repositories
     # need to add non standard helm chart for istio, in order for argocd to work
