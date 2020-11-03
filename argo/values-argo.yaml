@@ -213,6 +213,8 @@ server:
   # Extra arguments to provide to the Argo server binary.
   extraArgs:
     - --auth-mode=client
+    # turn on tls
+#    - --secure
 
   ## Additional volumes to the server main container.
   volumeMounts: []
