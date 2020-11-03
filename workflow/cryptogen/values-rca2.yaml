@@ -1,0 +1,19 @@
+caName: rca2
+domain: org2.net
+# MUST conform mspId from configtx.yaml
+mspId: Org2MSP
+# ReleaseName of deployed "hlf-ca" application
+hlfCaReleaseName: rca2
+# if deploying RCA, orgAdmin = true
+# Or otherwise deploying TLSCA, orgAdmin = false
+orgAdmin: true
+podGC: true
+# Defining input parameters, used by step "Register-Member"
+items:
+  - id: peer0.org2.net
+    type: peer
+    csrHosts: "p0o2-hlf-peer,peer0.org2.net,gupload.org2.net"
+pvcName: pvc-org2
+outputArtifact:
+  enabled: true
+  bucket: fabric-cd-dev

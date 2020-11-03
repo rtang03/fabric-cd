@@ -49,12 +49,6 @@ peer:
   # orgPath: /var/hyperledger/crypto-config/Org2MSP
   # Type of database ("goleveldb" or "CouchDB"):
   databaseType: goleveldb
-  # If CouchDB is used, which chart holds it
-  couchdbInstance: p0o2db
-  ## Database username
-  couchdbUsername: couchdb
-  ## Database password (default: random 24 character string)
-  couchdbPassword: password
   ## MSP ID of the Peer
   gossip:
     bootstrap: "p0o2-hlf-peer:7051"
@@ -80,7 +74,7 @@ secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
   peer:
     ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-    cred: "rcaorg2-tls"
+    cred: "rca2-tls"
     ## Certificate, saved under key 'cert.pem'
     cert: "peer0.org2.net-cert"
     ## Key, saved under 'key.pem'

@@ -314,6 +314,5 @@ helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | a
 - [How to prepare custom argocd image](https://medium.com/faun/handling-kubernetes-secrets-with-argocd-and-sops-650df91de173)
 - [Setup IAM for kms](https://cloud.google.com/kms/docs/iam)
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
-- [Argo CD - enable ingress](https://argoproj.github.io/argo-cd/operator-manual/ingress)
 - [Argo CD/istio compatibility issue](https://github.com/argoproj/argo-cd/issues/2784)
 - [Argo WF - install manifest](https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml)

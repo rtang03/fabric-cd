@@ -5,8 +5,8 @@ global:
   # workingDir: /var/hyperledger/crypto-config
   ### Default
   # logging: info
-  mspId: Org1MSP
-  caName: tlsca1
+  mspId: Org2MSP
+  caName: rca2
 
 ### Default
 #image:
@@ -15,12 +15,13 @@ global:
 #  pullPolicy: IfNotPresent
 
 ### Default
-#service:
-#  type: NodePort
-#  port: 7054
+service:
+  ## NodePort or LoadBalancer (cannot ClusterIP)
+  type: NodePort
+  port: 7054
 
 config:
-  type: tls
+  type: ca
   ### Default
   # debug: false
   csr:
@@ -41,14 +42,14 @@ config:
 persistence:
   ### Default
   # enabled: true
-  existingClaim: pvc-org1
+  existingClaim: pvc-org2
 
 externalDatabase:
   type: postgres
   # [Release Name]-postgresql-0
-  host: admin1-postgresql-0
+  host: admin2-postgresql-0
   port: 5432
-  database: tls_ca_db
+  database: rca_db
 
 ### Default
 #db:

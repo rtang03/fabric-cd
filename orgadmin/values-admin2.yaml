@@ -1,0 +1,77 @@
+global:
+  mspId: Org2MSP
+  ### Default
+  # TZ: Asia/Hong_Kong
+  ### Default
+  # workingDir: /var/hyperledger/crypto-config
+  ### Default
+  # logging: info
+
+cli:
+  ### Default
+  fabricBinary: "2.2.0"
+  ### Default
+  fabricCABinary: "1.4.7"
+
+orderer:
+  enabled: false
+
+hostAlias:
+  enabled: true
+  hostnames:
+    - hostname: peer0.org2.net
+      ip: 35.202.107.80
+    - hostname: orderer0.org0.com
+      ip: 35.202.107.80
+
+peer:
+  enabled: true
+  ### configmap
+  config:
+    peerAddress: "p0o2-hlf-peer:7051"
+    peerTlsRootcertFile: /var/hyperledger/crypto-config/Org2MSP/msp/tlscacerts/tls-ca-cert.pem
+  ### certs provider by org0, to peer
+  secret:
+    ordTlsCaCert: org0.com-tlscacert
+
+persistence:
+  ### Default
+  # annotations: {}
+  ### Default
+  # accessMode: ReadWriteOnce
+  ### Default
+  # enabled: true
+  pvcName: pvc-org2
+
+postgresql-0:
+  ### Default
+  # initdbScripts:
+  #   1-createdb.sql: |
+  #   CREATE DATABASE "tls_ca_db";
+  #   CREATE DATABASE "rca_db";
+  master:
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "10m"
+      sidecar.istio.io/proxyCPULimit: "50m"
+      sidecar.istio.io/rewriteAppHTTPProbers: "false"
+      # trace|debug|info|warning|error|critical|off
+      sidecar.istio.io/logLevel: "info"
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
+  slave:
+    podAnnotations:
+      sidecar.istio.io/proxyCPU: "10m"
+      sidecar.istio.io/proxyCPULimit: "50m"
+      sidecar.istio.io/rewriteAppHTTPProbers: "false"
+      # trace|debug|info|warning|error|critical|off
+      sidecar.istio.io/logLevel: "info"
+    podLabels:
+      version: "0.6.3"
+      app: "orgadmin"
+  service:
+    type: NodePort
+    nodePort: 31433
+  persistence:
+    enabled: true
+    existingClaim: pvc-org2
