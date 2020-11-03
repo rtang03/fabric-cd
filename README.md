@@ -41,7 +41,7 @@ Currently, an one-off setup of private zone DNS in Google Networking is required
 - peer0.org2.net
 - peer0.org3.net
 
-All A record is set equal to istio gateway ip.
+All A-record is set equal to istio gateway ip.
 
 ### Preparation Step
 

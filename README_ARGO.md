@@ -160,39 +160,68 @@ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-ad
 To validate installation, open browswer `http://localhost:8080`
 
 ### Argo Workflow Installation on GKE
+*Pre-requisite: Istio*
+The multi-org workflow shall rely on REST API, with external access.
+
+```shell script
+kubectl label namespace argo istio-injection=enabled
+kubectl -n argo apply -f networking/istio-argo.yaml
+```
+As an interim solution, update the `/etc/hosts` to add line `35.202.107.80 argo.server"
+
+*Pre-requisite: service accounts*
+It will deploy service account *workflow* into n0 and n1; which can perform all deployment tasks. On the other hand, the
+service account *orgadmin* can do a subset of admin task, (subject to futher requirement).
+
+```shell script
+# CREATE SERVICE ACCOUNT "workflow" (for each application namespace)
+kubectl -n $NS0 apply -f ./argo/service-account-argo.yaml
+kubectl -n $NS1 apply -f ./argo/service-account-argo.yaml
+
+# OPTIONALLY, CREATE SERVICE ACCOUNT "orgadmin" (for each application namespace)
+# kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
+```
+
+*Install Argo Workflow*
+Optionally, modify the `argo/values-argo.yaml` for installation configuration.
+
 ```shell script
 # CREATE DEFAULT NS
 kubectl create ns argo
-
-kubectl label namespace argo istio-injection=enabled
-kubectl -n argo apply -f argo/istio.yaml
 
 # INSTALL COMMUNITY HELM CHART
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo
 helm -n argo install argo -f argo/values-argo.yaml argo/argo
 
-# As reference info, below is the standard installation.
-# https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml
-
-# CREATE SERVICE ACCOUNT (for each application namespace)
-kubectl -n $NS0 apply -f ./argo/service-account-argo.yaml
-kubectl -n $NS1 apply -f ./argo/service-account-argo.yaml
-
-kubectl -n $NS1 delete -f ./argo/service-account-orgadmin.yaml
-
 # see https://argoproj.github.io/argo/rest-api/
 
+# configure artifact repo
+# kubectl -n argo apply -f ./argo/argo-cm.yaml
+
+# Optionally using PORT-FORWARD
+kubectl -n argo port-forward deployment/argo-server 2746:2746
+```
+
+*Argo Server REST API*
+In the multi-org deployment workflow, it shall reply Argo Server, for workflow initation. The Argo Server will be configured
+with "client mode" (see [auth-mode](https://argoproj.github.io/argo/argo-server-auth-mode/)). Both UI and REST API requires
+access token (see [access-token](https://argoproj.github.io/argo/access-token/))
+
+```shell script
+# Obtain access token from service account "workflow"
 SECRET=$(kubectl -n n1 get sa workflow -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 
+# OR
+
+ARGO_TOKEN=$(argo auth token)
+
+# using UI, open http://35.202.107.80, and logon
+
+# using API
 curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
-
-# configure artifact repo
-kubectl -n argo apply -f ./argocd/argo-cm.yaml
-
-# PORT-FORWARD
-kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
+
 
 ### ArgoCD Application manifest
 In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application. Make sure you are working
@@ -275,7 +304,7 @@ helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | a
 
 ### Reference Information
 - [Argo CD getting started](https://argoproj.github.io/argo-cd/getting_started/)
-- [Argo CD default install manifest](https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)
+- [Argo CD install manifest](https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)
 - [Argo CD api spec](https://github.com/argoproj/argo/blob/master/api/openapi-spec/swagger.json)
 - [Argo Workflow installation](https://argoproj.github.io/argo/installation/)
 - [helm chart for installing argo](https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd)
@@ -287,3 +316,4 @@ helm template workflow/cryptogen -f workflow/cryptogen/values-$REL_RCA1.yaml | a
 - [GKE permission and role](https://cloud.google.com/kms/docs/reference/permissions-and-roles)
 - [Argo CD - enable ingress](https://argoproj.github.io/argo-cd/operator-manual/ingress)
 - [Argo CD/istio compatibility issue](https://github.com/argoproj/argo-cd/issues/2784)
+- [Argo WF - install manifest](https://raw.githubusercontent.com/argoproj/argo/stable/manifests/install.yaml)
