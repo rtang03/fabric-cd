@@ -502,7 +502,6 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 # alias i1="istioctl -n n1"
 ```
 
-
 ### Reference Information
 - [Argo CD getting started](https://argoproj.github.io/argo-cd/getting_started/)
 - [Argo CD install manifest](https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)

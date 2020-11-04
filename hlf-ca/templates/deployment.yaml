@@ -10,7 +10,6 @@ spec:
     matchLabels:
       app: {{ include "hlf-ca.name" . }}
       release: {{ .Release.Name }}
-  # Ensure we allow our pod to be unavailable, so we can upgrade
   strategy:
     rollingUpdate:
       maxUnavailable: 1
