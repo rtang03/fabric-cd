@@ -11,7 +11,6 @@ REL_ORGADMIN=admin2
 REL_PEER=p0o2
 REL_RCA=rca2
 REL_TLSCA=tlsca2
-RELEASE_DIR=releases/org2
 PEER=peer0.org2.net
 TLSCACERT=org2.net-tlscacert
 
@@ -25,7 +24,6 @@ JOB_NEWORG=neworg
 JOB_UPDATE_CHANNEL=upch1
 MSPID_1=Org1MSP
 NS1=n1
-RELEASE_DIR1=releases/org1
 REL_GUPLOAD1=g1
 REL_RCA1=rca1
 TLSCACERT_0=org0.com-tlscacert

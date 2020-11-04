@@ -297,13 +297,16 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 POD=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
 
 # UPDATE PASSWORD: when port-forwarding is live, can update password
+# Do update password after initial setup
 argocd login localhost:8080 --insecure --username admin --password $POD
 argocd account update-password --current-password $POD --new-password [some-strong-password]
 ```
 
 **Add your git repo**
 As a pre-requisite, you need to create ssh key in your github.com account; and having ssh key in below path.
-In your fork repo, the below git url and ssh will be different.
+In your fork repo, the below git url and ssh will be different. Notice that we intentionally not configuring
+the ssh as part of *argocd-cm* configMap, preventing the ssh private key from commiting to github.
+
 ```shell script
 # Argocd connect to github with ssh key. Private key of github ssh login is located at `.ssh/id_rsa`
 # NOTE1: that this will modify argcd-cm configmap. Hence, after each time 'kubectl -n argocd apply -f ./argocd/argocd-cm.yaml'

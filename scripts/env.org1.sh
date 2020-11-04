@@ -15,7 +15,6 @@ REL_O4=o4
 REL_ORGADMIN0=admin0
 REL_RCA0=rca0
 REL_TLSCA0=tlsca0
-RELEASE_DIR0=releases/org0
 TLSCACERT0=org0.com-tlscacert
 
 ## Org1
@@ -32,6 +31,5 @@ REL_ORGADMIN1=admin1
 REL_PEER=p0o1
 REL_RCA1=rca1
 REL_TLSCA1=tlsca1
-RELEASE_DIR1=releases/org1
 PEER=peer0.org1.net
 TLSCACERT1=org1.net-tlscacert
