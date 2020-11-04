@@ -1,6 +1,8 @@
 #!/bin/bash
 
-. ./scripts/setup.sh
+# $1 = org2 or org3 .... etc
+
+. ./setup.sh
 . "env.$1.sh"
 
 SECONDS=0
@@ -102,7 +104,6 @@ printMessage "create app: $REL_GUPLOAD" $res
 echo "#################################"
 echo "### Step 8: Out-of-band process"
 echo "#################################"
-
 
 
 duration=$SECONDS

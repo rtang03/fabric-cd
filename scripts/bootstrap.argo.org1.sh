@@ -350,5 +350,7 @@ res=$?
 set +x
 printMessage "bootstrap part 2" $res
 
+helm template ../workflow/secrets -f ../workflow/secrets/values-istio-org1.yaml | argo -n istio-system submit - --wait
+
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
