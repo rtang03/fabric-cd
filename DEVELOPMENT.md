@@ -350,8 +350,9 @@ All workflow are performed by rbac backed service accounts. There are two servic
 
 ```shell script
 # CREATE SERVICE ACCOUNT "workflow" (for each application namespace)
-kubectl -n $NS0 apply -f ./argo/service-account-argo.yaml
-kubectl -n $NS1 apply -f ./argo/service-account-argo.yaml
+kubectl -n n0 apply -f ./argo/service-account-argo.yaml
+kubectl -n n1 apply -f ./argo/service-account-argo.yaml
+kubectl -n n2 apply -f ./argo/service-account-argo.yaml
 
 # OPTIONALLY, CREATE SERVICE ACCOUNT "orgadmin" (for each application namespace)
 # kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
@@ -425,7 +426,8 @@ uninstall application by `argocd` commands, this will delete corresponding pods 
 volume claims.
 
 ```shell script
-# Step 1: uninstall applications  via argocd
+# Step 1: uninstall applications  via argocd, in ALL NAMESPACES
+# if you need to uninstall application in one namespace, need to do it UI, or manually in cli.
 ./uninstall.argo.sh
 
 # Step 2: delete/recreate All pvc in corresponding namespace
@@ -545,3 +547,6 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 See `scripts/.sopscommithook`. This is an example of commit hook to prevent commiting un-encrypted secret files accidentally.
 Create commit hook in your local repository.
 
+**Change initial secret**
+The *orgadmin* helm chart will create *crypto-material* Secret resource. It contains a number of username / password.
+Currently, there is no way to modify after *orgadmin* is running.
