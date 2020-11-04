@@ -1,3 +1,4 @@
+# NOTE: it does not work now; need to wait the PR to argo-helm is accepted
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
