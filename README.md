@@ -62,7 +62,44 @@ peer:
       ip: 35.xxx.xxx.xxx
 ```
 
-### ArgoCD Application manifest
+### Naming Convention
+See `./scripts/env.org2.sh`
+
+```shell script
+## Org0
+DOMAIN0=org0.com
+MSPID0=Org0MSP
+NS0=n0
+ORG0=org0
+REL_O0=o0
+REL_O1=o1
+REL_O2=o2
+REL_O3=o3
+REL_O4=o4
+REL_ORGADMIN0=admin0
+REL_RCA0=rca0
+REL_TLSCA0=tlsca0
+TLSCACERT0=org0.com-tlscacert
+
+## Org1
+DOMAIN1=org1.net
+MSPID1=Org1MSP
+NS1=n1
+ORG1=org1
+JOB_BOOTSTRAP_A=b1
+JOB_BOOTSTRAP_B=b2
+JOB_FETCH_BLOCK=fetch1
+JOB_UPDATE_CHANNEL=upch1
+REL_GUPLOAD=g1
+REL_ORGADMIN1=admin1
+REL_PEER=p0o1
+REL_RCA1=rca1
+REL_TLSCA1=tlsca1
+PEER=peer0.org1.net
+TLSCACERT1=org1.net-tlscacert
+```
+
+**Argo CD application manifest**
 In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application. Make sure you are working
 on the desired `targetRevision`, i.e., github development branch.
 
@@ -105,13 +142,26 @@ sops -d orgadmin/secrets.admin1.yaml
 ```
 
 
-### Bootstrapping
-*IMPORTANT NOTE*
-1. Make sure the gcs storage `workflow/` and its sub-directory are empty. The workflows in `bootstrap.argo.sh` will output artifacts to `fabric-cd-dev` bucket. The non-empty paths will fail the workflow.
-1. ensure no running applications `./uninstall.argo.sh`
-1. ensure the empty PVC is ready, run `./recreate-pvc.sh org1`
+### Initial Network Bootstrapping for DEV
+For the setup of org0 and org1, use `bootstrap.argo.org1.sh` script.
+
+**Checklist**
+Below running bootstrapping the initial network from scratch:
+1. Go to GCP web UI; make sure the *gcs storage* `workflow/secrets` and `workflow/genesis` are both empty.
+The workflows in `bootstrap.argo.sh` will output artifacts to `fabric-cd-dev` storage bucket. The non-empty
+paths will give the workflow error when outputing artifacts.
+1. Go to argocd web UI, make sure no running applications. If neccessary, run `uninstall.argo.sh` under `scripts` directory.
+1. If `uninstall.argo.sh` is run, also run `./recreate-pvc.sh org1` to recreate the pvc. Repeat the same for `org2`.
+1. Make the *argo* and *argocd*'s port forwarding is live.
+
+**REMARK**: while the tls of *argo* and *argocd* web server is not ready, the installation script will require port-forwarding.
+Future enhancment will replace port-forwaring with API servers.
+
+**Install org0 and org1**
+The run may take 20 ~ 30 minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
+status.
 
 ```shell script
+cd scripts
 bootstrap.argo.org1.sh
-bootstrap.argo.orgx.sh
 ```

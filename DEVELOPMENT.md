@@ -93,6 +93,10 @@ kubectl label namespace argocd istio-injection=enabled
 # kubectl get cm istio-sidecar-injector -n istio-system -o yaml | sed -e 's/"rewriteAppHTTPProbe": true/"rewriteAppHTTPProbe": false/' | kubectl apply -f -
 ```
 
+**Compatibility issues**
+Notice that the current version of istio (v1.4.x) provided by GKE is too low version. The addon of istio v1.7, like kiali and prometheus
+do not work well. No traffic metric is able to capture in control plane. Still, istio traffic is fine.
+
 
 ### Cloud DNS
 **Update Cloud Private Zone DNS**
@@ -502,6 +506,7 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 # alias i1="istioctl -n n1"
 ```
 
+
 ### Reference Information
 - [Argo CD getting started](https://argoproj.github.io/argo-cd/getting_started/)
 - [Argo CD install manifest](https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)
@@ -530,3 +535,10 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [Hyperledger on Azure](https://github.com/Azure/Hyperledger-Fabric-on-Azure-Kubernetes-Service/blob/master/fabricTools/deployments/peer/fabric-peer-template-couchDB.yaml)
 - [auto-changelog generator](https://github.com/marketplace/actions/automatic-changelog-generator)
 - [ArgoCD + Istio: sample](https://github.com/speedwing/eks-argocd-bootstrap)
+
+
+## TODO
+**sopscommithook**
+See `scripts/.sopscommithook`. This is an example of commit hook to prevent commiting un-encrypted secret files accidentally.
+Create commit hook in your local repository.
+

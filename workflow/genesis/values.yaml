@@ -8,5 +8,6 @@ mspId: Org1MSP
 ## DON'T MODIFY ALIAS
 workflowAlias:
   namespace: "{{workflow.namespace}}"
+  workflow_name: "{{workflow.name}}"
 inputAlias:
   secretName: "{{inputs.parameters.secretName}}"

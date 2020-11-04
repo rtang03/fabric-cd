@@ -1,4 +1,5 @@
 #!/bin/sh
+### This does not work now. The grep is wrong. Fix later
 
 for FILE in $(git diff-index HEAD --name-only | grep <your vars dir> | grep "secrets.y"); do
     if [ -f "$FILE" ] && ! grep -C10000 "sops:" $FILE | grep -q "version:"; then

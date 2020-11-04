@@ -365,7 +365,7 @@ spec:
             s3:
               endpoint: storage.googleapis.com
               bucket: {{ .Values.outputArtifact.bucket }}
-              key: workflow/cryptogen/{{ .Values.mspId | lower }}-crypto-config.tgz
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}-crypto-config.tgz
               accessKeySecret:
                 name: gcp-s3-credentials
                 key: accessKey
