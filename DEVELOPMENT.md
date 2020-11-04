@@ -52,7 +52,10 @@ kubectl create namespace n2
 ### Istio
 **Install istioctl cli**
 Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
-istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6).
+istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6). Make sure
+to install the correct version level of istio cli; compatibile with GKE bundled istio version.
+
+*WARNING*: the latest / recent version may not work.
 
 ```shell script
 # client installation of istioctl v1.4.10 CLI on local machine

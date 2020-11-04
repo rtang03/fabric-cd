@@ -71,7 +71,6 @@ postgresql-0:
       app: "orgadmin"
   service:
     type: NodePort
-    nodePort: 31433
   persistence:
     enabled: true
     existingClaim: pvc-org2
