@@ -118,13 +118,6 @@ spec:
             - name: http-metrics
               containerPort: 9443
               protocol: TCP
-          startupProbe:
-            httpGet:
-              port: 9443
-              scheme: HTTP
-              path: /healthz
-            failureThreshold: 30
-            periodSeconds: 10
           livenessProbe:
             successThreshold: 1
             failureThreshold: 3
