@@ -282,15 +282,15 @@ artifactRepository:
     # the contents in the associated secret, as defined by the `name` attribute.
     accessKeySecret:
       # name: <releaseName>-minio (default)
-      name: gcp-s3-credentials
+      # name: gcp-s3-credentials
       key: accesskey
     secretKeySecret:
       # name: <releaseName>-minio
-      name: gcp-s3-credentials
+      # name: gcp-s3-credentials
       key: secretkey
     insecure: true
-    bucket: fabric-cd-dev
-    endpoint: storage.googleapis.com
+    # bucket: fabric-cd-dev
+    # endpoint: storage.googleapis.com
     # region:
     # roleARN:
     # useSDKCreds: true

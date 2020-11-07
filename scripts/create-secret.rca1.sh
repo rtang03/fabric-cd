@@ -90,6 +90,7 @@ kubectl -n n0 delete secret org1.net-tlscacert
 kubectl -n n0 create secret generic org1.net-tlscacert --from-literal=tls-ca-cert.pem="$CERT"
 printMessage "create secret org1.net-tlscacert" $?
 
+# TODO: BUG: WRONG CERT for ingress controller
 echo "######## 11. Create secret for tls for tlsca, used by ingress controller"
 export POD_TLSCA1=$(kubectl get pods -n n1 -l "app=hlf-ca,release=tlsca1" -o jsonpath="{.items[0].metadata.name}")
 preventEmptyValue "pod unavailable" POD_TLSCA1
@@ -104,6 +105,7 @@ kubectl -n n1 delete secret tlsca1-tls
 kubectl -n n1 create secret generic tlsca1-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
 printMessage "create secret tlsca1-tls" $?
 
+# TODO: BUG: WRONG CERT for ingress controller
 echo "######## 12. Create secret for tls for rca, used by ingress controller"
 export CERT=$(kubectl -n n1 exec ${POD_RCA} -c ca -- cat ./Org1MSP/ca/server/ca-cert.pem)
 preventEmptyValue "./Org1MSP/ca/server/ca-cert.pem" $CERT

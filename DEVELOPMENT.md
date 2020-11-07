@@ -2,16 +2,19 @@
 This document is for use by repo contributor.
 
 **IMPORTANT NOTE**
+
 - All development should happen on `dev-x.x` branch. The `master` branch shall maintain
 the latest runnable deployment; and is protected. It should perform pull request from `dev-x.x` ---> master.
 - Collaborator should work on forked repo, and deploying his own development GKE cluster and google project.
 - All contribution requires approval.
 
 **Naming Convention**
+
 - Deployment for Development Env: *dev-x.x*
 - Deployment for Production Env: *prod-x.x*
 
 **Technology**
+
 - GKE 1.16.13-gke.401/regular channel (n1-standard-4: 4 vcpu/15GB x 1 node)
 - Istio v1.4.10
 - installation of gcloud cli, kubectl and istioctl
@@ -38,6 +41,7 @@ gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 ```
 
 **Configure namespace**
+
 Here assumes to deploy 2 organizations, and a commonly shared argo and argocd.
 
 ```shell script
@@ -51,6 +55,7 @@ kubectl create namespace n2
 
 ### Istio
 **Install istioctl cli**
+
 Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
 istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6). Make sure
 to install the correct version level of istio cli; compatibile with GKE bundled istio version.
@@ -91,18 +96,21 @@ kubectl label namespace argocd istio-injection=enabled
 ```
 
 **Optionally, istio probe rewrite**
+
 ```shell script
 # currently, global probe rewrite is not enabled. We may consider disable itio probe rewrite globally
 # kubectl get cm istio-sidecar-injector -n istio-system -o yaml | sed -e 's/"rewriteAppHTTPProbe": true/"rewriteAppHTTPProbe": false/' | kubectl apply -f -
 ```
 
 **Compatibility issues**
+
 Notice that the current version of istio (v1.4.x) provided by GKE is too low version. The addon of istio v1.7, like kiali and prometheus
 do not work well. No traffic metric is able to capture in control plane. Still, istio traffic is fine.
 
 
 ### Cloud DNS
 **Update Cloud Private Zone DNS**
+
 You need create GCP private zone DNS, using UI. Currently, setup of private zone DNS in Google Networking required for:
 
 - orderer0.org0.com
@@ -128,6 +136,7 @@ kubectl -n istio-system get svc | grep ingressgateway
 
 ### Persistence Volume Claim
 **Configure Persistence Volume Claim**
+
 Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
 requirement. Also, different cloud provider has different offering. In GCP, here assumes to use "standard" storageClass.
 Note that if there is running pod in the corresponding namespace, the deletion of PVC will wait. Consider that we
@@ -208,6 +217,7 @@ In GitOps, you use [sops](https://github.com/mozilla/sops) to encrpyt the `secre
 install `sops` or `helm-secrets` cli to encrypt/decrypt local file. The naming convention is either `secrets.yaml` or `secrets.*.yaml`.
 
 **Installing helm-secrets**
+
 ```shell script
 # Optional Step: install helm-secrets plug-in locally
 # install helm-secret + sops
@@ -230,6 +240,7 @@ creation_rules:
 ```
 
 *basic sops command*
+
 ```shell script
 # example sops command: if local pgp is used instead
 # sops -e -i -p 33DBB14071110A8F093B29E7D95D3BE9260E76EA hlf-ca/secrets.yaml
@@ -256,6 +267,7 @@ located at [custom argocd repo](https://github.com/rtang03/argocd); publishing G
 won't work.
 
 **Optional: Istio**
+
 Here assumes that each organization will deploy his own cluster-scope *argocd*. This is loose requirement to expose
 *argocd* to public internet. Istio-enabled *argocd* is an optional feature.
 
@@ -268,7 +280,9 @@ Here assumes that each organization will deploy his own cluster-scope *argocd*. 
 see example in `argocd/values-argocd.key.example.yaml`. In above GCP KMS section, you should save the credential json file..
 
 **Install argocd with community supported helm chart**
+
 Modify the `argocd/values-argocd.yaml` for installation configuration.
+
 ```shell script
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
 # see example values file => https://github.com/argoproj/argo-helm/blob/master/charts/argo-cd/values.yaml
@@ -279,12 +293,14 @@ kubectl wait --for=condition=Ready --timeout 180s pod/$(kubectl get pods -n argo
 ```
 
 **Install local argocd cli**
+
 ```shell script
 # on mac
 brew install argocd
 ```
 
 **Deploy project specific configuration**
+
 ```shell script
 kubectl -n argocd apply -f ./argocd/project.yaml
 
@@ -294,11 +310,13 @@ kubectl -n argocd apply -f ./argocd/project.yaml
 ```
 
 **Port Forwarding**
+
 ```shell script
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 **Authenticate**
+
 ```shell script
 # the initial password is pod-id
 POD=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
@@ -310,6 +328,7 @@ argocd account update-password --current-password $POD --new-password [some-stro
 ```
 
 **Add your git repo**
+
 As a pre-requisite, you need to create ssh key in your github.com account; and having ssh key in below path.
 In your fork repo, the below git url and ssh will be different. Notice that we intentionally not configuring
 the ssh as part of *argocd-cm* configMap, preventing the ssh private key from commiting to github.
@@ -329,6 +348,7 @@ As an interim approach, need to update `/etc/hosts` for *argocd.server* entry. T
 - if using publicly exposed, `http://argocd.server`
 
 **GKE cluster admin**
+
 ```shell script
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user="$(gcloud config get-value account)"
 ```
@@ -338,12 +358,14 @@ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-ad
 *argo*, not like *argocd*, does not handle secrets, and it does not require custom image.
 
 **Pre-requisite: Istio**
+
 The multi organization workflow orchestration requires interactions over REST API. Istio-enabled *argo* is a
 required feature.
 
 As a development, *argo* is not hard-coded host file. Update the `/etc/hosts` to add line "35.xxx.xxx.xxx argo.server".
 
 *Pre-requisite: service accounts*
+
 All workflow are performed by rbac backed service accounts. There are two service accounts:
 - *workflow*: is created for each namespace, e.g. n0 and n1. It can perform any verbs.
 - *orgadmin*: can do a subset of admin task, (subject to futher requirement).
@@ -354,11 +376,15 @@ kubectl -n n0 apply -f ./argo/service-account-argo.yaml
 kubectl -n n1 apply -f ./argo/service-account-argo.yaml
 kubectl -n n2 apply -f ./argo/service-account-argo.yaml
 
+# TODO: TO BE REVIEWED
+# kubectl -n istio-system apply -f ./argo/service-account-argo.yaml
+
 # OPTIONALLY, CREATE SERVICE ACCOUNT "orgadmin" (for each application namespace)
 # kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
 ```
 
 **Install argo with community supported helm chart**
+
 Modify the `argo/values-argo.yaml` for installation configuration.
 ```shell script
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo
@@ -366,25 +392,30 @@ helm -n argo install argo -f argo/values-argo.yaml --set installCRDs=false argo/
 ```
 
 **Artifactory**
+
 ```shell script
 # configure artifactory to using GCS Storage
 kubectl -n argo apply -f ./argo/argo-cm.yaml
 ```
 
 **Install local argo cli**
+
 Download cli from the [release page](https://github.com/argoproj/argo/releases)
 
 **Port Forwarding**
+
 ```shell script
 kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
 
 **Argo Server REST API**
+
 In the multi-org deployment workflow, it shall reply Argo Server, for workflow execution. The Argo Server will be configured
 with "client mode" (see [auth-mode](https://argoproj.github.io/argo/argo-server-auth-mode/)). Both UI and REST API requires
 access token (see [access-token](https://argoproj.github.io/argo/access-token/))
 
 **Authenicate**
+
 ```shell script
 ARGO_TOKEN=$(argo auth token)
 echo $ARGO_TOKEN
@@ -394,15 +425,42 @@ echo $ARGO_TOKEN
 ```
 
 **cUrl**
+
 ```shell script
 curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
 ```
 
 **Obtain access token for different service account**
+
 ```shell script
 # Obtain access token from service account "workflow"
 SECRET=$(kubectl -n n1 get sa workflow -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+```
+
+**WorkflowTemplates**
+
+Here installs both *WorkflowTemplate* and *ClusterWorkflowTemplate*, via helm chart, under `workflow/wftemplate` directory. The
+workflow templates includes:
+- secret-resource (cluster scoped): create, delete
+- (namespace scoped)
+
+See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templates/), and [Cluster Workflow Templates](https://argoproj.github.io/argo/cluster-workflow-templates/).
+
+```shell script
+# ClusterWorkflowTemplate
+# Optionally, clean-up
+argo cluster-template delete secret-resource
+
+# Create ClusterWorkflowTemplate
+helm template workflow/wftemplate --set clusterscope=true | argo cluster-template create -
+
+# WorkflowTemplate
+argo -n n1 template delete retrieve-http-file
+helm template ../workflow/wftemplate | argo -n n1 template create -
+argo -n n1 submit ../workflow/wow.yaml
+
+helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
 ```
 
 
@@ -441,6 +499,7 @@ volume claims.
 
 ### Useful commands
 **gpg**
+
 ```shell script
 # list GPG keys
 gpg --list-secret-keys --keyid-format LONG
@@ -450,12 +509,14 @@ gpg --export-secret-keys --armor 33DBB14071110A8F093B29E7D95D3BE9260E76EA
 ```
 
 **sops**
+
 ```shell script
 # sops encryption command, -i means in-place replacement
 sops -e -i --gcp-kms projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key test.yaml
 ```
 
 **kubectl**
+
 ```shell script
 # streaming logs
 kubectl -n n0 logs -f [ORDERER_POD_ID] -c orderer
@@ -467,12 +528,14 @@ kubectl -n n1 logs -f [PEER_POD_ID] -c peer
 ```
 
 **istioctl**
+
 ```shell script
 # output status
 istioctl ps
 ```
 
 **helm**
+
 ```shell script
 # example to output argo workflow manifest for debugging
 helm template workflow/cryptogen -f workflow/cryptogen/values-rca1.yaml | argo -n n1 submit - --server-dry-run --output yaml
@@ -482,6 +545,7 @@ helm install rca0 -f ./hlf-ca/values-rca0.yaml -n n0 --dry-run --debug ./hlf-ca
 ```
 
 **Postgres**
+
 ```shell script
 # after postgresql is installed, you can valiate it; by decoding the secret
 export POSTGRES_PASSWORD=$(kubectl get secret --namespace default psql-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
@@ -493,7 +557,29 @@ kubectl port-forward --namespace default svc/psql-postgresql 5433:5432
 PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5433
 ```
 
+**ksniff**
+
+```shell script
+kubectl sniff <POD_NAME> [-n <NAMESPACE_NAME>] [-c <CONTAINER_NAME>] [-i <INTERFACE_NAME>] [-f <CAPTURE_FILTER>] [-o OUTPUT_FILE] [-l LOCAL_TCPDUMP_FILE] [-r REMOTE_TCPDUMP_FILE]
+
+# POD_NAME: Required. the name of the kubernetes pod to start capture its traffic.
+# NAMESPACE_NAME: Optional. Namespace name. used to specify the target namespace to operate on.
+# CONTAINER_NAME: Optional. If omitted, the first container in the pod will be chosen.
+# INTERFACE_NAME: Optional. Pod Interface to capture from. If omited, all Pod interfaces will be captured.
+# CAPTURE_FILTER: Optional. specify a specific tcpdump capture filter. If omitted no filter will be used.
+# OUTPUT_FILE: Optional. if specified, ksniff will redirect tcpdump output to local file instead of wireshark. Use '-' for stdout.
+# LOCAL_TCPDUMP_FILE: Optional. if specified, ksniff will use this path as the local path of the static tcpdump binary.
+# REMOTE_TCPDUMP_FILE: Optional. if specified, ksniff will use the specified path as the remote path to upload static tcpdump to.
+
+kubectl sniff <POD_NAME> -f "port 80" -o - | tshark -r -
+
+# e.g.
+kubectl sniff tlsca1-hlf-ca-69647d6cfb-gs7wn -n n1 -c ca
+kubectl sniff tlsca1-hlf-ca-69647d6cfb-gs7wn -n n1 -c ca -f "port 80" -o - | tshark -r -
+```
+
 **miscellaneous**
+
 ```shell script
 # install curl inside orderer or peer
 # apk add curl
@@ -540,13 +626,21 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [Hyperledger on Azure](https://github.com/Azure/Hyperledger-Fabric-on-Azure-Kubernetes-Service/blob/master/fabricTools/deployments/peer/fabric-peer-template-couchDB.yaml)
 - [auto-changelog generator](https://github.com/marketplace/actions/automatic-changelog-generator)
 - [ArgoCD + Istio: sample](https://github.com/speedwing/eks-argocd-bootstrap)
+- [install krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install)
+- [ksniff](https://github.com/eldadru/ksniff)
+https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95
 
+### TODO
+**Sops commit hook**
 
-## TODO
-**sopscommithook**
 See `scripts/.sopscommithook`. This is an example of commit hook to prevent commiting un-encrypted secret files accidentally.
 Create commit hook in your local repository.
 
 **Change initial secret**
+
 The *orgadmin* helm chart will create *crypto-material* Secret resource. It contains a number of username / password.
 Currently, there is no way to modify after *orgadmin* is running.
+
+**Enable HTTPS proxy**
+
+For argo, and argocd; enable https proxy, via istio secure gateway pattern. I attempted it, but failed. Try later.

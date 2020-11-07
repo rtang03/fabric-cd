@@ -1,0 +1,17 @@
+pvc: pvc-org1
+mspId: Org1MSP
+
+s3:
+  endpoint: storage.googleapis.com
+  bucket: fabric-cd-dev
+  accessKeySecret:
+    name: gcp-s3-credentials
+    key: accessKey
+  secretKeySecret:
+    name: gcp-s3-credentials
+    key: secretKey
+
+no_istio:
+  metadata:
+    annotations:
+      sidecar.istio.io/inject: "false"

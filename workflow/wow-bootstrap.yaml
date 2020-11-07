@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: workflow-of-workflows-
+spec:
+  entrypoint: main
+  serviceAccountName: workflow
+  templates:
+    - name: main
+      steps:
+        - - name: workflow1
+            template: t1
+            arguments:
+              parameters:
+                - name: workflowtemplate
+                  value: "retrieve-http-file"
+                - name: filename
+                  value: org1.net-tlscacert.pem
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: url
+                  value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
+        # - - name: workflow2
+        #     template: triggerWorkflowUsingResourceWithArgument
+        #     arguments:
+        #       parameters:
+        #         - name: workflowtemplate
+        #           value: "workflow-template-submittable"
+        #         - name: message
+        #           value: "Welcome Argo"
+
+    - name: t1
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+      inputs:
+        parameters:
+          - name: workflowtemplate
+          - name: filename
+          - name: path
+          - name: url
+      resource:
+        action: create
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: workflow-of-workflows-1-
+          spec:
+            arguments:
+              parameters:
+                - name: filename
+                  value: {{inputs.parameters.filename}}
+                - name: path
+                  value: {{inputs.parameters.path}}
+                - name: url
+                  value: {{inputs.parameters.url}}
+            workflowTemplateRef:
+              name: {{inputs.parameters.workflowtemplate}}
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)
+
+    # - name: triggerWorkflowUsingResourceWithArgument
+    #   inputs:
+    #     parameters:
+    #       - name: workflowtemplate
+    #       - name: message
+    #   resource:
+    #     action: create
+    #     manifest: |
+    #       apiVersion: argoproj.io/v1alpha1
+    #       kind: Workflow
+    #       metadata:
+    #         generateName: workflow-of-workflows-2-
+    #       spec:
+    #         arguments:
+    #           parameters:
+    #           - name: message
+    #             value: {{inputs.parameters.message}}
+    #         workflowTemplateRef:
+    #           name: {{inputs.parameters.workflowtemplate}}
+    #     successCondition: status.phase == Succeeded
+    #     failureCondition: status.phase in (Failed, Error)

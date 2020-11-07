@@ -1,0 +1,21 @@
+pvc_fabricfiles: pvc-org1
+pvc_gupload: pvc-gupload1
+
+clusterscope: false
+
+alias:
+  input_url: "{{inputs.parameters.url}}"
+  input_secretName: "{{inputs.parameters.secretName}}"
+  input_filename: "{{inputs.parameters.filename}}"
+  input_path: "{{inputs.parameters.path}}"
+  key1: "{{inputs.parameters.key1}}"
+  path1: "{{inputs.parameters.path1}}"
+  value1: "{{inputs.parameters.value1}}"
+  key2: "{{inputs.parameters.key2}}"
+  path2: "{{inputs.parameters.path2}}"
+  value2: "{{inputs.parameters.value2}}"
+
+no_istio:
+  metadata:
+    annotations:
+      sidecar.istio.io/inject: "false"

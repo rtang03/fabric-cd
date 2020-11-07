@@ -320,9 +320,9 @@ res=$?
 set +x
 printMessage "bootstrap part 1" $res
 
-#echo "#################################"
-#echo "### Step 17: Install chaincode"
-#echo "#################################"
+echo "#################################"
+echo "### Step 17: Install chaincode"
+echo "#################################"
 set -x
 helm template ../argo-app --set ns=$NS1,rel=eventstore,file=values-org1.yaml,path=hlf-cc,target=$TARGET | argocd app create -f -
 res=$?
@@ -341,16 +341,28 @@ res=$?
 set +x
 printMessage "eventstore is healthy and sync" $res
 
-#echo "#################################"
-#echo "### Step 18: Bootstrap part 2"
-#echo "#################################"
+echo "#################################"
+echo "### Step 18: Bootstrap part 2"
+echo "#################################"
 set -x
 helm template ../workflow/bootstrap -f ../workflow/bootstrap/values-org1-b.yaml | argo -n $NS1 submit - --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "bootstrap part 2" $res
 
-helm template ../workflow/secrets -f ../workflow/secrets/values-istio-org1.yaml | argo -n istio-system submit - --wait
+echo "#################################"
+echo "### Step 19: Create"
+echo "#################################"
+
+# NOT WORKING
+#export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
+#export CERT=$(kubectl -n n1 exec $POD_RCA -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem)
+#export KEY=$(kubectl -n n1 exec $POD_RCA -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/keystore/key.pem)
+#kubectl -n istio-system delete secret argo-tls
+#kubectl -n istio-system create secret generic argo-tls --from-literal=cert="$CERT" --from-literal=key="$KEY"
+
+# Don't work because pvc-org1 cannot be mount to istio-system
+#helm template ../workflow/secrets -f ../workflow/secrets/values-istio-org1.yaml | argo -n istio-system submit - --wait
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
