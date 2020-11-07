@@ -47,6 +47,7 @@ Update ip address of below values files:
 - hlf-ord/values-o2.yaml
 - hlf-ord/values-o3.yaml
 - hlf-ord/values-o4.yaml
+- workflow/bootstrap/values.yaml
 
 See below snippets
 ```yaml
@@ -165,3 +166,8 @@ status.
 cd scripts
 bootstrap.argo.org1.sh
 ```
+
+**Post installation step**
+1. Go to [GCS Storage UI](https://console.cloud.google.com/storage/browser/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert), to make org1.net *tlscacert.pem* PUBLIC.
+The public link should be https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
+1. Repeat the same step for orderer0.org0.com *tlscacert.pem*
