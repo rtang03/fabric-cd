@@ -455,11 +455,17 @@ argo cluster-template delete secret-resource
 # Create ClusterWorkflowTemplate
 helm template workflow/wftemplate --set clusterscope=true | argo cluster-template create -
 
-# WorkflowTemplate
-argo -n n1 template delete retrieve-http-file
-helm template ../workflow/wftemplate | argo -n n1 template create -
-argo -n n1 submit ../workflow/wow.yaml
+# Create WorkflowTemplate
+argo -n n1 template delete retrieve-from-http
 
+helm template workflow/wftemplate | argo -n n1 template create -
+
+helm template workflow/wftemplate | argo -n n2 template create -
+
+# workflow of workflow
+argo -n n1 submit workflow/wow-bootstrap.yaml
+
+# testing code. Not used now
 helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
 ```
 

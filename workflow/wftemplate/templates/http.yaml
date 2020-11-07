@@ -2,36 +2,36 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: retrieve-http-file
+  name: retrieve-from-http
 spec:
   activeDeadlineSeconds: 3600
   # podGC:
   #   strategy: OnPodCompletion
   serviceAccountName: workflow
-  entrypoint: retrieve-http-tmpl
-
-  volumes:
-    # binaries: peer, etc.
-    - name: fabricfiles
-      persistentVolumeClaim:
-        claimName: {{ .Values.pvc_fabricfiles }}
-    - name: gupload
-      persistentVolumeClaim:
-        claimName: {{ .Values.pvc_gupload }}
-    - name: setup-script
-      configMap:
-        name: "orgadmin--setupsh"
-        defaultMode: 0777
+  entrypoint: retrieve-tmpl
 
   templates:
     # Retrieve file via http
-    - name: retrieve-http-tmpl
+    - name: retrieve-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.alias.input_pvc_fabricfiles | quote }}
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.alias.input_pvc_gupload | quote }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0777
       inputs:
         parameters:
           - name: url
           - name: filename
           - name: path
+          - name: pvc_fabricfiles
+          - name: pvc_gupload
         artifacts:
           - name: file
             path: /tmp/{{ .Values.alias.input_filename }}
@@ -61,17 +61,4 @@ spec:
           - name: setup-script
             mountPath: /script/setup.sh
             subPath: setup.sh
-    # Delete Secret resource
-    - name: delete-secret-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      inputs:
-        parameters:
-          - name: secretName
-      resource:
-        action: delete
-        manifest: |
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: {{ .Values.alias.input_secretName | quote }}
-  {{- end }}
+{{- end }}

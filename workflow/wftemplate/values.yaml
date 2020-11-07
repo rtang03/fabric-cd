@@ -4,16 +4,20 @@ pvc_gupload: pvc-gupload1
 clusterscope: false
 
 alias:
+  input_pvc_fabricfiles: "{{inputs.parameters.pvc_fabricfiles}}"
+  input_pvc_gupload: "{{inputs.parameters.pvc_gupload}}"
   input_url: "{{inputs.parameters.url}}"
   input_secretName: "{{inputs.parameters.secretName}}"
   input_filename: "{{inputs.parameters.filename}}"
   input_path: "{{inputs.parameters.path}}"
+  input_key: "{{inputs.parameters.key}}"
   key1: "{{inputs.parameters.key1}}"
   path1: "{{inputs.parameters.path1}}"
   value1: "{{inputs.parameters.value1}}"
   key2: "{{inputs.parameters.key2}}"
   path2: "{{inputs.parameters.path2}}"
   value2: "{{inputs.parameters.value2}}"
+  output_value1: "{{steps.retrieve.outputs.parameters.value1}}"
 
 no_istio:
   metadata:
