@@ -1,31 +1,30 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: wow-bootstrap-
+  generateName: wow-org2-
 spec:
   entrypoint: main
   serviceAccountName: workflow
   templates:
     - name: main
       steps:
-        - - name: w-retrieve-from-http
-            template: w1
+        # STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+        - - name: load-org1tlscacert
+            template: retrieve-from-http-tmpl
             arguments:
               parameters:
                 - name: workflowtemplate
                   value: "retrieve-from-http"
                 - name: filename
-                  value: org1.net-tlscacert.pem
+                  value: "org1.net-tlscacert.pem"
                 - name: path
-                  value: /var/gupload/fileserver
+                  value: "/var/gupload/fileserver"
                 - name: url
-                  value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
-                - name: pvc_fabricfiles
-                  value: pvc-org1
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem"
                 - name: pvc_gupload
-                  value: pvc-gupload1
-        - - name: w-create-secret-from-file
-            template: w2
+                  value: "pvc-gupload2"
+        - - name: create-secret-org1tlscacert
+            template: create-secret-from-file-tmpl
             arguments:
               parameters:
                 - name: workflowtemplate
@@ -38,12 +37,41 @@ spec:
                   value: "/var/gupload/fileserver"
                 - name: key
                   value: "tlscacert.pem"
-                - name: pvc_fabricfiles
-                  value: "pvc-org1"
                 - name: pvc_gupload
-                  value: "pvc-gupload1"
+                  value: "pvc-gupload2"
+        # STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+        - - name: load-org0tlscacert
+            template: retrieve-from-http-tmpl
+            arguments:
+              parameters:
+                - name: workflowtemplate
+                  value: "retrieve-from-http"
+                - name: filename
+                  value: "org0.com-tlscacert.pem"
+                - name: path
+                  value: "/var/gupload/fileserver"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem"
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+        - - name: create-secret-org0tlscacert
+            template: create-secret-from-file-tmpl
+            arguments:
+              parameters:
+                - name: workflowtemplate
+                  value: "create-secret-from-file"
+                - name: secretName
+                  value: "org0.com-tlscacert"
+                - name: filename
+                  value: "org0.com-tlscacert.pem"
+                - name: path
+                  value: "/var/gupload/fileserver"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
 
-    - name: w1
+    - name: retrieve-from-http-tmpl
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
@@ -53,7 +81,6 @@ spec:
           - name: filename
           - name: path
           - name: url
-          - name: pvc_fabricfiles
           - name: pvc_gupload
       resource:
         action: create
@@ -61,7 +88,7 @@ spec:
           apiVersion: argoproj.io/v1alpha1
           kind: Workflow
           metadata:
-            generateName: w1-{{inputs.parameters.workflowtemplate}}
+            generateName: w1-{{inputs.parameters.workflowtemplate}}-
           spec:
             arguments:
               parameters:
@@ -71,16 +98,15 @@ spec:
                   value: {{inputs.parameters.path}}
                 - name: url
                   value: {{inputs.parameters.url}}
-                - name: pvc_fabricfiles
-                  value: {{inputs.parameters.pvc_fabricfiles}}
                 - name: pvc_gupload
                   value: {{inputs.parameters.pvc_gupload}}
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
+              clusterScope: true
         successCondition: status.phase == Succeeded
         failureCondition: status.phase in (Failed, Error)
 
-    - name: w2
+    - name: create-secret-from-file-tmpl
       metadata:
         annotations:
           sidecar.istio.io/inject: "false"
@@ -91,7 +117,6 @@ spec:
           - name: filename
           - name: path
           - name: key
-          - name: pvc_fabricfiles
           - name: pvc_gupload
       resource:
         action: create
@@ -99,7 +124,7 @@ spec:
           apiVersion: argoproj.io/v1alpha1
           kind: Workflow
           metadata:
-            generateName: w2-{{inputs.parameters.workflowtemplate}}
+            generateName: w2-{{inputs.parameters.workflowtemplate}}-
           spec:
             arguments:
               parameters:
@@ -111,11 +136,10 @@ spec:
                 value: {{inputs.parameters.path}}
               - name: key
                 value: {{inputs.parameters.key}}
-              - name: pvc_fabricfiles
-                value: {{inputs.parameters.pvc_fabricfiles}}
               - name: pvc_gupload
                 value: {{inputs.parameters.pvc_gupload}}
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
+              clusterScope: true
         successCondition: status.phase == Succeeded
         failureCondition: status.phase in (Failed, Error)

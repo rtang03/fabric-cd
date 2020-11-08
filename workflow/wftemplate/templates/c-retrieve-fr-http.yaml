@@ -1,6 +1,6 @@
-{{- if eq .Values.clusterscope false }}
+{{- if eq .Values.clusterscope true }}
 apiVersion: argoproj.io/v1alpha1
-kind: WorkflowTemplate
+kind: ClusterWorkflowTemplate
 metadata:
   name: retrieve-from-http
 spec:
@@ -19,9 +19,6 @@ spec:
     - name: retrieve-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       volumes:
-        - name: fabricfiles
-          persistentVolumeClaim:
-            claimName: {{ .Values.alias.input_pvc_fabricfiles | quote }}
         - name: gupload
           persistentVolumeClaim:
             claimName: {{ .Values.alias.input_pvc_gupload | quote }}
@@ -34,7 +31,6 @@ spec:
           - name: url
           - name: filename
           - name: path
-          - name: pvc_fabricfiles
           - name: pvc_gupload
         artifacts:
           - name: file
@@ -58,8 +54,6 @@ spec:
               exit 1
             fi
         volumeMounts:
-          - mountPath: /var/hyperledger
-            name: fabricfiles
           - mountPath: /var/gupload/fileserver
             name: gupload
           - name: setup-script

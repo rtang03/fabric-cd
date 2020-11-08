@@ -22,8 +22,6 @@ spec:
                   value: /var/gupload/fileserver/public
                 - name: url
                   value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
-                - name: pvc_fabricfiles
-                  value: pvc-org1
                 - name: pvc_gupload
                   value: pvc-gupload1
         # Download org0.com-tlscacert.pem from gcs storage
@@ -40,8 +38,6 @@ spec:
                   value: /var/gupload/fileserver/public
                 - name: url
                   value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem
-                - name: pvc_fabricfiles
-                  value: pvc-org1
                 - name: pvc_gupload
                   value: pvc-gupload1
 
@@ -55,7 +51,6 @@ spec:
           - name: filename
           - name: path
           - name: url
-          - name: pvc_fabricfiles
           - name: pvc_gupload
       resource:
         action: create
@@ -73,12 +68,11 @@ spec:
                   value: {{inputs.parameters.path}}
                 - name: url
                   value: {{inputs.parameters.url}}
-                - name: pvc_fabricfiles
-                  value: {{inputs.parameters.pvc_fabricfiles}}
                 - name: pvc_gupload
                   value: {{inputs.parameters.pvc_gupload}}
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
+              clusterScope: true
         successCondition: status.phase == Succeeded
         failureCondition: status.phase in (Failed, Error)
 

@@ -354,6 +354,11 @@ echo "#################################"
 echo "### Step 19: Create"
 echo "#################################"
 
+#### Run wow-bootstrap.n1.yaml
+
+#### MAKE tlscacert.pem PUBLIC
+
+
 # NOT WORKING
 #export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
 #export CERT=$(kubectl -n n1 exec $POD_RCA -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/signcerts/cert.pem)

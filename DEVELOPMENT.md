@@ -462,8 +462,28 @@ helm template workflow/wftemplate | argo -n n1 template create -
 
 helm template workflow/wftemplate | argo -n n2 template create -
 
-# workflow of workflow
+# workflow of workflow - ORG1
+# STEP 1: send org1.net-tlscacert.pem to to n1 /var/gupload/fileserver/public
+# 1. retrieve-from-http
+
+# STEP 2: send org0.com-tlscacert.pem to to n1 /var/gupload/fileserver/public
+# 1. retrieve-from-http
 argo -n n1 submit workflow/wow-bootstrap.n1.yaml
+
+# workflow of workflow - ORG2
+# STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+# 1. retrieve-from-http
+# 2. create-secret-from-file
+
+# STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+# 1. retrieve-from-http
+# 2. create-secret-from-file
+
+# STEP 3: get org2.net-tlscacert.pem and create org2.net-tlscacert.pem in n2
+# 1. retrieve-from-http
+# 2. create-secret-from-file
+
+# STEP 4: curl n1, to repeat STEP 3 for n1
 
 argo -n n2 submit workflow/wow-bootstrap.n2.yaml
 
