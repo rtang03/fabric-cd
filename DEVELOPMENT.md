@@ -463,7 +463,9 @@ helm template workflow/wftemplate | argo -n n1 template create -
 helm template workflow/wftemplate | argo -n n2 template create -
 
 # workflow of workflow
-argo -n n1 submit workflow/wow-bootstrap.yaml
+argo -n n1 submit workflow/wow-bootstrap.n1.yaml
+
+argo -n n2 submit workflow/wow-bootstrap.n2.yaml
 
 # testing code. Not used now
 helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait

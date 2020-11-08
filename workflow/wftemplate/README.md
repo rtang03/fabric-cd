@@ -18,6 +18,11 @@ helm template workflow/wftemplate | argo -n n1 template create -
 1. Delete pre-existing secret
 1. Create secret
 
+**gupload-download-file**
+
+1. Gupload download a file
+1. Save it to mounted pvc
+
 **retrieve-from-http**
 
 1. Retrieve file from url

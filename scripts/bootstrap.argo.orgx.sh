@@ -92,26 +92,26 @@ res=$?
 set +x
 printMessage "create secret $REL_RCA" $res
 
-# echo "#################################"
-# echo "### Step 7: Install $REL_GUPLOAD"
-# echo "#################################"
-# set -x
-# helm template ../argo-app --set ns=$NS,rel=$REL_GUPLOAD,file=values-$REL_GUPLOAD.yaml,path=gupload,target=$TARGET | argocd app create -f -
-# res=$?
-# set +x
-# printMessage "create app: $REL_GUPLOAD" $res
-#
-# set -x
-# argocd app sync $REL_GUPLOAD
-# res=$?
-# set +x
-# printMessage "$REL_RCA sync starts" $res
-#
-# set -x
-# argocd app wait $REL_TLSCA $REL_RCA --timeout 300
-# res=$?
-# set +x
-# printMessage "$REL_TLSCA | $REL_RCA is healthy and sync" $res
+echo "#################################"
+echo "### Step 7: Install $REL_GUPLOAD"
+echo "#################################"
+set -x
+helm template ../argo-app --set ns=$NS,rel=$REL_GUPLOAD,file=values-$REL_GUPLOAD.yaml,path=gupload,target=$TARGET | argocd app create -f -
+res=$?
+set +x
+printMessage "create app: $REL_GUPLOAD" $res
+
+set -x
+argocd app sync $REL_GUPLOAD
+res=$?
+set +x
+printMessage "$REL_RCA sync starts" $res
+
+set -x
+argocd app wait $REL_TLSCA $REL_RCA --timeout 300
+res=$?
+set +x
+printMessage "$REL_TLSCA | $REL_RCA is healthy and sync" $res
 
 #echo "#################################"
 #echo "### Step 8: Out-of-band process"

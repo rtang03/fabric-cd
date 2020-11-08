@@ -3,7 +3,10 @@ pvc_gupload: pvc-gupload1
 
 clusterscope: false
 
+guploadImage: ghcr.io/rtang03/gupload:0.1.6
+
 alias:
+  input_cacert: "{{inputs.parameters.cacert}}"
   input_pvc_fabricfiles: "{{inputs.parameters.pvc_fabricfiles}}"
   input_pvc_gupload: "{{inputs.parameters.pvc_gupload}}"
   input_url: "{{inputs.parameters.url}}"
