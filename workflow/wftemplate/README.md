@@ -30,4 +30,7 @@ helm template workflow/wftemplate | argo -n n1 template create -
 1. Gupload download a file
 1. Save it to mounted pvc
 
+**simple-echo**
+1. echo (Used for smoke test)
+
 

@@ -378,9 +378,6 @@ kubectl -n n2 apply -f ./argo/service-account-argo.yaml
 
 # TODO: TO BE REVIEWED
 # kubectl -n istio-system apply -f ./argo/service-account-argo.yaml
-
-# OPTIONALLY, CREATE SERVICE ACCOUNT "orgadmin" (for each application namespace)
-# kubectl -n $NS1 apply -f ./argo/service-account-orgadmin.yaml
 ```
 
 **Install argo with community supported helm chart**
@@ -432,11 +429,30 @@ curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.10
 
 **Obtain access token for different service account**
 
+The access token will be used for UI log on.
+
 ```shell script
 # Obtain access token from service account "workflow"
 SECRET=$(kubectl -n n1 get sa workflow -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 ```
+
+**Service Account: guest**
+
+Each namespace need a service account *guest*; used by REST API.
+
+```shell script
+# CREATE SERVICE ACCOUNT "org2.net". This SA is used for inter-organization workflow, via Events
+kubectl -n n1 apply -f ./argo/service-account-guest.yaml
+
+# Access token
+SECRET=$(kubectl -n n1 get sa guess -o=jsonpath='{.secrets[0].name}')
+ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+
+# Repeat for other namespace
+```
+
+Send the access token to other organization admin (e.g. org2), in order for sending in Argo Event.
 
 **WorkflowTemplates**
 
@@ -447,26 +463,46 @@ workflow templates includes:
 
 See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templates/), and [Cluster Workflow Templates](https://argoproj.github.io/argo/cluster-workflow-templates/).
 
+**Create ClusterWorkflowTemplate**
+
 ```shell script
 # ClusterWorkflowTemplate
-# Optionally, clean-up
+# Optionally, clean-up pre-existing ClusterWorkflowTemplate
 argo cluster-template delete secret-resource
+argo cluster-template delete simple-echo
 
 # Create ClusterWorkflowTemplate
 helm template workflow/wftemplate --set clusterscope=true | argo cluster-template create -
+```
 
-# Create WorkflowTemplate
+**Create WorkflowTemplate**
+
+```shell script
+# ClusterWorkflowTemplate
+# Optionally, clean-up
+argo -n n1 template delete create-secret-from-file
+argo -n n1 template delete gupload-XX-file  (FIX it later)
 argo -n n1 template delete retrieve-from-http
 
+# Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate | argo -n n1 template create -
 
-helm template workflow/wftemplate | argo -n n2 template create -
+# Repeat for other namespace
 
+# Deploy WorkflowEventBinding
+kubectl -n argo apply argo/eventbinding.yaml
+
+# run smoke test
+curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
+```
+
+There will be no direct response. Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
+
+**Trigger WorkflowTemplates**
+
+```shell script
 # workflow of workflow - ORG1
-# STEP 1: send org1.net-tlscacert.pem to to n1 /var/gupload/fileserver/public
-# 1. retrieve-from-http
-
-# STEP 2: send org0.com-tlscacert.pem to to n1 /var/gupload/fileserver/public
+# STEP 1: send org0.com-tlscacert.pem to to n1 /var/gupload/fileserver/public
 # 1. retrieve-from-http
 argo -n n1 submit workflow/wow-bootstrap.n1.yaml
 
@@ -479,16 +515,12 @@ argo -n n1 submit workflow/wow-bootstrap.n1.yaml
 # 1. retrieve-from-http
 # 2. create-secret-from-file
 
-# STEP 3: get org2.net-tlscacert.pem and create org2.net-tlscacert.pem in n2
-# 1. retrieve-from-http
-# 2. create-secret-from-file
-
 # STEP 4: curl n1, to repeat STEP 3 for n1
 
 argo -n n2 submit workflow/wow-bootstrap.n2.yaml
 
 # testing code. Not used now
-helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
+# helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
 ```
 
 

@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-consumer
+spec:
+  event:
+    selector: payload.message != "" && discriminator == "my-discriminator"
+    # selector: payload.message != "" && metadata["x-argo"] == ["true"] && discriminator == "my-discriminator"
+  submit:
+    workflowTemplateRef:
+      name: simple-echo
+    arguments:
+      parameters:
+        - name: message
+          valueFrom:
+            event: payload.message
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-fetch-block
+spec:
+  event:
+    selector: payload.address != "" && discriminator == "fetch-block"
+  submit:
+    workflowTemplateRef:
+      name: fetch-block-tmpl
+    arguments:
+      parameters:
+        - name: address
+          valueFrom:
+            event: payload.address
