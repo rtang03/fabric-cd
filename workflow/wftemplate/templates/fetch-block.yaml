@@ -1,0 +1,69 @@
+{{- if eq .Values.clusterscope false }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: fetch-block
+spec:
+  # must complete in 1 min (600 seconds)
+  activeDeadlineSeconds: 600
+  # podGC:
+  #   strategy: OnPodCompletion
+  serviceAccountName: workflow
+  entrypoint: fetch-block-tmpl
+  # volumes:
+  #   - name: fabricfiles
+  #     persistentVolumeClaim:
+  #       claimName: {{ .Values.pvc }}
+
+  templates:
+    - name: fetch-block-tmpl
+      steps:
+        - - name: fetch
+            template: fetch
+
+    - name: fetch
+{{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: pvc-org1
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0555
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq
+            ./bin/peer version
+            ### Fetch channel config and turn into config.json
+            printHeader "Fetch channel config"
+            set -x
+            ./bin/peer/fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
+            res=$?
+            set +x
+            printMessage "fetch config block" $res
+        envFrom:
+          - configMapRef:
+              name: orgadmin--cli
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+    - name: gupload
+{{ toYaml .Values.no_istio | indent 6 }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        args:
+          - |-
+            echo "2"
+{{- end }}

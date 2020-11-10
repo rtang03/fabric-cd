@@ -469,7 +469,8 @@ See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templ
 # ClusterWorkflowTemplate
 # Optionally, clean-up pre-existing ClusterWorkflowTemplate
 argo cluster-template delete secret-resource
-argo cluster-template delete simple-echo
+argo cluster-template delete create-secret-from-file
+argo cluster-template delete retrieve-from-http
 
 # Create ClusterWorkflowTemplate
 helm template workflow/wftemplate --set clusterscope=true | argo cluster-template create -
@@ -480,9 +481,8 @@ helm template workflow/wftemplate --set clusterscope=true | argo cluster-templat
 ```shell script
 # ClusterWorkflowTemplate
 # Optionally, clean-up
-argo -n n1 template delete create-secret-from-file
-argo -n n1 template delete gupload-XX-file  (FIX it later)
-argo -n n1 template delete retrieve-from-http
+#argo -n n1 clustemplate delete gupload-XX-file  (FIX it later)
+argo -n n1 template delete simple-echo
 
 # Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate | argo -n n1 template create -

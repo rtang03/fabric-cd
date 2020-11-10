@@ -206,6 +206,14 @@ printMessage "create secret genesis" $?
 
 rm ../download/genesis.block
 
+#### MAKE tlscacert.pem PUBLIC
+# Make you have "gsutil" installed from gcloud; can run gcloud components list
+gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem
+
+gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
+
+sleep 5
+
 echo "#################################"
 echo "### Step 13: Install orderers"
 echo "#################################"
@@ -351,13 +359,10 @@ set +x
 printMessage "bootstrap part 2" $res
 
 echo "#################################"
-echo "### Step 19: Create"
+echo "### Step 19: Create Secret org0.com-tlscacert for n1"
 echo "#################################"
 
-#### Run wow-bootstrap.n1.yaml
-
-#### MAKE tlscacert.pem PUBLIC
-
+argo -n n1 submit workflow/wow-bootstrap.n1.yaml
 
 # NOT WORKING
 #export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")
@@ -365,7 +370,6 @@ echo "#################################"
 #export KEY=$(kubectl -n n1 exec $POD_RCA -c ca -- cat ./Org1MSP/peer0.org1.net/tls-msp/keystore/key.pem)
 #kubectl -n istio-system delete secret argo-tls
 #kubectl -n istio-system create secret generic argo-tls --from-literal=cert="$CERT" --from-literal=key="$KEY"
-
 # Don't work because pvc-org1 cannot be mount to istio-system
 #helm template ../workflow/secrets -f ../workflow/secrets/values-istio-org1.yaml | argo -n istio-system submit - --wait
 
