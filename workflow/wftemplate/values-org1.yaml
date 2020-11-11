@@ -1,0 +1,29 @@
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+    ip: 35.202.107.80
+  - hostnames:
+      - gupload.org2.net
+    ip: 35.202.107.80
+
+ordererUrl: orderer0.org0.com
+
+orgadmin:
+  pvcName: pvc-org1
+gupload:
+  pvcName: pvc-gupload1
+  uploadedFilename: "o1_channel_config--config.json"
+secret:
+  - name: org0tlscacert
+    secret: org0.com-tlscacert
+    path: "/var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert"
+  - name: org1tlscacert
+    secret: org1.net-tlscacert
+    path: "/var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert"
+  - name: guploadtlscacert
+    secret: org2.net-tlscacert
+    path: "/var/gupload/cert"
+address:
+  url: gupload.org2.net
+  port: 15443

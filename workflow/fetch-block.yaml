@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: fetch-block-org1
+  generateName: fetch-block-
 spec:
   serviceAccountName: workflow
   # arguments:

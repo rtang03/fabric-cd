@@ -4,25 +4,34 @@ kind: WorkflowTemplate
 metadata:
   name: fetch-block
 spec:
-  # must complete in 1 min (600 seconds)
   activeDeadlineSeconds: 600
   # podGC:
   #   strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
   serviceAccountName: workflow
-  entrypoint: fetch-block-tmpl
-  # volumes:
-  #   - name: fabricfiles
-  #     persistentVolumeClaim:
-  #       claimName: {{ .Values.pvc }}
+  entrypoint: main
 
   templates:
-    - name: fetch-block-tmpl
+    - name: main
       steps:
         - - name: fetch
             template: fetch
 
     - name: fetch
 {{ toYaml .Values.no_istio | indent 6 }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+      {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+            {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
       volumes:
         - name: fabricfiles
           persistentVolumeClaim:
@@ -30,13 +39,20 @@ spec:
         - name: setup-script
           configMap:
             name: "orgadmin--setupsh"
-            defaultMode: 0555
+            defaultMode: 0511
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        - name: org0-tlscacert
+          secret:
+            secretName: org0.com-tlscacert
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
         workingDir: /var/hyperledger
         args:
           - |-
+            FABRIC_CFG_PATH=/etc/hyperledger
             . /script/setup.sh
             apk update
             apk upgrade
@@ -45,10 +61,20 @@ spec:
             ### Fetch channel config and turn into config.json
             printHeader "Fetch channel config"
             set -x
-            ./bin/peer/fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
+            ./bin/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile /tmp/tlscacert.pem >& /tmp/fetchconfig.log
             res=$?
             set +x
+            cat /tmp/fetchconfig.log
             printMessage "fetch config block" $res
+            printHeader "Decoding config block to JSON and isolating config"
+            set -x
+            $BIN/configtxlator proto_decode --input /tmp/config_block.pb --type common.Block | jq .data.data[0].payload.data.config > /tmp/config.json
+            res=$?
+            set +x
+            printMessage "decode block and extract channel config: config.json" $res
+        env:
+          - name: ORDERER_URL
+            value: {{ .Values.ordererUrl }}
         envFrom:
           - configMapRef:
               name: orgadmin--cli
@@ -58,6 +84,11 @@ spec:
           - name: setup-script
             mountPath: /script/setup.sh
             subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - mountPath: /tmp/tlscacert.pem
+            name: org0-tlscacert
+
     - name: gupload
 {{ toYaml .Values.no_istio | indent 6 }}
       container:

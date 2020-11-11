@@ -483,6 +483,8 @@ helm template workflow/wftemplate --set clusterscope=true | argo cluster-templat
 # Optionally, clean-up
 #argo -n n1 clustemplate delete gupload-XX-file  (FIX it later)
 argo -n n1 template delete simple-echo
+argo -n n1 template delete fetch-block
+argo -n n1 template delete download-and-create-secret
 
 # Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate | argo -n n1 template create -
@@ -491,7 +493,7 @@ helm template workflow/wftemplate | argo -n n2 template create -
 # Repeat for other namespace
 
 # Deploy WorkflowEventBinding
-kubectl -n argo apply -f argo/eventbinding.yaml
+kubectl -n n1 apply -f argo/eventbinding.yaml
 
 # run smoke test for REST api. Beforehand, make sure env variable ARGO_TOKEN is set for service account "guest"
 curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
@@ -504,6 +506,7 @@ Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 
 ```shell script
 # workflow of workflow - ORG2
+argo -n n1 submit workflow/fetch-block.yaml
 
 # testing code. Not used now
 # helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait

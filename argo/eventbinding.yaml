@@ -21,27 +21,30 @@ metadata:
   name: event-pull-tlscacert
 spec:
   event:
-    selector: payload.filename != "" && payload.secretname != "" && payload.url != "" && discriminator == "pull-tlscacert"
+    selector: payload.file != "" && payload.secret != "" && payload.key != "" && payload.path != "" && payload.pvc != "" && payload.url != "" && discriminator == "pull-tlscacert"
   submit:
     workflowTemplateRef:
       name: download-and-create-secret
     arguments:
       parameters:
-        - name: filename
+        - name: file
           valueFrom:
-            event: payload.filename
+            event: payload.file
         - name: key
-          value: "tlscacert.pem"
+          valueFrom:
+            event: payload.key
         - name: path
-          value: /var/gupload/fileserver
+          valueFrom:
+            event: payload.path
         # TODO: IMPORTANT NOTE: currently, there is only one Argo Server for org0/org1. Later phase,
         # we will split, so that each new org will have its own Argo-Server, the below mounted volume
         # need modify
-        - name: pvc_gupload
-          value: "pvc-gupload1"
-        - name: secretName
+        - name: pvc
           valueFrom:
-            event: payload.secretname
+            event: payload.pvc
+        - name: secret
+          valueFrom:
+            event: payload.secret
         - name: url
           valueFrom:
             event: payload.url

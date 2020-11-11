@@ -117,7 +117,7 @@ set +x
 printMessage "$REL_GUPLOAD is healthy and sync" $res
 
 echo "#################################"
-echo "### Step 8: Out-of-band process"
+echo "### Step 8: Create tlscacert"
 echo "#################################"
 # STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
 # STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
@@ -127,8 +127,37 @@ res=$?
 set +x
 printMessage "create tlscacerts" $res
 
-#curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $ARGO_TOKEN" \
-#  -d '{"filename":"org2.net-tlscacert.pem","secretname":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem"}'
+echo "#################################"
+echo "### Step 9: Out-of-band process"
+echo "#################################"
+# IMPORTANT NOTE: ARGO_TOKEN is supposed to pass to org2, via out-of-band process
+SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
+ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+
+curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $ARGO_TOKEN" \
+  -d '{"file":"org2.net-tlscacert.pem","secret":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem","key":"tlscacert.pem","path":"/var/gupload/fileserver","pvc":"pvc-gupload1"}'
+
+echo "#################################"
+echo "### Step 14: Install $REL_PEER"
+echo "#################################"
+set -x
+helm template ../argo-app --set ns=$NS,rel=$REL_PEER,file=values-$REL_PEER.yaml,path=hlf-peer,target=$TARGET | argocd app create -f -
+res=$?
+set +x
+printMessage "create app: $REL_PEER" $res
+
+set -x
+argocd app sync $REL_PEER
+res=$?
+set +x
+printMessage "$REL_PEER sync starts" $res
+
+set -x
+argocd app wait $REL_PEER $REL_GUPLOAD --timeout 120
+res=$?
+set +x
+printMessage "$REL_PEER are healthy and sync" $res
+
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

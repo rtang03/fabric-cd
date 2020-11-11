@@ -5,6 +5,17 @@ clusterscope: false
 
 guploadImage: ghcr.io/rtang03/gupload:0.1.6
 
+ordererUrl: orderer0.org0.com
+
+#hostAlias:
+#  - hostnames:
+#      - orderer0.org0.com
+#      - peer0.org1.net
+#    ip: 35.202.107.80
+#  - hostnames:
+#      - gupload.org2.net
+#    ip: 35.202.107.80
+
 alias:
   input_cacert: "{{inputs.parameters.cacert}}"
   input_message: "{{inputs.parameters.message}}"
