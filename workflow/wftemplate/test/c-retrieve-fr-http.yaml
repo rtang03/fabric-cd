@@ -1,62 +1,47 @@
-{{- if eq .Values.clusterscope true }}
+# STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
 apiVersion: argoproj.io/v1alpha1
-kind: ClusterWorkflowTemplate
+kind: Workflow
 metadata:
-  name: retrieve-from-http
+  generateName: dl-create-tlscacert-
 spec:
-  activeDeadlineSeconds: 3600
-  # podGC:
-  #   strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
-    secondsAfterSuccess: 3600     # Time to live after workflow is successful
-    secondsAfterFailure: 3600     # Time to live after workflow fails
   serviceAccountName: workflow
-  entrypoint: main
-
-  templates:
-    # Retrieve file via http
-    - name: retrieve-tmpl
-{{ toYaml .Values.no_istio | indent 6 }}
-      volumes:
-        - name: gupload
-          persistentVolumeClaim:
-            claimName: {{ .Values.alias.input_pvc_gupload | quote }}
-        - name: setup-script
-          configMap:
-            name: "orgadmin--setupsh"
-            defaultMode: 0777
-      inputs:
-        parameters:
-          - name: url
-          - name: filename
-          - name: path
-          - name: pvc_gupload
-        artifacts:
-          - name: file
-            path: /tmp/{{ .Values.alias.input_filename }}
-            http:
-              url: {{ .Values.alias.input_url | quote }}
-      container:
-        image: library/alpine:3.12.0
-        command: ["sh", "-c"]
-        workingDir: /
-        args:
-          - |-
-            . /script/setup.sh
-            if [ -f "/tmp/{{ .Values.alias.input_filename }}" ]; then
-              echo "file {{ .Values.alias.input_filename }} downloaded"
-              ls -ls /tmp/{{ .Values.alias.input_filename }}
-              cp /tmp/{{ .Values.alias.input_filename }} {{ .Values.alias.input_path }}/{{ .Values.alias.input_filename }}
-              printMessage "{{ .Values.alias.input_path }}/{{ .Values.alias.input_filename }} created" $?
-            else
-              echo "file not found"
-              exit 1
-            fi
-        volumeMounts:
-          - mountPath: /var/gupload/fileserver
-            name: gupload
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh
-{{- end }}
+  arguments:
+    parameters:
+      - name: filename
+        value: "org1.net-tlscacert.pem"
+      - name: key
+        value: "tlscacert.pem"
+      - name: path
+        value: /var/gupload/fileserver
+      - name: pvc_gupload
+        value: "pvc-gupload2"
+      - name: secretName
+        value: "org1.net-tlscacert"
+      - name: url
+        value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem"
+  workflowTemplateRef:
+    name: download-and-create-secret
+---
+# STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: dl-create-tlscacert-
+spec:
+  serviceAccountName: workflow
+  arguments:
+    parameters:
+      - name: filename
+        value: "org0.com-tlscacert.pem"
+      - name: key
+        value: "tlscacert.pem"
+      - name: path
+        value: /var/gupload/fileserver
+      - name: pvc_gupload
+        value: "pvc-gupload2"
+      - name: secretName
+        value: "org0.com-tlscacert"
+      - name: url
+        value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem"
+  workflowTemplateRef:
+    name: download-and-create-secret

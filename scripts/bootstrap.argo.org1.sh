@@ -362,7 +362,11 @@ echo "#################################"
 echo "### Step 19: Create Secret org0.com-tlscacert for n1"
 echo "#################################"
 
-argo -n n1 submit ../workflow/create-org0tlscacert.n1.yaml
+set -x
+argo -n n1 submit ../workflow/create-org0tlscacert.n1.yaml --watch --request-timeout 60s
+res=$?
+set +x
+printMessage "create tlscacerts" $res
 
 # NOT WORKING
 #export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")

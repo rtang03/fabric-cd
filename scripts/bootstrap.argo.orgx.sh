@@ -121,7 +121,11 @@ echo "### Step 8: Out-of-band process"
 echo "#################################"
 # STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
 # STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
-argo -n n2 submit ../workflow/create-tlscacert.n2.yaml
+set -x
+argo -n n2 submit ../workflow/create-tlscacert.n2.yaml --watch --request-timeout 60s
+res=$?
+set +x
+printMessage "create tlscacerts" $res
 
 #curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $ARGO_TOKEN" \
 #  -d '{"filename":"org2.net-tlscacert.pem","secretname":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem"}'

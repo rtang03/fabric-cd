@@ -486,6 +486,7 @@ argo -n n1 template delete simple-echo
 
 # Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate | argo -n n1 template create -
+helm template workflow/wftemplate | argo -n n2 template create -
 
 # Repeat for other namespace
 
