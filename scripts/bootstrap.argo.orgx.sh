@@ -92,6 +92,9 @@ res=$?
 set +x
 printMessage "create secret $REL_RCA" $res
 
+#### MAKE tlscacert.pem PUBLIC
+gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem
+
 echo "#################################"
 echo "### Step 7: Install $REL_GUPLOAD"
 echo "#################################"
@@ -113,11 +116,15 @@ res=$?
 set +x
 printMessage "$REL_GUPLOAD is healthy and sync" $res
 
-#echo "#################################"
-#echo "### Step 8: Out-of-band process"
-#echo "#################################"
+echo "#################################"
+echo "### Step 8: Out-of-band process"
+echo "#################################"
+# STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+# STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+argo -n n2 submit ../workflow/create-tlscacert.n2.yaml
 
-#### MAKE tlscacert.pem PUBLIC
+#curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $ARGO_TOKEN" \
+#  -d '{"filename":"org2.net-tlscacert.pem","secretname":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem"}'
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
