@@ -18,6 +18,37 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowEventBinding
 metadata:
+  name: event-pull-tlscacert
+spec:
+  event:
+    selector: payload.filename != "" && payload.secretname != "" && payload.url != "" && discriminator == "pull-tlscacert"
+  submit:
+    workflowTemplateRef:
+      name: download-and-create-secret
+    arguments:
+      parameters:
+        - name: filename
+          valueFrom:
+            event: payload.filename
+        - name: key
+          value: "tlscacert.pem"
+        - name: path
+          value: /var/gupload/fileserver
+        # TODO: IMPORTANT NOTE: currently, there is only one Argo Server for org0/org1. Later phase,
+        # we will split, so that each new org will have its own Argo-Server, the below mounted volume
+        # need modify
+        - name: pvc_gupload
+          value: "pvc-gupload1"
+        - name: secretName
+          valueFrom:
+            event: payload.secretname
+        - name: url
+          valueFrom:
+            event: payload.url
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
   name: event-fetch-block
 spec:
   event:

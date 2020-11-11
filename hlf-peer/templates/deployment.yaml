@@ -129,9 +129,6 @@ spec:
           secret:
             secretName: {{ .Values.secrets.adminKey }}
         {{- end }}
-        # - name: org0-tls-ca-cert
-        #   secret:
-        #     secretName: {{ .Values.secrets.ordOrg0Tlscacert }}
       containers:
         - name: peer
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -154,6 +151,8 @@ spec:
               containerPort: 2375
               protocol: TCP
           livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
               scheme: HTTP
               path: /healthz
@@ -161,6 +160,8 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
             httpGet:
               scheme: HTTP
               path: /healthz
@@ -275,8 +276,6 @@ spec:
             - mountPath: {{ include "hlf-peer.home" . }}/admin/msp/keystore
               name: admin-key
             {{- end }}
-            # - mountPath: {{ include "hlf-peer.home" . }}/ord/org0/tlscacerts
-            #   name: org0-tls-ca-cert
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

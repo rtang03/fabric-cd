@@ -8,22 +8,6 @@ spec:
   templates:
     - name: main
       steps:
-#        # Download org1.net-tlscacert.pem from gcs storage
-#        # Place it gupload public folder in n1
-#        - - name: load-org1tlscacert
-#            template: retrieve-from-http-tmpl
-#            arguments:
-#              parameters:
-#                - name: workflowtemplate
-#                  value: "retrieve-from-http"
-#                - name: filename
-#                  value: org1.net-tlscacert.pem
-#                - name: path
-#                  value: /var/gupload/fileserver/public
-#                - name: url
-#                  value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
-#                - name: pvc_gupload
-#                  value: pvc-gupload1
         # Download org0.com-tlscacert.pem from gcs storage
         # Place it gupload public folder in n1
         - - name: load-org0tlscacert
@@ -40,6 +24,23 @@ spec:
                   value: https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem
                 - name: pvc_gupload
                   value: pvc-gupload1
+
+        - - name: create-secret-org0tlscacert
+            template: create-secret-from-file-tmpl
+            arguments:
+              parameters:
+                - name: workflowtemplate
+                  value: "create-secret-from-file"
+                - name: secretName
+                  value: "org0.com-tlscacert"
+                - name: filename
+                  value: "org0.com-tlscacert.pem"
+                - name: path
+                  value: "/var/gupload/fileserver/public"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: pvc_gupload
+                  value: "pvc-gupload1"
 
     - name: retrieve-from-http-tmpl
       metadata:
@@ -76,3 +77,40 @@ spec:
         successCondition: status.phase == Succeeded
         failureCondition: status.phase in (Failed, Error)
 
+    - name: create-secret-from-file-tmpl
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+      inputs:
+        parameters:
+          - name: workflowtemplate
+          - name: secretName
+          - name: filename
+          - name: path
+          - name: key
+          - name: pvc_gupload
+      resource:
+        action: create
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: w2-{{inputs.parameters.workflowtemplate}}-
+          spec:
+            arguments:
+              parameters:
+              - name: secretName
+                value: {{inputs.parameters.secretName}}
+              - name: filename
+                value: {{inputs.parameters.filename}}
+              - name: path
+                value: {{inputs.parameters.path}}
+              - name: key
+                value: {{inputs.parameters.key}}
+              - name: pvc_gupload
+                value: {{inputs.parameters.pvc_gupload}}
+            workflowTemplateRef:
+              name: {{inputs.parameters.workflowtemplate}}
+              clusterScope: true
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)

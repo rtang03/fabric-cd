@@ -31,7 +31,7 @@ the latest runnable deployment; and is protected. It should perform pull request
 ## First-time setup
 ### GKE
 We need to deploy GKE using UI. After GKE is created, update local machine credentials. The current project name
-is `fabric-cd-dev`.
+is `fabric-cd-dev`. Also, make sure `gcloud`, `gsutil`, and `kubectl` are installed.
 
 **Configure local machine**
 
@@ -446,7 +446,7 @@ Each namespace need a service account *guest*; used by REST API.
 kubectl -n n1 apply -f ./argo/service-account-guest.yaml
 
 # Access token
-SECRET=$(kubectl -n n1 get sa guess -o=jsonpath='{.secrets[0].name}')
+SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 
 # Repeat for other namespace
@@ -458,7 +458,7 @@ Send the access token to other organization admin (e.g. org2), in order for send
 
 Here installs both *WorkflowTemplate* and *ClusterWorkflowTemplate*, via helm chart, under `workflow/wftemplate` directory. The
 workflow templates includes:
-- secret-resource (cluster scoped): create, delete
+- secret-resource (cluster scoped)
 - (namespace scoped)
 
 See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templates/), and [Cluster Workflow Templates](https://argoproj.github.io/argo/cluster-workflow-templates/).
@@ -490,34 +490,19 @@ helm template workflow/wftemplate | argo -n n1 template create -
 # Repeat for other namespace
 
 # Deploy WorkflowEventBinding
-kubectl -n argo apply argo/eventbinding.yaml
+kubectl -n argo apply -f argo/eventbinding.yaml
 
-# run smoke test
+# run smoke test for REST api. Beforehand, make sure env variable ARGO_TOKEN is set for service account "guest"
 curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
 ```
 
-There will be no direct response. Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
+There will be no direct response of event execution; which will be the request on queue.
+Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 
 **Trigger WorkflowTemplates**
 
 ```shell script
-# workflow of workflow - ORG1
-# STEP 1: send org0.com-tlscacert.pem to to n1 /var/gupload/fileserver/public
-# 1. retrieve-from-http
-argo -n n1 submit workflow/wow-bootstrap.n1.yaml
-
 # workflow of workflow - ORG2
-# STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
-# 1. retrieve-from-http
-# 2. create-secret-from-file
-
-# STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
-# 1. retrieve-from-http
-# 2. create-secret-from-file
-
-# STEP 4: curl n1, to repeat STEP 3 for n1
-
-argo -n n2 submit workflow/wow-bootstrap.n2.yaml
 
 # testing code. Not used now
 # helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
@@ -704,3 +689,9 @@ Currently, there is no way to modify after *orgadmin* is running.
 **Enable HTTPS proxy**
 
 For argo, and argocd; enable https proxy, via istio secure gateway pattern. I attempted it, but failed. Try later.
+
+**Mutliple Clusters**
+
+Here is the starting solution, which all namespaces (i.e. org) are located in the same cluster. Hence, share the single
+*Argo* and *ArgoCD* servers. In a decentralized deployment, new organization shall require separate cluster installation,
+and argo servers. The 2nd phase implementation is multiple cluster deployment.

@@ -362,7 +362,7 @@ echo "#################################"
 echo "### Step 19: Create Secret org0.com-tlscacert for n1"
 echo "#################################"
 
-argo -n n1 submit ../workflow/wow-bootstrap.n1.yaml
+argo -n n1 submit ../workflow/create-org0tlscacert.n1.yaml
 
 # NOT WORKING
 #export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")

@@ -1,0 +1,47 @@
+# STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: dl-create-tlscacert-
+spec:
+  serviceAccountName: workflow
+  arguments:
+    parameters:
+      - name: filename
+        value: "org1.net-tlscacert.pem"
+      - name: key
+        value: "tlscacert.pem"
+      - name: path
+        value: /var/gupload/fileserver
+      - name: pvc_gupload
+        value: "pvc-gupload2"
+      - name: secretName
+        value: "org1.net-tlscacert"
+      - name: url
+        value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem"
+  workflowTemplateRef:
+    name: download-and-create-secret
+---
+# STEP 2: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: dl-create-tlscacert-
+spec:
+  serviceAccountName: workflow
+  arguments:
+    parameters:
+      - name: filename
+        value: "org0.com-tlscacert.pem"
+      - name: key
+        value: "tlscacert.pem"
+      - name: path
+        value: /var/gupload/fileserver
+      - name: pvc_gupload
+        value: "pvc-gupload2"
+      - name: secretName
+        value: "org0.com-tlscacert"
+      - name: url
+        value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem"
+  workflowTemplateRef:
+    name: download-and-create-secret
