@@ -27,7 +27,7 @@ spec:
         claimName: {{ .Values.pvcName }}
     - name: configtx
       configMap:
-        name: admin0-orgadmin--configtx
+        name: orgadmin--configtx
 
   templates:
     - name: genesis-tmpl

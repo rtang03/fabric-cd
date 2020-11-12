@@ -16,6 +16,10 @@ cli:
 orderer:
   enabled: false
 
+anchorPeer:
+  host: peer0.org2.net
+  port: 15443
+
 hostAlias:
   enabled: true
   hostnames:

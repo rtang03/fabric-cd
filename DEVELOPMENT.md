@@ -493,7 +493,7 @@ helm template workflow/wftemplate | argo -n n2 template create -
 
 # Repeat for other namespace
 
-# Deploy WorkflowEventBinding
+# Deploy WorkflowEventBinding, for use by Argo server REST API
 kubectl -n n1 apply -f argo/eventbinding.yaml
 
 # run smoke test for REST api. Beforehand, make sure env variable ARGO_TOKEN is set for service account "guest"
@@ -506,8 +506,8 @@ Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 **Trigger WorkflowTemplates**
 
 ```shell script
-# workflow of workflow - ORG2
-argo -n n1 submit workflow/gupload.yaml
+# Run Tests
+argo -n n1 submit workflow/wftemplate/test/fetch-upload-test.yaml
 
 # testing code. Not used now
 # helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait

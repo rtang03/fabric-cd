@@ -1,8 +1,9 @@
 {{- if .Values.orderer.enabled }}
+# For use by org0 to create genesis block
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "orgadmin.fullname" . }}--configtx
+  name: orgadmin--configtx
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 data:
@@ -163,4 +164,41 @@ data:
             - *Org1MSP
           Capabilities:
             <<: *ApplicationCapabilities
-  {{- end }}
+{{- else}}
+# For use by org2 or ... to create new org update block; via "neworg" workflow
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orgadmin-configtx
+  labels:
+  {{- include "labels.standard" . | nindent 4 }}
+data:
+  configtx.yaml: |
+    Organizations:
+      - &{{ .Values.global.mspId }}
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: {{ .Values.global.mspId }}
+        # ID to load the MSP definition as
+        ID: {{ .Values.global.mspId }}
+        MSPDir: /var/hyperledger/crypto-config/{{ .Values.global.mspId }}/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('{{ .Values.global.mspId }}.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('{{ .Values.global.mspId }}.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('{{ .Values.global.mspId }}.admin')"
+          Endorsement:
+            Type: Signature
+            Rule: "OR('{{ .Values.global.mspId }}.member')"
+        AnchorPeers:
+          # AnchorPeers defines the location of peers which can be used
+          # for cross org gossip communication.  Note, this value is only
+          # encoded in the genesis block in the Application section context
+          - Host: {{ .Values.anchorPeer.host }}
+            Port: {{ .Values.anchorPeer.port }}
+{{- end }}

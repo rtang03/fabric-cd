@@ -21,28 +21,19 @@ metadata:
   name: event-pull-tlscacert
 spec:
   event:
-    selector: payload.file != "" && payload.secret != "" && payload.key != "" && payload.path != "" && payload.pvc != "" && payload.url != "" && discriminator == "pull-tlscacert"
+    selector: payload.file != "" && payload.secret != "" && payload.key != "" && payload.path != "" && payload.url != "" && discriminator == "pull-tlscacert"
   submit:
     workflowTemplateRef:
       name: download-and-create-secret
     arguments:
       parameters:
-        - name: file
+        - name: filename
           valueFrom:
             event: payload.file
         - name: key
           valueFrom:
             event: payload.key
-        - name: path
-          valueFrom:
-            event: payload.path
-        # TODO: IMPORTANT NOTE: currently, there is only one Argo Server for org0/org1. Later phase,
-        # we will split, so that each new org will have its own Argo-Server, the below mounted volume
-        # need modify
-        - name: pvc
-          valueFrom:
-            event: payload.pvc
-        - name: secret
+        - name: secretName
           valueFrom:
             event: payload.secret
         - name: url
@@ -55,12 +46,18 @@ metadata:
   name: event-fetch-block
 spec:
   event:
-    selector: payload.address != "" && discriminator == "fetch-block"
+    selector: payload.url != "" && payload.cacert != "" && payload.outfile != "" && discriminator == "fetch-upload"
   submit:
     workflowTemplateRef:
-      name: fetch-block-tmpl
+      name: fetch-upload
     arguments:
       parameters:
-        - name: address
+        - name: cacert
           valueFrom:
-            event: payload.address
+            event: payload.cacert
+        - name: outfile
+          valueFrom:
+            event: payload.outfile
+        - name: url
+          valueFrom:
+            event: payload.url

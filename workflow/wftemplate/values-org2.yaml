@@ -1,0 +1,31 @@
+pvc_fabricfiles: pvc-org2
+pvc_gupload: pvc-gupload2
+mspId: Org2MSP
+
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org2.net
+    ip: 35.202.107.80
+  - hostnames:
+      - gupload.org1.net
+    ip: 35.202.107.80
+
+ordererUrl: orderer0.org0.com
+
+neworg:
+  # latest channel block (block 0), uploaded by "fetch1"
+  channelConfg: channel_config--config.json
+  secret:
+    - name: guploadtlscacert
+      secret: org1.net-tlscacert
+      path: "/var/gupload/cert"
+  # used by configMap configtx.yaml
+  configtx:
+    anchorPeer: peer0.org2.net
+    anchorPeerPort: 15443
+  # dial address of gupload
+  address:
+    url: gupload.org1.net
+    port: 15443
+

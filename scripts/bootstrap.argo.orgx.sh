@@ -132,10 +132,9 @@ echo "### Step 9: Out-of-band process"
 echo "#################################"
 # IMPORTANT NOTE: ARGO_TOKEN is supposed to pass to org2, via out-of-band process
 SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
-ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 
-curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $ARGO_TOKEN" \
-  -d '{"file":"org2.net-tlscacert.pem","secret":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem","key":"tlscacert.pem","path":"/var/gupload/fileserver","pvc":"pvc-gupload1"}'
+curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $TOKEN" -d '{"file":"org2.net-tlscacert.pem","secret":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem","key":"tlscacert.pem"}'
 
 echo "#################################"
 echo "### Step 14: Install $REL_PEER"
@@ -158,6 +157,11 @@ res=$?
 set +x
 printMessage "$REL_PEER are healthy and sync" $res
 
+echo "#####################################################################"
+echo "### MULTIPLE ORGS WORKFLOW"
+echo "#####################################################################"
+
+curl http://argo.server/api/v1/events/n1/fetch-upload -H "Authorization: $TOKEN" -d '{"outfile":"channel_config--config.json","cacert":"org2.net-tlscacert","url":"gupload.org2.net:15443"}'
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

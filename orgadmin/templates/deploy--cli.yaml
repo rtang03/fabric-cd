@@ -35,7 +35,7 @@ spec:
         {{- if .Values.orderer.enabled }}
         - name: configtx
           configMap:
-            name: {{ include "orgadmin.fullname" . }}--configtx
+            name: "orgadmin--configtx"
         {{- end }}
         {{- if .Values.orderer.enabled }}
         - name: org1mspcacerts
