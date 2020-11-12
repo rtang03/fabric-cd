@@ -488,7 +488,7 @@ argo -n n1 template delete download-and-create-secret
 argo -n n1 template delete gupload-up-file
 
 # Create WorkflowTemplate for each namespace
-helm template workflow/wftemplate | argo -n n1 template create -
+helm template workflow/wftemplate -f workflow/wftemplate/values-org1.yaml | argo -n n1 template create -
 helm template workflow/wftemplate | argo -n n2 template create -
 
 # Repeat for other namespace

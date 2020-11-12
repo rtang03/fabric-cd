@@ -1,0 +1,49 @@
+{{- if eq .Values.clusterscope false }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: download-and-create-secret
+spec:
+  activeDeadlineSeconds: 300
+  # podGC:
+  #   strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: cacert
+          - name: infile
+          - name: outfile
+          - name: pvc_gupload
+          - name: url
+      steps:
+        - - name: fetch
+            templateRef:
+              name: fetch-block
+              template: fetch-tmpl
+              clusterScope: true
+        - - name: gupload
+            templateRef:
+              name: gupload-up-file
+              template: upload-tmpl
+              clusterScope: true
+            arguments:
+              parameters:
+                - name: cacert
+                  value: {{ .Values.alias.input_cacert | quote }}
+                - name: url
+                  value: {{ .Values.alias.input_url | quote }}
+                - name: infile
+                  value: {{ .Values.alias.input_infile | quote }}
+                - name: outfile
+                  value: {{ .Values.alias.input_outfile | quote }}
+                - name: pvc_gupload
+                  value: {{ .Values.alias.input_pvc_gupload | quote }}
+{{- end }}

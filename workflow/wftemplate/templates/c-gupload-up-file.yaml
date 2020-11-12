@@ -1,6 +1,6 @@
-{{- if eq .Values.clusterscope false }}
+{{- if eq .Values.clusterscope true }}
 apiVersion: argoproj.io/v1alpha1
-kind: WorkflowTemplate
+kind: ClusterWorkflowTemplate
 metadata:
   name: gupload-up-file
 spec:
@@ -56,13 +56,17 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++
-            ./gupload --version
-            printHeader "Gupload to {{ .Values.alias.input_url }}: {{ .Values.alias.input_infile }} -> {{ .Values.alias.input_outfile }}"
-            set -x
-            ./gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile /mnt/{{ .Values.alias.input_infile }} --outfile {{ .Values.alias.input_outfile }} --address {{ .Values.alias.input_url }}
-            res=$?
-            set +x
-            printMessage "gupload upload" $res
+            if [ -f "/mnt/{{ .Values.alias.input_infile }}" ]; then
+              ./gupload --version
+              printHeader "Gupload to {{ .Values.alias.input_url }}: {{ .Values.alias.input_infile }} -> {{ .Values.alias.input_outfile }}"
+              set -x
+              ./gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile /mnt/{{ .Values.alias.input_infile }} --outfile {{ .Values.alias.input_outfile }} --address {{ .Values.alias.input_url }}
+              res=$?
+              set +x
+              printMessage "gupload upload" $res
+            else
+              printMessage "/mnt/{{ .Values.alias.input_infile }} exist" 1
+            fi
         volumeMounts:
           - mountPath: /mnt
             name: gupload
