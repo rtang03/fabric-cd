@@ -1,0 +1,75 @@
+{{- if eq .Values.clusterscope false }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: gupload-up-file
+spec:
+  activeDeadlineSeconds: 3600
+  # podGC:
+  #   strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
+  serviceAccountName: workflow
+  entrypoint: upload-tmpl
+
+  templates:
+    # Retrieve file via gupload
+    - name: upload-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+        {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+          {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.alias.input_pvc_gupload | quote }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: cacert
+          secret:
+            secretName: {{ .Values.alias.input_cacert | quote }}
+      inputs:
+        parameters:
+          - name: cacert
+          - name: url
+          - name: infile
+          - name: outfile
+          - name: pvc_gupload
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        workingDir: /var/gupload
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            ./gupload --version
+            printHeader "Gupload to {{ .Values.alias.input_url }}: {{ .Values.alias.input_infile }} -> {{ .Values.alias.input_outfile }}"
+            set -x
+            ./gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile /mnt/{{ .Values.alias.input_infile }} --outfile {{ .Values.alias.input_outfile }} --address {{ .Values.alias.input_url }}
+            res=$?
+            set +x
+            printMessage "gupload upload" $res
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - name: cacert
+            subPath: tlscacert.pem
+            mountPath: "/var/gupload/cert/tlscacert.pem"
+{{- end }}

@@ -18,7 +18,9 @@ ordererUrl: orderer0.org0.com
 
 alias:
   input_cacert: "{{inputs.parameters.cacert}}"
+  # used by simple-echo
   input_message: "{{inputs.parameters.message}}"
+  # used by dl-create-secret
   input_pvc_gupload: "{{inputs.parameters.pvc_gupload}}"
   input_url: "{{inputs.parameters.url}}"
   input_secretName: "{{inputs.parameters.secretName}}"
@@ -32,6 +34,9 @@ alias:
   path2: "{{inputs.parameters.path2}}"
   value2: "{{inputs.parameters.value2}}"
   output_value1: "{{steps.retrieve.outputs.parameters.value1}}"
+  # used by gupload
+  input_infile: "{{inputs.parameters.infile}}"
+  input_outfile: "{{inputs.parameters.outfile}}"
 
 no_istio:
   metadata:

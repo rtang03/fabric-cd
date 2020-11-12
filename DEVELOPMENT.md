@@ -485,6 +485,7 @@ helm template workflow/wftemplate --set clusterscope=true | argo cluster-templat
 argo -n n1 template delete simple-echo
 argo -n n1 template delete fetch-block
 argo -n n1 template delete download-and-create-secret
+argo -n n1 template delete gupload-up-file
 
 # Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate | argo -n n1 template create -
@@ -506,7 +507,7 @@ Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 
 ```shell script
 # workflow of workflow - ORG2
-argo -n n1 submit workflow/fetch-block.yaml
+argo -n n1 submit workflow/gupload.yaml
 
 # testing code. Not used now
 # helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait

@@ -18,9 +18,9 @@ spec:
     - name: main
       steps:
         - - name: fetch
-            template: fetch
+            template: fetch-tmpl
 
-    - name: fetch
+    - name: fetch-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       {{- if .Values.hostAlias }}
       hostAliases:
@@ -89,7 +89,7 @@ spec:
           - mountPath: /tmp/tlscacert.pem
             name: org0-tlscacert
 
-    - name: gupload
+    - name: gupload-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       container:
         image: library/alpine:3.12.0
