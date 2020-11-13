@@ -7,6 +7,9 @@ guploadImage: ghcr.io/rtang03/gupload:0.1.6
 
 ordererUrl: orderer0.org0.com
 
+neworg:
+  enabled: false
+
 #hostAlias:
 #  - hostnames:
 #      - orderer0.org0.com
