@@ -5,6 +5,8 @@ metadata:
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 data:
+  workflow: "1"  # Only one workflow can run at given time in particular namespace
+  template: "5" # Five instance of template can run at a given time in particular namespace
   {{- if .Values.peer.enabled }}
   CORE_PEER_ADDRESS: {{ .Values.peer.config.peerAddress }}
   {{- end }}

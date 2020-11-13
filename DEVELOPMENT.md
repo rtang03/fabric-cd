@@ -489,7 +489,7 @@ argo -n n1 template delete gupload-up-file
 
 # Create WorkflowTemplate for each namespace
 helm template workflow/wftemplate -f workflow/wftemplate/values-org1.yaml | argo -n n1 template create -
-helm template workflow/wftemplate | argo -n n2 template create -
+helm template workflow/wftemplate -f workflow/wftemplate/values-org2.yaml | argo -n n2 template create -
 
 # Repeat for other namespace
 
@@ -507,7 +507,7 @@ Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 
 ```shell script
 # Run Tests
-argo -n n1 submit workflow/wftemplate/test/fetch-upload-test.yaml
+argo -n n2 submit workflow/wftemplate/test/neworg-config-update-test.yaml
 
 # testing code. Not used now
 # helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait

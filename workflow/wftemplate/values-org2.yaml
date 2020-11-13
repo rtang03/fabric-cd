@@ -14,6 +14,7 @@ hostAlias:
 ordererUrl: orderer0.org0.com
 
 neworg:
+  enabled: true
   # latest channel block (block 0), uploaded by "fetch1"
   channelConfg: channel_config--config.json
   secret:

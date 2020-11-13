@@ -170,11 +170,11 @@ res=$?
 set +x
 printMessage "create secret rca0 - Step 1 to Step 4" $res
 
-set -x
-helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA0-b.yaml | argo -n $NS0 submit - --wait
-res=$?
-set +x
-printMessage "create secret rca0 - Step 5 to Step 10" $res
+#set -x
+#helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA0-b.yaml | argo -n $NS0 submit - --wait
+#res=$?
+#set +x
+#printMessage "create secret rca0 - Step 5 to Step 10" $res
 
 set -x
 helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA1.yaml | argo -n $NS1 submit - --wait

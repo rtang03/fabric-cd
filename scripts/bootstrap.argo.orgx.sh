@@ -134,10 +134,14 @@ echo "#################################"
 SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
 TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 
+set -x
 curl http://argo.server/api/v1/events/n1/pull-tlscacert -H "Authorization: $TOKEN" -d '{"file":"org2.net-tlscacert.pem","secret":"org2.net-tlscacert","url":"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem","key":"tlscacert.pem"}'
+res=$?
+set +x
+printMessage "pull-tlscacert" $res
 
 echo "#################################"
-echo "### Step 14: Install $REL_PEER"
+echo "### Step 10: Install $REL_PEER"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=$NS,rel=$REL_PEER,file=values-$REL_PEER.yaml,path=hlf-peer,target=$TARGET | argocd app create -f -
@@ -161,7 +165,11 @@ echo "#####################################################################"
 echo "### MULTIPLE ORGS WORKFLOW"
 echo "#####################################################################"
 
+set -x
 curl http://argo.server/api/v1/events/n1/fetch-upload -H "Authorization: $TOKEN" -d '{"outfile":"channel_config--config.json","cacert":"org2.net-tlscacert","url":"gupload.org2.net:15443"}'
+res=$?
+set +x
+printMessage "fetch-upload" $res
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

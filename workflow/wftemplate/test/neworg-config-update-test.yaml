@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: test-neworg-
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  # arguments:
+  #   parameters:
+  #     - name: cacert
+  #       value: org2.net-tlscacert
+  #     - name: outfile
+  #       value: "channel_config--config.json"
+  #     - name: url
+  #       value: "gupload.org2.net:15443"
+  workflowTemplateRef:
+    name: neworg-config-update
