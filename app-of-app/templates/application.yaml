@@ -20,7 +20,6 @@ spec:
         {{- if .secret }}
         - {{ .secret }}
       {{- end }}
-      version: v3
   destination:
     server: {{ $.Values.server }}
     namespace: {{ $.Values.ns }}
