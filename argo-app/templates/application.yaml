@@ -19,7 +19,6 @@ spec:
         {{- if .Values.secret }}
         - {{ .Values.secret }}
         {{- end }}
-      version: v3
   destination:
     server: {{ .Values.server }}
     namespace: {{ .Values.ns }}
