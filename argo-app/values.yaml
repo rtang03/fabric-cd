@@ -7,3 +7,4 @@ path: orgadmin
 rel: admin1
 file: values-admin1.yaml
 #secret: secrets.yaml
+clusterscope: false
