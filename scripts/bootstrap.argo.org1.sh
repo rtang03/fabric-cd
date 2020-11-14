@@ -319,8 +319,21 @@ res=$?
 set +x
 printMessage "$REL_PEER | $REL_GUPLOAD are healthy and sync" $res
 
+
 echo "#################################"
-echo "### Step 16: Bootstrap part 1"
+echo "### Step 16: Create Secret org0.com-tlscacert for n1"
+echo "#################################"
+
+set -x
+argo -n n1 submit ../workflow/create-org0tlscacert.n1.yaml --watch --request-timeout 60s
+res=$?
+set +x
+printMessage "create tlscacerts" $res
+
+sleep 60
+
+echo "#################################"
+echo "### Step 17: Bootstrap part 1"
 echo "#################################"
 set -x
 helm template ../workflow/bootstrap -f ../workflow/bootstrap/values-org1-a.yaml | argo -n $NS1 submit - --watch --request-timeout 300s
@@ -329,7 +342,7 @@ set +x
 printMessage "bootstrap part 1" $res
 
 echo "#################################"
-echo "### Step 17: Install chaincode"
+echo "### Step 18: Install chaincode"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=$NS1,rel=eventstore,file=values-org1.yaml,path=hlf-cc,target=$TARGET | argocd app create -f -
@@ -350,23 +363,13 @@ set +x
 printMessage "eventstore is healthy and sync" $res
 
 echo "#################################"
-echo "### Step 18: Bootstrap part 2"
+echo "### Step 19: Bootstrap part 2"
 echo "#################################"
 set -x
 helm template ../workflow/bootstrap -f ../workflow/bootstrap/values-org1-b.yaml | argo -n $NS1 submit - --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "bootstrap part 2" $res
-
-echo "#################################"
-echo "### Step 19: Create Secret org0.com-tlscacert for n1"
-echo "#################################"
-
-set -x
-argo -n n1 submit ../workflow/create-org0tlscacert.n1.yaml --watch --request-timeout 60s
-res=$?
-set +x
-printMessage "create tlscacerts" $res
 
 # NOT WORKING
 #export POD_RCA=$(kubectl get pods -n n1 -l "app=hlf-ca,release=rca1" -o jsonpath="{.items[0].metadata.name}")

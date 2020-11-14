@@ -1,0 +1,28 @@
+{{- range .Values.apps }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .rel }}
+  namespace: argocd
+  # Add a this finalizer ONLY if you want these to cascade delete.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $.Values.project }}
+  source:
+    repoURL: {{ $.Values.repoURL }}
+    targetRevision: {{ $.Values.target }}
+    path: {{ .path }}
+    helm:
+      releaseName: {{ .rel }}
+      valueFiles:
+        - {{ .file }}
+        {{- if .secret }}
+        - {{ .secret }}
+      {{- end }}
+      version: v3
+  destination:
+    server: {{ $.Values.server }}
+    namespace: {{ $.Values.ns }}
+---
+{{- end }}

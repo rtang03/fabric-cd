@@ -31,6 +31,7 @@ server:
     sidecar.istio.io/rewriteAppHTTPProbers: "false"
     sidecar.istio.io/logLevel: "info"
   config:
+    statusbadge.enabled: 'true'
     # https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#helm-chart-repositories
     # need to add non standard helm chart for istio, in order for argocd to work
     helm.repositories: |

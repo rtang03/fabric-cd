@@ -556,6 +556,7 @@ spec:
             apk --no-cache add libc6-compat libstdc++ tzdata
             # decode org0 tlscacert
             cat /tmp/org0.com-tlscacert_encoded.pem | base64 -d > /tmp/org0.com-tlscacert.pem
+            more /tmp/org0.com-tlscacert.pem
             set -x
             $BIN/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.bootstrap.chaincode.id }}
             res=$?
