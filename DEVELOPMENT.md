@@ -385,7 +385,7 @@ kubectl -n n2 apply -f ./argo/service-account-argo.yaml
 Modify the `argo/values-argo.yaml` for installation configuration.
 ```shell script
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo
-helm -n argo install argo -f argo/values-argo.yaml --set installCRDs=false argo/argo
+helm -n argo apply argo -f argo/values-argo.yaml --set installCRDs=false argo/argo
 ```
 
 **Artifactory**
