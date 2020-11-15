@@ -70,10 +70,10 @@ spec:
             chmod +x /usr/local/bin/argocd
             printHeader "Argocd App Sync"
             set -x
-            argocd login "${ARGOCD_SERVER}:80" --grpc-web
-            argocd version --server "${ARGOCD_SERVER}:80"
+            # argocd login "${ARGOCD_SERVER}:80" --grpc-web
+            argocd version --server "${ARGOCD_SERVER}:80" --grpc-web
             printMessage "print version" $?
-            argocd app sync admin1 --server "${ARGOCD_SERVER}:80"
+            argocd app sync admin1 --server "${ARGOCD_SERVER}:80" --grpc-web
         env:
           - name: ARGOCD_AUTH_TOKEN
             valueFrom:
