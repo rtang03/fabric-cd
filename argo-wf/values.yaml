@@ -40,6 +40,8 @@ alias:
   # used by gupload
   input_infile: "{{inputs.parameters.infile}}"
   input_outfile: "{{inputs.parameters.outfile}}"
+  # used by argocd-cli
+  input_app: "{{inputs.parameters.app}}"
 
 no_istio:
   metadata:

@@ -25,15 +25,6 @@ spec:
       {{- end }}
       {{- end }}
       inputs:
-        # artifacts:
-        #   - name: argocd
-        #     path: /usr/local/bin/argocd
-        #     mode: 0755
-        #     http:
-        #       url: http://35.202.107.80/download/argocd-linux-amd64
-        #       headers:
-        #         name: Host
-        #         value: argocd.server
         parameters:
           - name: app
       volumes:
@@ -68,11 +59,23 @@ spec:
             set +x
             printMessage "Binary Load" $res
             chmod +x /usr/local/bin/argocd
-            printHeader "Argocd App Sync"
+            printHeader "Argocd App Sync: {{ .Values.alias.input_app | quote }}"
             set -x
+            # TODO: change to TLS
             argocd version --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
-            printMessage "print version" $?
-            argocd app sync admin1 --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
+            res=$?
+            set +x
+            printMessage "print version" $res
+            set -x
+            argocd app sync {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
+            res=$?
+            set +x
+            printMessage "app sync" $res
+            set -x
+            argocd app wait {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext --timeout 300
+            res=$?
+            set +x
+            printMessage "wait sync" $res
         env:
           - name: ARGOCD_AUTH_TOKEN
             valueFrom:
