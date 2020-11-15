@@ -12,20 +12,51 @@ spec:
   entrypoint: argocd-app-sync
 
   templates:
-    # Delete Secret resource
     - name: argocd-app-sync
 {{ toYaml .Values.no_istio | indent 6 }}
       inputs:
+        artifacts:
+          - name: argocd
+            path: /usr/local/bin/argocd
+            mode: 0755
+            http:
+              url: http://argocd.server/download/argocd-linux-amd64
         parameters:
           - name: app
+      volumes:
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
         args:
           - |-
-            echo "argoServer: $ARGOCD_SERVER"
-            echo "argoAuthToken: $ARGOCD_AUTH_TOKEN"
-            curl -sSL -o /usr/local/bin/argocd https://${ARGOCD_SERVER}/download/argocd-linux-amd64
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ curl
+            ### Checking ENV
+            if [ -z $ARGOCD_SERVER ]; then
+              printMessage "env ARGO_SERVER" 1
+            else
+              echo "ArgoCD Server: $ARGOCD_SERVER"
+            fi
+            if [ -z $ARGOCD_AUTH_TOKEN ]; then
+              printMessage "load env: ARGOCD_AUTH_TOKEN" 1
+            else
+              echo "ARGOCD_AUTH_TOKEN found"
+            fi
+            # printHeader "Download argocd binary"
+            # set -x
+            # curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64 -v
+            # res=$?
+            # set +x
+            # printMessage "load" $res
+            printHeader "Argocd App Sync"
+            set -x
+            argocd version
             # argocd app sync admin1
         env:
           - name: ARGOCD_AUTH_TOKEN
@@ -36,3 +67,7 @@ spec:
         envFrom:
           - configMapRef:
               name: orgadmin--cli
+        volumeMounts:
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
