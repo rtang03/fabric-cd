@@ -20,7 +20,10 @@ spec:
             path: /usr/local/bin/argocd
             mode: 0755
             http:
-              url: http://argocd.server/download/argocd-linux-amd64
+              url: http://35.202.107.80/download/argocd-linux-amd64
+              headers:
+                name: Host
+                value: argocd.server
         parameters:
           - name: app
       volumes:
