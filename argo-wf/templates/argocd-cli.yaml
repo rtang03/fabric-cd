@@ -70,7 +70,7 @@ spec:
             chmod +x /usr/local/bin/argocd
             printHeader "Argocd App Sync"
             set -x
-            argocd version --server "${ARGOCD_SERVER}:80" --plaintext
+            argocd version --server "${ARGOCD_SERVER}:80"
             printMessage "print version" $?
             argocd app sync admin1 --server "${ARGOCD_SERVER}:80"
         env:
