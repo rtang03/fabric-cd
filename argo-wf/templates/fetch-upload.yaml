@@ -28,7 +28,7 @@ spec:
             templateRef:
               name: gupload-up-file
               template: upload-tmpl
-              clusterScope: true
+              clusterScope: false
             arguments:
               parameters:
                 - name: cacert
