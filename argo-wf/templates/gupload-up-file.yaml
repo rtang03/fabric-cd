@@ -1,4 +1,4 @@
-{{- if eq .Values.clusterscope true }}
+{{- if eq .Values.clusterscope false }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
