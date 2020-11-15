@@ -15,15 +15,15 @@ spec:
     - name: argocd-app-sync
 {{ toYaml .Values.no_istio | indent 6 }}
       inputs:
-        artifacts:
-          - name: argocd
-            path: /usr/local/bin/argocd
-            mode: 0755
-            http:
-              url: http://35.202.107.80/download/argocd-linux-amd64
-              headers:
-                name: Host
-                value: argocd.server
+        # artifacts:
+        #   - name: argocd
+        #     path: /usr/local/bin/argocd
+        #     mode: 0755
+        #     http:
+        #       url: http://35.202.107.80/download/argocd-linux-amd64
+        #       headers:
+        #         name: Host
+        #         value: argocd.server
         parameters:
           - name: app
       volumes:
@@ -51,12 +51,12 @@ spec:
             else
               echo "ARGOCD_AUTH_TOKEN found"
             fi
-            # printHeader "Download argocd binary"
-            # set -x
-            # curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64 -v
-            # res=$?
-            # set +x
-            # printMessage "load" $res
+            printHeader "Download argocd binary"
+            set -x
+            curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64 -v
+            res=$?
+            set +x
+            printMessage "load" $res
             printHeader "Argocd App Sync"
             set -x
             argocd version
