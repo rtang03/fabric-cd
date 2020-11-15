@@ -19,6 +19,9 @@ spec:
         {{- if .Values.secret }}
         - {{ .Values.secret }}
         {{- end }}
+      {{- if .Values.useV3 }}
+      version: v3
+      {{- end }}
   destination:
     server: {{ .Values.server }}
     {{- if eq .Values.clusterscope false }}

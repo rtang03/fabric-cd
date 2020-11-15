@@ -6,7 +6,7 @@
 SECONDS=0
 TARGET=dev-0.1
 
-helm template ../argo-app --set ns=argo,path=argo,target=dev-0.1,rel=argo-org1,file=values-argo.yaml | argocd app create -f -
+helm template ../argo-app --set ns=argo,path=argo,target=dev-0.1,rel=argo-org1,file=values-argo.yaml,useV3=true | argocd app create -f -
 
 helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-org1,file=values-org1.yaml | argocd app create -f -
 
