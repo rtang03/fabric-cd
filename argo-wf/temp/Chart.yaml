@@ -1,9 +1,0 @@
-apiVersion: v2
-appVersion: 0.6.3
-description: workflow template
-name: argo
-version: 0.1.0
-dependencies:
-  - name: "argo"
-    version: "0.13.3"
-    repository: "https://argoproj.github.io/argo-helm"

@@ -11,6 +11,7 @@ spec:
   podGC:
     strategy: OnPodCompletion
   serviceAccountName: workflow
+  entrypoint: argocd-app-sync
 
   templates:
     # Delete Secret resource
