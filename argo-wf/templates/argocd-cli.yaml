@@ -63,10 +63,11 @@ spec:
             fi
             printHeader "Download argocd binary"
             set -x
-            curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64 -v
+            curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64
             res=$?
             set +x
-            printMessage "load" $res
+            printMessage "Binary Load" $res
+            chmod +x /usr/local/bin/argocd
             printHeader "Argocd App Sync"
             set -x
             argocd version
