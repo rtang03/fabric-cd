@@ -70,8 +70,9 @@ spec:
             chmod +x /usr/local/bin/argocd
             printHeader "Argocd App Sync"
             set -x
-            argocd version
-            # argocd app sync admin1
+            argocd version --server http://$ARGO_SERVER
+            printMessage "print version" $?
+            argocd app sync admin1 --server http://$ARGO_SERVER
         env:
           - name: ARGOCD_AUTH_TOKEN
             valueFrom:
