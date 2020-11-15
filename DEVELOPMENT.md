@@ -302,11 +302,12 @@ brew install argocd
 **Deploy project specific configuration**
 
 ```shell script
-kubectl -n argocd apply -f ./argocd/project.yaml
+kubectl -n argocd apply -f argocd/project.yaml
 
-# if accidentally modify argocd-cm in later step, you may need to re-load it.
-# this step should use with care
-# kubectl -n argocd apply -f ./argocd/argocd-cm.yaml
+# Generate JWT, for use by automated process
+# Remind to gitignore "download" directory.
+# In ArgoCD, no JWT will persist. Need to store it locally
+argocd proj role create-token my-project ci-role > download/ARGO_TOKEN_CI.txt
 ```
 
 **Port Forwarding**
@@ -318,13 +319,28 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 **Authenticate**
 
 ```shell script
+# get all accounts, "admin", "cli"
+argocd account list
+
 # the initial password is pod-id
 POD=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
 
-# UPDATE PASSWORD: when port-forwarding is live, can update password
+# UPDATE PASSWORD for account "admin": when port-forwarding is live, can update password
 # Do update password after initial setup
+# TODO: In a production setup, admin should be disable after initial configuration setup.
 argocd login localhost:8080 --insecure --username admin --password $POD
-argocd account update-password --current-password $POD --new-password [some-strong-password]
+argocd account update-password --current-password $POD --new-password [NEW-PASSWORD]
+
+# Update password for account "cli"
+argocd account update-password --account cli --current-password [CURRENT ADMIN-PASSWORD] --new-password [NEW-PASSWORD]
+
+# Generate JWT for "cli"
+CONTENT=$(argocd account generate-token --account cli)
+kubectl -n n1 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
+
+# optionally, save it locally
+# Remind to gitignore "download" directory.
+# echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
 ```
 
 **Add your git repo**
@@ -385,7 +401,7 @@ kubectl -n n2 apply -f ./argo/service-account-argo.yaml
 Modify the `argo/values-argo.yaml` for installation configuration.
 ```shell script
 # see https://github.com/argoproj/argo-helm/tree/master/charts/argo
-helm -n argo apply argo -f argo/values-argo.yaml --set installCRDs=false argo/argo
+helm -n argo install argo -f argo/values-argo.yaml --set installCRDs=false argo/argo
 ```
 
 **Artifactory**

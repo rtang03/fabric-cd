@@ -15,6 +15,9 @@ cli:
   # It provides org0 with org1's certs, for creation of genesis.block
   firstOrgDir: /var/hyperledger/crypto-config/Org1MSP
 
+argocd:
+  url: "argocd.server"
+
 orderer:
   enabled: false
 
