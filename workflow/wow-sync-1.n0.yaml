@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: wow-bootstrap-org0-1
+  name: wow-sync-org0-1
 spec:
   entrypoint: main
   serviceAccountName: workflow
