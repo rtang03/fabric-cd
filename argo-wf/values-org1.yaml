@@ -15,5 +15,5 @@ ordererUrl: orderer0.org0.com
 
 argocdServerUrl: argocd.server
 
-createsChannel:
+createChannel:
   enabled: true
