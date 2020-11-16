@@ -1,6 +1,8 @@
 # Continuous Deployment
 GitOps Continuous deployment for *fabric-es* and its projects.
 
+- **o0** http://argocd.server/api/badge?name=o0&revision=true
+
 (This page is under construction).
 ```text
 Dear Everyone,
