@@ -5,9 +5,6 @@ server: https://kubernetes.default.svc
 repoURL: git@github.com:rtang03/fabric-cd.git
 
 apps:
-  - path: argo-wf
-    rel: argo-org1
-    file: values-org1.yaml
   - path: orgadmin
     rel: admin1
     file: values-admin1.yaml
