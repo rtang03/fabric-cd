@@ -70,21 +70,21 @@ echo "#################################"
 echo "### Step 5: App sync - org0"
 echo "#################################"
 set -x
-argo submit -n n0 ../workflow/wow-sync-1.n0.yaml --watch --request-timeout 300s
+argo submit -n n0 ../workflow/aoa-sync-1.n0.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit org0 sync request - part1" $res
-checkArgoWfSucceeded "wow-sync-1" n0
+checkArgoWfSucceeded "aoa-sync-1" n0
 
 echo "#################################"
 echo "### Step 6: App sync - org1"
 echo "#################################"
 set -x
-argo submit -n n1 ../workflow/wow-sync-1.n1.yaml --watch --request-timeout 300s
+argo submit -n n1 ../workflow/aoa-sync-1.n1.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit org1 sync request - part1" $res
-checkArgoWfSucceeded "wow-sync-1" n1
+checkArgoWfSucceeded "aoa-sync-1" n1
 
 echo "#################################"
 echo "### Step 7: Workflow: crypto-$REL_TLSCA1"
@@ -191,21 +191,21 @@ echo "#################################"
 echo "### Step 13: app sync org0: part 2"
 echo "#################################"
 set -x
-argo submit -n n0 ../workflow/wow-sync-2.n0.yaml --watch --request-timeout 300s
+argo submit -n n0 ../workflow/aoa-sync-2.n0.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit sync request - part2" $res
-checkArgoWfSucceeded "wow-sync-2" n0
+checkArgoWfSucceeded "aoa-sync-2" n0
 
 echo "#################################"
 echo "### Step 14: app sync org1: part 2"
 echo "#################################"
 set -x
-argo submit -n n1 ../workflow/wow-sync-2.n1.yaml --watch --request-timeout 300s
+argo submit -n n1 ../workflow/aoa-sync-2.n1.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit sync request - part2" $res
-checkArgoWfSucceeded "wow-sync-2" n1
+checkArgoWfSucceeded "aoa-sync-2" n1
 
 sleep 5
 

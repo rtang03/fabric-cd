@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  generateName: create-channel
+  name: create-channel
 spec:
   activeDeadlineSeconds: 300
   # podGC:

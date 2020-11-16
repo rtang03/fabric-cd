@@ -491,7 +491,7 @@ organization.
 # helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-org1,file=values-org1.yaml | argocd app create -f -
 
 # Test the deployed templates, e.g. "simple-echo"
-argo -n n1 submit argo-wf/test/simple-echo-test.yaml
+argo -n n1 submit argo-wf/test/xxxx.test.yaml
 ```
 
 There will be no direct response of event execution; which will be the request on queue.
