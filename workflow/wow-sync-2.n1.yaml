@@ -8,46 +8,6 @@ spec:
   templates:
     - name: main
       steps:
-        - - name: sync-o0
-            templateRef:
-              name: argocd-cli
-              template: argocd-app-sync
-            arguments:
-              parameters:
-                - name: app
-                  value: "o0"
-          - name: sync-o1
-            templateRef:
-              name: argocd-cli
-              template: argocd-app-sync
-            arguments:
-              parameters:
-                - name: app
-                  value: "o1"
-          - name: sync-02
-            templateRef:
-              name: argocd-cli
-              template: argocd-app-sync
-            arguments:
-              parameters:
-                - name: app
-                  value: "o2"
-          - name: sync-o3
-            templateRef:
-              name: argocd-cli
-              template: argocd-app-sync
-            arguments:
-              parameters:
-                - name: app
-                  value: "o3"
-          - name: sync-o4
-            templateRef:
-              name: argocd-cli
-              template: argocd-app-sync
-            arguments:
-              parameters:
-                - name: app
-                  value: "o4"
         - - name: sync-p0o1
             templateRef:
               name: argocd-cli

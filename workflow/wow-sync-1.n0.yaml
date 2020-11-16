@@ -15,28 +15,28 @@ spec:
             arguments:
               parameters:
                 - name: app
-                  value: "apps-org1"
-        - - name: sync-admin1
+                  value: "apps-org0"
+          - name: sync-admin0
             templateRef:
               name: argocd-cli
               template: argocd-app-sync
             arguments:
               parameters:
                 - name: app
-                  value: "admin1"
-        - - name: sync-tlsca1
+                  value: "admin0"
+          - name: sync-tlsca0
             templateRef:
               name: argocd-cli
               template: argocd-app-sync
             arguments:
               parameters:
                 - name: app
-                  value: "tlsca1"
-          - name: sync-rca1
+                  value: "tlsca0"
+          - name: sync-rca0
             templateRef:
               name: argocd-cli
               template: argocd-app-sync
             arguments:
               parameters:
                 - name: app
-                  value: "rca1"
+                  value: "rca0"

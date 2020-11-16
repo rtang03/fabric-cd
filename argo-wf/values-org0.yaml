@@ -1,0 +1,16 @@
+pvc_fabricfiles: pvc-org1
+pvc_gupload: pvc-gupload1
+
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+      - argocd.server
+    ip: 35.202.107.80
+  - hostnames:
+      - gupload.org2.net
+    ip: 35.202.107.80
+
+ordererUrl: orderer0.org0.com
+
+argocdServerUrl: argocd.server

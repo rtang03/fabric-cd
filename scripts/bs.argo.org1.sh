@@ -6,22 +6,44 @@
 SECONDS=0
 TARGET=dev-0.1
 echo "#################################"
-echo "### Step 0: Install WorkflowTemplates"
+echo "### Step 0: Install WorkflowTemplates (n0)"
 echo "#################################"
 set -x
-helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-org1,file=values-org1.yaml | argocd app create -f -
+helm template ../argo-app --set ns=n0,path=argo-wf,target=dev-0.1,rel=argo-template-org1,file=values-org0.yaml | argocd app create -f -
 res=$?
 set +x
 printMessage "install wfTemplate" $res
 
 set -x
-argocd app sync argo-org1
+argocd app sync argo-template-org0
 res=$?
 set +x
 printMessage "app sync" $res
 
 set -x
-argocd app wait argo-org1
+argocd app wait argo-template-org0
+res=$?
+set +x
+printMessage "wait wfTemplate" $res
+
+
+echo "#################################"
+echo "### Step 0: Install WorkflowTemplates (n1)"
+echo "#################################"
+set -x
+helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-wftemplate-org1,file=values-org1.yaml | argocd app create -f -
+res=$?
+set +x
+printMessage "install wfTemplate" $res
+
+set -x
+argocd app sync argo-template-org1
+res=$?
+set +x
+printMessage "app sync" $res
+
+set -x
+argocd app wait argo-template-org1
 res=$?
 set +x
 printMessage "wait wfTemplate" $res
@@ -35,18 +57,6 @@ res=$?
 set +x
 printMessage "install org0 manifests" $res
 
-#set -x
-#argocd app sync apps-org0
-#res=$?
-#set +x
-#printMessage "run app sync: app-of-apps" $res
-#
-#set -x
-#argocd app wait apps-org0
-#res=$?
-#set +x
-#printMessage "wait app-of-apps" $res
-
 echo "#################################"
 echo "### Step 1: App-of-apps (n1)"
 echo "#################################"
@@ -56,28 +66,23 @@ res=$?
 set +x
 printMessage "install org1 manifests" $res
 
-#set -x
-#argocd app sync apps-org1
-#res=$?
-#set +x
-#printMessage "run app sync: app-of-apps" $res
-#
-#set -x
-#argocd app wait apps-org1
-#res=$?
-#set +x
-#printMessage "wait app-of-apps" $res
+echo "#################################"
+echo "### Step 2: App sync - org0"
+echo "#################################"
+set -x
+argo submit -n n0 ../workflow/wow-sync-1.n0.yaml --watch --request-timeout 300s
+res=$?
+set +x
+printMessage "submit org0 sync request - part1" $res
 
 echo "#################################"
-echo "### Step 2: Run ArgoCD app sync"
+echo "### Step 2: App sync - org1"
 echo "#################################"
 set -x
 argo submit -n n1 ../workflow/wow-sync-1.n1.yaml --watch --request-timeout 300s
 res=$?
 set +x
-printMessage "submit sync request - part1" $res
-
-exit 0
+printMessage "submit org1 sync request - part1" $res
 
 echo "#################################"
 echo "### Step 3: Workflow: crypto-$REL_TLSCA1"
@@ -173,7 +178,16 @@ gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n1/org1.net-tlsc
 sleep 5
 
 echo "#################################"
-echo "### Step 9: app sync part 2"
+echo "### Step 9: app sync org0: part 2"
+echo "#################################"
+set -x
+argo submit -n n0 ../workflow/wow-sync-2.n0.yaml --watch --request-timeout 300s
+res=$?
+set +x
+printMessage "submit sync request - part2" $res
+
+echo "#################################"
+echo "### Step 9: app sync org1: part 2"
 echo "#################################"
 set -x
 argo submit -n n1 ../workflow/wow-sync-2.n1.yaml --watch --request-timeout 300s
