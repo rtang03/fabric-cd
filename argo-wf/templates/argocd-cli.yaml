@@ -27,65 +27,67 @@ spec:
       inputs:
         parameters:
           - name: app
-      volumes:
-        - name: setup-script
-          configMap:
-            name: "orgadmin--setupsh"
-            defaultMode: 0755
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
         args:
           - |-
-            . /script/setup.sh
+            ARGOCD_SERVER={{ .Values.argocdServerUrl }}
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ curl
             ### Checking ENV
             if [ -z $ARGOCD_SERVER ]; then
-              printMessage "env ARGO_SERVER" 1
+              echo "env ARGO_SERVER"
+              exit 1
             else
               echo "ArgoCD Server: $ARGOCD_SERVER"
             fi
             if [ -z $ARGOCD_AUTH_TOKEN ]; then
-              printMessage "load env: ARGOCD_AUTH_TOKEN" 1
+              echo "load env: ARGOCD_AUTH_TOKEN"
+              exit 1
             else
               echo "ARGOCD_AUTH_TOKEN found"
             fi
-            printHeader "Download argocd binary"
+            ### Download argocd binary ####
             set -x
             curl -sSL -o /usr/local/bin/argocd http://${ARGOCD_SERVER}/download/argocd-linux-amd64
             res=$?
             set +x
-            printMessage "Binary Load" $res
+            if [ $res -ne 0 ]; then
+              echo "fail to load argocd binary"
+              exit $res
+            fi
             chmod +x /usr/local/bin/argocd
-            printHeader "Argocd App Sync: {{ .Values.alias.input_app | quote }}"
+            ### Argocd App Sync: {{ .Values.alias.input_app | quote }} ###
             set -x
             # TODO: change to TLS
             argocd version --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             res=$?
             set +x
-            printMessage "print version" $res
+            if [ $res -ne 0 ]; then
+              echo "fail to print version"
+              exit $res
+            fi
             set -x
             argocd app sync {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             res=$?
             set +x
-            printMessage "app sync" $res
+            if [ $res -ne 0 ]; then
+              echo "fail to sync app"
+              exit $res
+            fi
             set -x
             argocd app wait {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext --timeout 300
             res=$?
             set +x
-            printMessage "wait sync" $res
+            if [ $res -ne 0 ]; then
+              echo "fail to wait to finish"
+              exit $res
+            fi
         env:
           - name: ARGOCD_AUTH_TOKEN
             valueFrom:
               secretKeyRef:
                 name: argocd-cli-jwt
                 key: jwt
-        envFrom:
-          - configMapRef:
-              name: orgadmin--cli
-        volumeMounts:
-          - name: setup-script
-            mountPath: /script/setup.sh
-            subPath: setup.sh

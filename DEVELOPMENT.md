@@ -472,43 +472,32 @@ Send the access token to other organization admin (e.g. org2), in order for send
 
 **WorkflowTemplates**
 
-Here installs both *WorkflowTemplate* and *ClusterWorkflowTemplate*, via helm chart, under `workflow/wftemplate` directory. The
+Here installs both *WorkflowTemplate* and *ClusterWorkflowTemplate*, via helm chart, under `argo-wf` directory. The
 workflow templates includes:
 - secret-resource (cluster scoped)
 - (namespace scoped)
 
-See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templates/), and [Cluster Workflow Templates](https://argoproj.github.io/argo/cluster-workflow-templates/).
-
-**Create ClusterWorkflowTemplate**
-
-```shell script
-# ClusterWorkflowTemplate
-# Optionally, clean-up pre-existing ClusterWorkflowTemplate
-argo cluster-template delete secret-resource
-argo cluster-template delete create-secret-from-file
-argo cluster-template delete retrieve-from-http
-
-# Create ClusterWorkflowTemplate
-helm template workflow/wftemplate --set clusterscope=true | argo cluster-template create -
-```
+See concept of [WorkflowTemplate](https://argoproj.github.io/argo/workflow-templates/).
 
 **Create WorkflowTemplate**
 
+The *workflowTemplate* is deployed via ArgoCD. You need not run it. This is part of the boostraping script, for each
+organization.
+
 ```shell script
-# ClusterWorkflowTemplate
-# Optionally, clean-up
-#argo -n n1 clustemplate delete gupload-XX-file  (FIX it later)
-argo -n n1 template delete simple-echo
-argo -n n1 template delete fetch-block
-argo -n n1 template delete download-and-create-secret
-argo -n n1 template delete gupload-up-file
+# E.g. inside bootstrapping script.
+# helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-org1,file=values-org1.yaml | argocd app create -f -
 
-# Create WorkflowTemplate for each namespace
-helm template workflow/wftemplate -f workflow/wftemplate/values-org1.yaml | argo -n n1 template create -
-helm template workflow/wftemplate -f workflow/wftemplate/values-org2.yaml | argo -n n2 template create -
+# Test the deployed templates, e.g. "simple-echo"
+argo -n n1 submit argo-wf/test/simple-echo-test.yaml
+```
 
-# Repeat for other namespace
+There will be no direct response of event execution; which will be the request on queue.
+Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 
+**WorkflowEventBinding**
+
+```shell script
 # Deploy WorkflowEventBinding, for use by Argo server REST API
 kubectl -n n1 apply -f argo/eventbinding.yaml
 
@@ -516,18 +505,7 @@ kubectl -n n1 apply -f argo/eventbinding.yaml
 curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
 ```
 
-There will be no direct response of event execution; which will be the request on queue.
-Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
-
-**Trigger WorkflowTemplates**
-
-```shell script
-# Run Tests
-argo -n n2 submit workflow/wftemplate/test/neworg-config-update-test.yaml
-
-# testing code. Not used now
-# helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
-```
+This enables Argo Events, such that the cross-organization workflow orchrestration is performed.
 
 
 ### External chaincode container
@@ -716,3 +694,12 @@ For argo, and argocd; enable https proxy, via istio secure gateway pattern. I at
 Here is the starting solution, which all namespaces (i.e. org) are located in the same cluster. Hence, share the single
 *Argo* and *ArgoCD* servers. In a decentralized deployment, new organization shall require separate cluster installation,
 and argo servers. The 2nd phase implementation is multiple cluster deployment.
+
+**Use Istio for ArgoCD**
+
+This is unfinished part, to use Istio to add TLS support, for both *Argo* and *ArgoCD* servers.
+
+```shell script
+# testing code. Not working.
+helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
+```

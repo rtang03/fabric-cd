@@ -35,12 +35,9 @@ conf:
   - name: CORE_PEER_TLS_ENABLED
     value: "true"
   - name: CORE_PEER_TLS_ROOTCERT_FILE
-    # TODO: remove it
-    # value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tls-ca-cert.pem
     value: /var/hyperledger/crypto-config/channel-artifacts/org1.net-tlscacert/tlscacert.pem
   - name: ORDERER_CA
     value: /tmp/org0.com-tlscacert.pem
-#    value: /var/hyperledger/crypto-config/channel-artifacts/org0.com-tlscacert/tlscacert.pem
   - name: ORDERER_URL
     value: "orderer0.org0.com:15443"
   - name: CORE_PEER_MSPCONFIGPATH

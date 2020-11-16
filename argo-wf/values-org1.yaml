@@ -12,3 +12,5 @@ hostAlias:
     ip: 35.202.107.80
 
 ordererUrl: orderer0.org0.com
+
+argocdServerUrl: argocd.server
