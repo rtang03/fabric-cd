@@ -96,13 +96,6 @@ set +x
 printMessage "run workflow cryptogen-$REL_TLSCA1" $res
 checkArgoWfSucceeded "cryptogen-$REL_TLSCA1" n1
 
-#CHECK=$(argo -n n1 get @latest -o json | jq '.metadata.labels."workflows.argoproj.io/phase"' -)
-#if [ $CHECK != '"Succeeded"' ]; then
-#  printMessage "workflow crypto-$REL_TLSCA1" 1
-#else
-#  printMessage "check ok: workflow-cryptogen-$REL_TLSCA1" 0
-#fi
-
 echo "#################################"
 echo "### Step 8: Workflow crypto-$REL_RCA1"
 echo "#################################"

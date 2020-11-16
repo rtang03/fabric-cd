@@ -9,6 +9,9 @@ ordererUrl: orderer0.org0.com
 
 argocdServerUrl: argocd.server
 
+createChannel:
+  enabled: false
+
 neworg:
   enabled: false
 
