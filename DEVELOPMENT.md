@@ -24,8 +24,9 @@ the latest runnable deployment; and is protected. It should perform pull request
 - Argo Workflow v2.11.3
 - sops
 - Helm Secrets
-- gpg
+- gpg (installed on local dev machine)
 - GoLang
+- jq (installed on local dev machine)
 
 
 ## First-time setup

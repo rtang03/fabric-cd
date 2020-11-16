@@ -6,7 +6,7 @@
 SECONDS=0
 TARGET=dev-0.1
 echo "#################################"
-echo "### Step 0: Install WorkflowTemplates (n0)"
+echo "### Step 1: Install WorkflowTemplates (n0)"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=n0,path=argo-wf,target=dev-0.1,rel=argo-template-org0,file=values-org0.yaml | argocd app create -f -
@@ -28,7 +28,7 @@ printMessage "wait wfTemplate" $res
 
 
 echo "#################################"
-echo "### Step 0: Install WorkflowTemplates (n1)"
+echo "### Step 2: Install WorkflowTemplates (n1)"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-template-org1,file=values-org1.yaml | argocd app create -f -
@@ -49,7 +49,7 @@ set +x
 printMessage "wait wfTemplate" $res
 
 echo "#################################"
-echo "### Step 1: App-of-apps (n0)"
+echo "### Step 3: App-of-apps (n0)"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=argocd,path=app-of-app,target=dev-0.1,rel=apps-org0,file=values-org0.yaml | argocd app create -f -
@@ -58,7 +58,7 @@ set +x
 printMessage "install org0 manifests" $res
 
 echo "#################################"
-echo "### Step 1: App-of-apps (n1)"
+echo "### Step 4: App-of-apps (n1)"
 echo "#################################"
 set -x
 helm template ../argo-app --set ns=argocd,path=app-of-app,target=dev-0.1,rel=apps-org1,file=values-org1.yaml | argocd app create -f -
@@ -67,68 +67,74 @@ set +x
 printMessage "install org1 manifests" $res
 
 echo "#################################"
-echo "### Step 2: App sync - org0"
+echo "### Step 5: App sync - org0"
 echo "#################################"
 set -x
 argo submit -n n0 ../workflow/wow-sync-1.n0.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit org0 sync request - part1" $res
+checkArgoWfSucceeded "wow-sync-1" n0
 
 echo "#################################"
-echo "### Step 2: App sync - org1"
+echo "### Step 6: App sync - org1"
 echo "#################################"
 set -x
 argo submit -n n1 ../workflow/wow-sync-1.n1.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit org1 sync request - part1" $res
+checkArgoWfSucceeded "wow-sync-1" n1
 
 echo "#################################"
-echo "### Step 3: Workflow: crypto-$REL_TLSCA1"
+echo "### Step 7: Workflow: crypto-$REL_TLSCA1"
 echo "#################################"
 set -x
 helm template ../workflow/cryptogen -f ../workflow/cryptogen/values-$REL_TLSCA1.yaml | argo -n $NS1 submit - --generate-name cryptogen-$REL_TLSCA1- --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "run workflow cryptogen-$REL_TLSCA1" $res
+checkArgoWfSucceeded "cryptogen-$REL_TLSCA1" n1
 
-CHECK=$(argo -n n1 get @latest -o json | jq '.metadata.labels."workflows.argoproj.io/phase"' -)
-if [ $CHECK != "Succeeded" ]; then
-  printMessage "workflow crypto-$REL_TLSCA1" 1
-else
-  printMessage "check ok" 0
-fi
+#CHECK=$(argo -n n1 get @latest -o json | jq '.metadata.labels."workflows.argoproj.io/phase"' -)
+#if [ $CHECK != '"Succeeded"' ]; then
+#  printMessage "workflow crypto-$REL_TLSCA1" 1
+#else
+#  printMessage "check ok: workflow-cryptogen-$REL_TLSCA1" 0
+#fi
 
 echo "#################################"
-echo "### Step 4: Workflow crypto-$REL_RCA1"
+echo "### Step 8: Workflow crypto-$REL_RCA1"
 echo "#################################"
 set -x
 helm template ../workflow/cryptogen -f ../workflow/cryptogen/values-$REL_RCA1.yaml | argo -n $NS1 submit - --generate-name cryptogen-$REL_RCA1- --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "run workflow crypto-$REL_RCA1" $res
+checkArgoWfSucceeded "cryptogen-$REL_RCA1" n1
 
 echo "#################################"
-echo "### Step 5: Workflow: crypto-$REL_TLSCA0"
+echo "### Step 9: Workflow: crypto-$REL_TLSCA0"
 echo "#################################"
 set -x
 helm template ../workflow/cryptogen -f ../workflow/cryptogen/values-$REL_TLSCA0.yaml | argo -n $NS0 submit - --generate-name cryptogen-$REL_TLSCA0- --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "run workflow crypto-tlsca0" $res
+checkArgoWfSucceeded "cryptogen-$REL_TLSCA0" n0
 
 echo "#################################"
-echo "### Step 6: Workflow: crypto-$REL_RCA0"
+echo "### Step 10: Workflow: crypto-$REL_RCA0"
 echo "#################################"
 set -x
 helm template ../workflow/cryptogen -f ../workflow/cryptogen/values-$REL_RCA0.yaml | argo -n $NS0 submit - --generate-name cryptogen-$REL_RCA0- --watch --request-timeout 120s
 res=$?
 set +x
 printMessage "run workflow crypto-$REL_RCA0" $res
+checkArgoWfSucceeded "cryptogen-$REL_RCA0" n0
 
 echo "#################################"
-echo "### Step 7: Create secrets"
+echo "### Step 11: Create secrets"
 echo "#################################"
 # Note:
 # 1. It will not detect if the gcs bucket has genesis. If already exist, this workflow will fail.
@@ -139,21 +145,24 @@ helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA0-a.yaml
 res=$?
 set +x
 printMessage "create secret rca0 - Step 1 to Step 4" $res
+checkArgoWfSucceeded "secret-$REL_RCA0" n0
 
 set -x
 helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA0-b.yaml | argo -n $NS0 submit - --wait
 res=$?
 set +x
 printMessage "create secret rca0 - Step 5 to Step 10" $res
+checkArgoWfSucceeded "secret-$REL_RCA0" n0
 
 set -x
 helm template ../workflow/secrets -f ../workflow/secrets/values-$REL_RCA1.yaml | argo -n $NS1 submit - --wait
 res=$?
 set +x
 printMessage "create secret rca1" $res
+checkArgoWfSucceeded "secret-$REL_RCA1" n1
 
 echo "#################################"
-echo "### Step 8: Create genesis block and channeltx"
+echo "### Step 12: Create genesis block and channeltx"
 echo "#################################"
 # Note: It will not detect if the gcs bucket has genesis. If already exist, this workflow will fail.
 set -x
@@ -161,6 +170,7 @@ helm template ../workflow/genesis | argo -n $NS0 submit - --watch --request-time
 res=$?
 set +x
 printMessage "create genesis.block in $NS0" $res
+checkArgoWfSucceeded "genesis" n0
 
 ######## 3. Create configmap: genesis.block
 POD_CLI0=$(kubectl get pods -n $NS0 -l "app=orgadmin,release=$REL_ORGADMIN0" -o jsonpath="{.items[0].metadata.name}")
@@ -185,24 +195,26 @@ gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n1/org1.net-tlsc
 sleep 5
 
 echo "#################################"
-echo "### Step 9: app sync org0: part 2"
+echo "### Step 13: app sync org0: part 2"
 echo "#################################"
 set -x
 argo submit -n n0 ../workflow/wow-sync-2.n0.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit sync request - part2" $res
+checkArgoWfSucceeded "wow-sync-2" n0
 
 echo "#################################"
-echo "### Step 9: app sync org1: part 2"
+echo "### Step 14: app sync org1: part 2"
 echo "#################################"
 set -x
 argo submit -n n1 ../workflow/wow-sync-2.n1.yaml --watch --request-timeout 300s
 res=$?
 set +x
 printMessage "submit sync request - part2" $res
+checkArgoWfSucceeded "wow-sync-2" n1
 
-sleep 30
+sleep 5
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
