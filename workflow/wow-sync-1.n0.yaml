@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: wow-bootstrap-org1-1
+  name: wow-bootstrap-org0-1
 spec:
   entrypoint: main
   serviceAccountName: workflow
@@ -16,7 +16,7 @@ spec:
               parameters:
                 - name: app
                   value: "apps-org0"
-          - name: sync-admin0
+        - - name: sync-admin0
             templateRef:
               name: argocd-cli
               template: argocd-app-sync
@@ -24,7 +24,7 @@ spec:
               parameters:
                 - name: app
                   value: "admin0"
-          - name: sync-tlsca0
+        - - name: sync-tlsca0
             templateRef:
               name: argocd-cli
               template: argocd-app-sync

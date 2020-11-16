@@ -336,6 +336,7 @@ argocd account update-password --account cli --current-password [CURRENT ADMIN-P
 
 # Generate JWT for "cli"
 CONTENT=$(argocd account generate-token --account cli)
+kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 kubectl -n n1 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 
 # optionally, save it locally
