@@ -64,6 +64,7 @@ spec:
             FABRIC_CFG_PATH=/etc/hyperledger
             ORDERER_CA=/tmp/org0.com/tlscacert.pem
             CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net/tlscacert.pem
+            sleep 1h
             . /script/setup.sh
             apk update
             apk upgrade
