@@ -1,0 +1,73 @@
+{{- if .Values.updateAnchorPeer.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: update-anchor-peer
+spec:
+  activeDeadlineSeconds: 300
+  # podGC:
+  #   strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+      {{ toYaml .Values.no_istio | indent 6 }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+        {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+          {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_fabricfiles }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        - name: org0-tlscacert
+          secret:
+            secretName: org0.com-tlscacert
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            FABRIC_CFG_PATH=/etc/hyperledger
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            ./bin/peer version
+            printHeader "Create Channel"
+        env:
+          - name: ORDERER_URL
+            value: {{ .Values.ordererUrl }}
+        envFrom:
+          - configMapRef:
+              name: orgadmin--cli
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          - mountPath: /tmp/tlscacert.pem
+            name: org0-tlscacert
+  {{- end }}

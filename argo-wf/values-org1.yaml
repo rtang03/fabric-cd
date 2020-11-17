@@ -1,5 +1,6 @@
 pvc_fabricfiles: pvc-org1
 pvc_gupload: pvc-gupload1
+mspId: Org1MSP
 
 hostAlias:
   - hostnames:
@@ -16,4 +17,7 @@ ordererUrl: orderer0.org0.com
 argocdServerUrl: argocd.server
 
 createChannel:
+  enabled: true
+
+updateAnchorPeer:
   enabled: true

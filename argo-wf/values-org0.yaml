@@ -1,5 +1,6 @@
 pvc_fabricfiles: pvc-org0
 pvc_gupload: pvc-gupload1
+mspId: Org0MSP
 
 hostAlias:
   - hostnames:
