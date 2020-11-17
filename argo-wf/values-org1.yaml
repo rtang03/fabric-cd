@@ -12,7 +12,7 @@ hostAlias:
       - gupload.org2.net
     ip: 35.202.107.80
 
-ordererUrl: orderer0.org0.com
+ordererUrl: orderer0.org0.com:15443
 
 argocdServerUrl: argocd.server
 

@@ -5,7 +5,7 @@ clusterscope: false
 
 guploadImage: ghcr.io/rtang03/gupload:0.1.6
 
-ordererUrl: orderer0.org0.com
+ordererUrl: orderer0.org0.com:15443
 
 argocdServerUrl: argocd.server
 
