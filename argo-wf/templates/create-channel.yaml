@@ -62,8 +62,8 @@ spec:
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             echo "ChannelName: $CHANNEL_NAME"
             FABRIC_CFG_PATH=/etc/hyperledger
-            ORDERER_CA=/tmp/org0.com-tlscacert.pem
-            CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
+            ORDERER_CA=/tmp/org0.com/tlscacert.pem
+            CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net/tlscacert.pem
             . /script/setup.sh
             apk update
             apk upgrade
@@ -100,12 +100,12 @@ spec:
             subPath: setup.sh
           - mountPath: /etc/hyperledger
             name: core-yaml
-          - mountPath: /tmp/org0.com-tlscacert.pem
+          - mountPath: /tmp/org0.com
             name: org0-tlscacert
-            subPath: org0.com-tlscacert.pem
-          - mountPath: /tmp/org1.net-tlscacert.pem
+            subPath: tlscacert.pem
+          - mountPath: /tmp/org1.net
             name: org1-tlscacert
-            subPath: org1.net-tlscacert.pem
+            subPath: tlscacert.pem
       outputs:
         parameters:
           - name: channel_block_s3_path
