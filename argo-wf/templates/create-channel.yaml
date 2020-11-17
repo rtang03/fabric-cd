@@ -80,6 +80,7 @@ spec:
             else
               echo "Creating channel $CHANNEL_NAME"
               set -x
+              nslookup orderer0.org0.com
               ./bin/peer channel create -o $ORDERER_URL -c $CHANNEL_NAME -f /tmp/channel.tx --outputBlock /tmp/$CHANNEL_NAME.block --tls --cafile $ORDERER_CA >& /tmp/createchannel.log
               res=$?
               set +x
