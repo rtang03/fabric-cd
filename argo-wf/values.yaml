@@ -11,6 +11,7 @@ argocdServerUrl: argocd.server
 
 createChannel:
   enabled: false
+  s3Key_Channeltx: workflow/genesis/channel.tx
 
 updateAnchorPeer:
   enabled: false

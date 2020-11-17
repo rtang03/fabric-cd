@@ -18,6 +18,14 @@ spec:
       inputs:
         parameters:
           - name: channelname
+        artifacts:
+          - name: channeltx
+            path: /tmp/channel.tx
+            s3:
+              key: {{ .Values.createChannel.s3Key_Channeltx | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
       {{- if .Values.hostAlias }}
       hostAliases:
       {{- range .Values.hostAlias }}
@@ -51,9 +59,8 @@ spec:
         workingDir: /var/hyperledger
         args:
           - |-
-            # CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
-            echo "CN: $CHANNEL_NAME"
-            CHANNEL_NAME=loanapp
+            CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
+            echo "ChannelName: $CHANNEL_NAME"
             FABRIC_CFG_PATH=/etc/hyperledger
             ORDERER_CA=/tmp/org0.com-tlscacert.pem
             CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
@@ -98,9 +105,9 @@ spec:
           - mountPath: /tmp/org1.net-tlscacert.pem
             name: org1-tlscacert
       outputs:
-        # parameters:
-        #   - name: channel_block_s3_path
-        #     value: workflow/{ { .Values.alias.workflow_name }}/{ { .Values.mspId | lower }}/create-channel/{ { .Values.alias.input_channelname }}.block
+        parameters:
+          - name: channel_block_s3_path
+            value: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel
         artifacts:
           - name: channel-block
             path: /tmp/
