@@ -78,6 +78,7 @@ spec:
             then
               echo "Channel $CHANNEL_NAME is already created. create-channel skipped" | tee /tmp/createchannel.log
             else
+              sleep 1h
               echo "Creating channel $CHANNEL_NAME"
               set -x
               ./bin/peer channel create -o $ORDERER_URL -c $CHANNEL_NAME -f /tmp/channel.tx --outputBlock /tmp/$CHANNEL_NAME.block --tls --cafile $ORDERER_CA >& /tmp/createchannel.log
