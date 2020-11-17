@@ -102,8 +102,10 @@ spec:
             name: core-yaml
           - mountPath: /tmp/org0.com-tlscacert.pem
             name: org0-tlscacert
+            subPath: org0.com-tlscacert.pem
           - mountPath: /tmp/org1.net-tlscacert.pem
             name: org1-tlscacert
+            subPath: /tmp/org1.net-tlscacert.pem
       outputs:
         parameters:
           - name: channel_block_s3_path
