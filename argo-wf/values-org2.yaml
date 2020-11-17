@@ -13,6 +13,9 @@ hostAlias:
 
 ordererUrl: orderer0.org0.com:15443
 
+joinChannel:
+  enabled: true
+
 updateAnchorPeer:
   enabled: true
 

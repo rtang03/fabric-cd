@@ -1,8 +1,8 @@
-{{- if .Values.createChannel.enabled }}
+{{- if .Values.joinChannel.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: create-channel
+  name: join-channel
 spec:
   activeDeadlineSeconds: 300
   ttlStrategy:
@@ -18,24 +18,15 @@ spec:
       inputs:
         parameters:
           - name: channelname
+          - name: s3path
         artifacts:
-          - name: channeltx
-            path: /tmp/channel.tx
+          - name: channel-block
+            path: /tmp/{{ .Values.alias.input_channelname}}.block
             s3:
-              key: {{ .Values.createChannel.s3Key_Channeltx | quote }}
+              key: "{{ .Values.alias.input_s3path }}/{{ .Values.alias.input_channelname }}.block"
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}
-      {{- if .Values.hostAlias }}
-      hostAliases:
-      {{- range .Values.hostAlias }}
-        - hostnames:
-            {{- range .hostnames }}
-            - {{ . }}
-            {{- end }}
-          ip: {{ .ip }}
-      {{- end }}
-      {{- end }}
       volumes:
         - name: fabricfiles
           persistentVolumeClaim:
@@ -47,9 +38,6 @@ spec:
         - name: core-yaml
           configMap:
             name: core-yaml
-        - name: org0-tlscacert
-          secret:
-            secretName: org0.com-tlscacert
         - name: org1-tlscacert
           secret:
             secretName: org1.net-tlscacert
@@ -60,33 +48,29 @@ spec:
         args:
           - |-
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
-            ORDERER_URL={{ .Values.ordererUrl }}
             FABRIC_CFG_PATH=/etc/hyperledger
-            ORDERER_CA=/tmp/org0.com-tlscacert.pem
             CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
             echo "CHANNEL_NAME: $CHANNEL_NAME"
-            echo "ORDERER_URL: $ORDERER_URL"
             . /script/setup.sh
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
             ./bin/peer version
-            printHeader "Create Channel"
-            echo "Fetch block to see if channel has already been created..."
+            printHeader "Join channel"
+            sleep 1s
             set -x
-            ./bin/peer channel fetch 0 -c $CHANNEL_NAME --tls --cafile $ORDERER_CA -o $ORDERER_URL /tmp/$CHANNEL_NAME.block
+            ./bin/peer channel getinfo -c $CHANNEL_NAME >& /tmp/getinfo.log
+            res=$?
             set +x
-            if [ -f "/tmp/$CHANNEL_NAME.block" ]
-            then
-              echo "Channel $CHANNEL_NAME is already created. create-channel skipped" | tee /tmp/createchannel.log
-            else
-              echo "Creating channel $CHANNEL_NAME"
+            if [ $res = 1 ]; then
               set -x
-              ./bin/peer channel create -o $ORDERER_URL -c $CHANNEL_NAME -f /tmp/channel.tx --outputBlock /tmp/$CHANNEL_NAME.block --tls --cafile $ORDERER_CA >& /tmp/createchannel.log
+              ./bin/peer channel join -b /tmp/$CHANNEL_NAME.block >& /tmp/joinchannel.log
               res=$?
               set +x
-              cat /tmp/createchannel.log
-              printMessage "generate $CHANNEL_NAME.block" $res
+              cat /tmp/joinchannel.log
+              printMessage "join channel" $res
+            else
+              echo "channel already joined. join-channel skipped" | tee /tmp/joinchannel.log
             fi
         envFrom:
           - configMapRef:
@@ -99,9 +83,6 @@ spec:
             subPath: setup.sh
           - mountPath: /etc/hyperledger
             name: core-yaml
-          - mountPath: /tmp/org0.com-tlscacert.pem
-            name: org0-tlscacert
-            subPath: tlscacert.pem
           - mountPath: /tmp/org1.net-tlscacert.pem
             name: org1-tlscacert
             subPath: tlscacert.pem
@@ -110,12 +91,12 @@ spec:
           - name: channel_block_s3_path
             value: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel
         artifacts:
-          - name: channel-block
+          - name: join-channel-log
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/join-channel/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}

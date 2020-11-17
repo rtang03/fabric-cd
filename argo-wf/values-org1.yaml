@@ -20,5 +20,8 @@ createChannel:
   enabled: true
   s3Key_Channeltx: workflow/genesis/channel.tx
 
+joinChannel:
+  enabled: true
+
 updateAnchorPeer:
   enabled: true

@@ -13,6 +13,9 @@ createChannel:
   enabled: false
   s3Key_Channeltx: workflow/genesis/channel.tx
 
+joinChannel:
+  enabled: false
+
 updateAnchorPeer:
   enabled: false
 
@@ -41,6 +44,7 @@ s3:
 alias:
   # general
   workflow_name: "{{workflow.name}}"
+  input_s3path: "{{inputs.parameters.s3path}}"
   input_cacert: "{{inputs.parameters.cacert}}"
   # used by simple-echo
   input_message: "{{inputs.parameters.message}}"
