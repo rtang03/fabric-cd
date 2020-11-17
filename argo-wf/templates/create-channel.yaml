@@ -44,7 +44,7 @@ spec:
             secretName: org0.com-tlscacert
         - name: org1-tlscacert
           secret:
-            secretName: org0.net-tlscacert
+            secretName: org1.net-tlscacert
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
