@@ -105,7 +105,7 @@ spec:
             subPath: org0.com-tlscacert.pem
           - mountPath: /tmp/org1.net-tlscacert.pem
             name: org1-tlscacert
-            subPath: /tmp/org1.net-tlscacert.pem
+            subPath: org1.net-tlscacert.pem
       outputs:
         parameters:
           - name: channel_block_s3_path
