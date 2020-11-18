@@ -69,6 +69,9 @@ alias:
   input_app: "{{inputs.parameters.app}}"
   # used by create-channel
   input_channelname: "{{inputs.parameters.channelname}}"
+  # used by update-anchor-peer
+  input_host: "{{inputs.parameters.host}}"
+  input_port: "{{inputs.parameters.port}}"
 
 no_istio:
   metadata:
