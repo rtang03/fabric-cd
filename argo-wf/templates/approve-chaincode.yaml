@@ -1,0 +1,138 @@
+{{- if .Values.approveChaincode.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: approve-chaincode
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: channelname
+          - name: version
+          - name: sequence
+        artifacts:
+          - name: channeltx
+            path: /tmp/channel.tx
+            s3:
+              key: {{ .Values.createChannel.s3Key_Channeltx | quote }}
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+      {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+            {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_fabricfiles }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        {{- range .Values.approveChaincode.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
+            ORDERER_URL={{ .Values.ordererUrl }}
+            FABRIC_CFG_PATH=/etc/hyperledger
+            ORDERER_CA=/tmp/org0.com-tlscacert.pem
+            CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
+            echo "CHANNEL_NAME: $CHANNEL_NAME"
+            echo "ORDERER_URL: $ORDERER_URL"
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            ./bin/peer version
+            set -x
+            ./bin/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.chaincode.id }}
+            res=$?
+            set +x
+            if [ $res = 0 ]; then
+              echo "Exec queryapproved successfully. [approve-chaincode] skipped."
+              exit 0
+            else
+              echo "fail to queryapproved; continue to approve chaincode,..."
+            fi
+            printHeader "approve chaincode"
+            echo "package-id: $CHAINCODE_CCID"
+            if [ $CHAINCODE_CCID = "" ]; then
+              echo "CHAINCODE_CCID is empty, exit(1)"
+              exit 1
+            fi
+            set -x
+            # Note: signature-policy is not currently used. In future, can add "--signature-policy"
+            ./bin/peer lifecycle chaincode approveformyorg -o $ORDERER_URL -C $CHANNEL_NAME \
+              --tls --cafile $ORDERER_CA --name {{ .Values.chaincode.id }} \
+              --version {{ .Values.alias.input_version }} --package-id $CHAINCODE_CCID \
+              --init-required --sequence {{ .Values.alias.input_sequence }} \
+              --waitForEvent >& /tmp/approvecc.log
+            res=$?
+            set +x
+            cat  /tmp/approvecc.log
+            printMessage "approve chaincode" $res
+            printHeader "queryapproved"
+            set -x
+            ./bin/peer lifecycle chaincode queryapproved -C $CHANNEL_NAME -n {{ .Values.chaincode.id }} >& /tmp/queryapproved.log
+            res=$?
+            set +x
+            cat /tmp/queryapproved.log
+            printMessage "queryapproved" $res
+        envFrom:
+          - configMapRef:
+              name: "orgadmin--cli"
+          - configMapRef:
+              name: "chaincode-ccid"
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          {{- range .Values.approveChaincode.secrets }}
+          - mountPath: {{ .mountPath }}
+            name: {{ .name }}
+            subPath: {{ .subPath }}
+          {{- end }}
+      outputs:
+        artifacts:
+          - name: approve-chaincode
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/approve-chaincode/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+{{- end }}

@@ -19,6 +19,51 @@ joinChannel:
 updateAnchorPeer:
   enabled: false
 
+packageChaincode:
+  enabled: false
+
+approveChaincode:
+  enabled: false
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+commitChaincode:
+  enabled: false
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+smoketest:
+  enabled: false
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
 neworg:
   enabled: false
 
@@ -40,6 +85,27 @@ s3:
   secretKeySecret:
     name: gcp-s3-credentials
     key: secretKey
+
+# Used by package-chaincode
+connection_json: |
+  {
+                  "address": "eventstore-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+# Used by package-chaincode
+metadata_json: |
+  {"path":"","type":"external","label":"eventstorev1"}
+
+chaincode:
+  id: eventstore
+  contract: eventstore
+  version: 1
+  lang: node
 
 alias:
   # general
@@ -72,6 +138,12 @@ alias:
   # used by update-anchor-peer
   input_host: "{{inputs.parameters.host}}"
   input_port: "{{inputs.parameters.port}}"
+  # used by package-install-chaincode
+  input_version: "{{inputs.parameters.version}}"
+  # used by cc-id
+  input_ccid: "{{inputs.parameters.ccid}}"
+  # used by approve-chaincode
+  input_sequence: "{{inputs.parameters.sequence}}"
 
 no_istio:
   metadata:

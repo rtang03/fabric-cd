@@ -25,3 +25,48 @@ joinChannel:
 
 updateAnchorPeer:
   enabled: true
+
+packageChaincode:
+  enabled: true
+
+approveChaincode:
+  enabled: true
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+commitChaincode:
+  enabled: true
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+smoketest:
+  enabled: true
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem

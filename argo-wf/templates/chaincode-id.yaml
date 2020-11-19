@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: chaincode-id-resource
+spec:
+  activeDeadlineSeconds: 60
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: ccid
+      steps:
+        - - name: delete-ccid
+            template: delete-ccid
+        - - name: create-ccid
+            template: create-ccid
+            arguments:
+              parameters:
+                - name: ccid
+                  value: {{ .Values.alias.input_ccid | quote }}
+
+    - name: delete-ccid
+{{ toYaml .Values.no_istio | indent 6 }}
+      resource:
+        action: delete
+        manifest: |
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: "chaincode-ccid"
+    - name: create-ccid
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: ccid
+      resource:
+        action: create
+        manifest: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "chaincode-ccid"
+          data:
+            CHAINCODE_CCID: {{ .Values.alias.input_ccid | quote }}
