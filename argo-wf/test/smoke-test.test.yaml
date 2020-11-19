@@ -13,9 +13,5 @@ spec:
     parameters:
       - name: channelname
         value: "loanapp"
-      - name: sequence
-        value: 1
-      - name: version
-        value: 1
   workflowTemplateRef:
     name: smoke-test

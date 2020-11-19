@@ -44,7 +44,7 @@ spec:
         action: create
         manifest: |
           apiVersion: v1
-          kind: Secret
+          kind: ConfigMap
           metadata:
             name: "chaincode-ccid"
           data:
