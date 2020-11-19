@@ -77,10 +77,10 @@ spec:
             printHeader "commit chaincode"
             # check the tlscacerts
             {{- range .Values.commitChaincode.targets }}
-            if [ -d "/tmp/{{ .tlsRootCertFiles }}" ]; then
+            if [ -f "/tmp/{{ .tlsRootCertFiles }}" ]; then
               echo "{{ .tlsRootCertFiles }} found"
             else
-              printMessage "find to {{ .tlsRootCertFiles }}" 1
+              printMessage "find {{ .tlsRootCertFiles }}" 1
             fi
             {{- end }}
             set -x
