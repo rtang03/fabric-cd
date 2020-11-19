@@ -90,7 +90,7 @@ spec:
               --init-required --sequence {{ .Values.alias.input_sequence }} \
             {{- range .Values.commitChaincode.targets }}
               --peerAddresses {{ .peerAddress }} \
-              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+              --tlsRootCertFiles /tmp/{{ .tlsRootCertFiles }} \
             {{- end }}
               --waitForEvent >& /tmp/commitcc.log
             res=$?
