@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: bootstrap-org1-
+  generateName: bootstrap-channel-org1
 spec:
   entrypoint: main
   serviceAccountName: workflow

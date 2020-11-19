@@ -68,7 +68,7 @@ spec:
               -c '{"Args":["createCommit", "dev_entity", "ent_dev", "0","[]", "ent_dev"]}' \
             {{- range .Values.smoketest.targets }}
               --peerAddresses {{ .peerAddress }} \
-              --tlsRootCertFiles {{ .tlsRootCertFiles }} \
+              --tlsRootCertFiles /tmp/{{ .tlsRootCertFiles }} \
             {{- end }}
               --waitForEvent --waitForEventTimeout 300s >& /tmp/devinvoke.log
             res=$?

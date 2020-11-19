@@ -209,5 +209,15 @@ checkArgoWfSucceeded "aoa-sync-2" n1
 
 sleep 5
 
+echo "#################################"
+echo "### Step 15: bootstrap-channel"
+echo "#################################"
+set -x
+argo submit -n n1 ../workflow/bootstrap-channel.n1.yaml --watch --request-timeout 300s
+res=$?
+set +x
+printMessage "bootstrap-channel" $res
+checkArgoWfSucceeded "bootstrap-channel-org1" n1
+
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
