@@ -339,11 +339,17 @@ argocd account update-password --account cli --current-password [CURRENT ADMIN-P
 CONTENT=$(argocd account generate-token --account cli)
 kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 kubectl -n n1 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
+kubectl -n n2 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 
-# optionally, save it locally
+# optionally, save it locally; for repeated use, during development
 # Remind to gitignore "download" directory.
 # echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
 ```
+
+The above jwt is required in order to run bootstraping scripts.
+
+TODO: If *orgX* is created in separate cluster, the *argo* server will be independently installed. The above jwt
+is required as well.
 
 **Add your git repo**
 
