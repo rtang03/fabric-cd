@@ -343,7 +343,7 @@ kubectl -n n2 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 
 # optionally, save it locally; for repeated use, during development
 # Remind to gitignore "download" directory.
-# echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
+echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
 ```
 
 The above jwt is required in order to run bootstraping scripts.
@@ -468,6 +468,7 @@ Each namespace need a service account *guest*; used by REST API.
 ```shell script
 # CREATE SERVICE ACCOUNT "org2.net". This SA is used for inter-organization workflow, via Events
 kubectl -n n1 apply -f ./argo/service-account-guest.yaml
+kubectl -n n2 apply -f ./argo/service-account-guest.yaml
 
 # Access token
 SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')

@@ -5,8 +5,6 @@ metadata:
   name: fetch-upload
 spec:
   activeDeadlineSeconds: 600
-  # podGC:
-  #   strategy: OnPodCompletion
   ttlStrategy:
     secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
     secondsAfterSuccess: 3600     # Time to live after workflow is successful
@@ -121,4 +119,5 @@ spec:
             name: core-yaml
           - mountPath: /tmp/tlscacert.pem
             name: org0-tlscacert
+            subPath: tlscacert.pem
 {{- end }}

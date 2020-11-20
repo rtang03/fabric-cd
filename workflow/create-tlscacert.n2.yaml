@@ -37,7 +37,7 @@ spec:
               template: main
 
         # STEP 2: send org2.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
-        - - name: load-org2tlscacert
+          - name: load-org2tlscacert
             arguments:
               parameters:
                 - name: filename
@@ -57,7 +57,7 @@ spec:
               template: main
 
         # STEP 3: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
-        - - name: load-org0tlscacert
+          - name: load-org0tlscacert
             arguments:
               parameters:
                 - name: filename
