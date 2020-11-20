@@ -16,12 +16,6 @@ TLSCACERT=org2.net-tlscacert
 
 ## Non-org3
 G1_URL=gupload.org1.net:15443
-JOB_FETCH_BLOCK=fetch1
-JOB_INSTALL_CHAINCODE_A=installcc-a
-JOB_INSTALL_CHAINCODE_B=installcc-b
-JOB_JOINCHANNEL=joinch
-JOB_NEWORG=neworg
-JOB_UPDATE_CHANNEL=upch1
 MSPID_1=Org1MSP
 NS1=n1
 REL_GUPLOAD1=g1

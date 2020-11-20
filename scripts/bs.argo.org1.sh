@@ -9,7 +9,7 @@ echo "#################################"
 echo "### Step 1: Install WorkflowTemplates (n0)"
 echo "#################################"
 set -x
-helm template ../argo-app --set ns=n0,path=argo-wf,target=dev-0.1,rel=argo-template-org0,file=values-org0.yaml | argocd app create -f -
+helm template ../argo-app --set ns=$NS0,path=argo-wf,target=dev-0.1,rel=argo-template-org0,file=values-org0.yaml | argocd app create -f -
 res=$?
 set +x
 printMessage "install wfTemplate" $res
@@ -31,7 +31,7 @@ echo "#################################"
 echo "### Step 2: Install WorkflowTemplates (n1)"
 echo "#################################"
 set -x
-helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-template-org1,file=values-org1.yaml | argocd app create -f -
+helm template ../argo-app --set ns=$NS1,path=argo-wf,target=dev-0.1,rel=argo-template-org1,file=values-org1.yaml | argocd app create -f -
 res=$?
 set +x
 printMessage "install wfTemplate" $res
@@ -181,9 +181,17 @@ rm ../download/genesis.block
 
 #### MAKE tlscacert.pem PUBLIC
 # Make you have "gsutil" installed from gcloud; can run gcloud components list
+set -x
 gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem
+res=$?
+set +x
+printMessage "make org0.com-tlscacert public" $?
 
+set -x
 gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
+res=$?
+set +x
+printMessage "make org1.net-tlscacert public" $?
 
 sleep 5
 

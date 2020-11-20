@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: aoa-sync-org2-2
+spec:
+  entrypoint: main
+  serviceAccountName: workflow
+  templates:
+    - name: main
+      steps:
+        - - name: sync-p0o2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "p0o2"
+          - name: sync-g2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "g2"
