@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: test-neworg-config-update
+  generateName: neworg-config-update
 spec:
   activeDeadlineSeconds: 300
   ttlStrategy:

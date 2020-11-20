@@ -129,16 +129,25 @@ printMessage "submit $ORG sync request - part2" $res
 checkArgoWfSucceeded "aoa-sync-2" $NS
 
 echo "#####################################################################"
-echo "### Step 10: multi-organization workflow"
+echo "### Multi-organization workflow"
 echo "#####################################################################"
-
-exit 0
-
+echo "### Step 10: Fetch block at n1, and gupload fileserver of $NS "
+echo "#####################################################################"
 set -x
 curl http://argo.server/api/v1/events/n1/fetch-upload -H "Authorization: $TOKEN" -d '{"outfile":"channel_config--config.json","cacert":"org2.net-tlscacert","url":"gupload.org2.net:15443"}'
 res=$?
 set +x
 printMessage "fetch-upload" $res
+
+echo "#####################################################################"
+echo "### Step 11: prepares $NS's config_update_in_envelope.pb"
+echo "#####################################################################"
+set -x
+argo submit -n $NS ../workflow/neworg-config-update.$NS.yaml --watch --request-timeout 300s
+res=$?
+set +x
+printMessage "gupload config_update_in_envelope.pb to org1" $res
+checkArgoWfSucceeded "neworg-update-config" $NS
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"
