@@ -140,6 +140,9 @@ spec:
             res=$?
             set +x
             printMessage "encode update_envelope" $res
+            set -x
+            cp /tmp/config_update_in_envelope.pb /mnt
+            printMessage "copy config_update_in_envelope.pb" $?
         envFrom:
           - configMapRef:
               name: orgadmin--cli
