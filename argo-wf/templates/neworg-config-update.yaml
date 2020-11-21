@@ -25,16 +25,11 @@ spec:
         - - name: neworg
             template: neworg-tmpl
             arguments:
-              - name: config_block_json
-                value: {{ .Values.alias.input_config_block_json | quote }}
-              - name: channelname
-                value: {{ .Values.alias.input_channelname | quote }}
-              - name: cacert
-                value: {{ .Values.alias.input_cacert | quote }}
-              - name: url
-                value: {{ .Values.alias.input_url | quote }}
-              - name: outfile
-                value: {{ .Values.alias.input_outfile | quote }}
+              parameters:
+                - name: config_block_json
+                  value: {{ .Values.alias.input_config_block_json | quote }}
+                - name: channelname
+                  value: {{ .Values.alias.input_channelname | quote }}
         - - name: gupload
             templateRef:
               name: gupload-up-file
@@ -59,9 +54,6 @@ spec:
         parameters:
           - name: config_block_json
           - name: channelname
-          - name: cacert
-          - name: outfile
-          - name: url
       volumes:
         - name: gupload
           persistentVolumeClaim:
