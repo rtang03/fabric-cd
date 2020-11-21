@@ -85,6 +85,7 @@ spec:
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ jq
             ./bin/peer version
+
             if [ -f "/mnt/$CONFIG" ]
             then
               echo "$CONFIG exists"
@@ -105,7 +106,7 @@ spec:
             printMessage "modify config to append new org: {{ .Values.mspId }}" $res
             printHeader "step 3: encode config.json to config.pb"
             set -x
-            ./bin/configtxlator proto_encode --input /tmp/$CONFIG --type common.Config --output /tmp/config.pb
+            ./bin/configtxlator proto_encode --input /mnt/$CONFIG --type common.Config --output /tmp/config.pb
             res=$?
             set +x
             printMessage "encode config.json to config.pb" $res
