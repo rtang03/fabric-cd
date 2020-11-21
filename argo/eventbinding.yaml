@@ -61,3 +61,25 @@ spec:
         - name: url
           valueFrom:
             event: payload.url
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-
+spec:
+  event:
+    selector: payload.url != "" && payload.cacert != "" && payload.outfile != "" && discriminator == "fetch-upload"
+  submit:
+    workflowTemplateRef:
+      name: fetch-upload
+    arguments:
+      parameters:
+        - name: cacert
+          valueFrom:
+            event: payload.cacert
+        - name: outfile
+          valueFrom:
+            event: payload.outfile
+        - name: url
+          valueFrom:
+            event: payload.url

@@ -49,6 +49,10 @@ spec:
 
     - name: neworg-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: config_block_json
+          - name: channelname
       volumes:
         - name: gupload
           persistentVolumeClaim:

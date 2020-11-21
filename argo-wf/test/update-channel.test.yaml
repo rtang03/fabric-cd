@@ -15,6 +15,6 @@ spec:
       - name: channelname
         value: "loanapp"
       - name: update_channel_env
-        value: "config_update_in_envelope.pb"
+        value: "o2_neworg_update--config_update_in_envelope.pb"
   workflowTemplateRef:
     name: update-channel
