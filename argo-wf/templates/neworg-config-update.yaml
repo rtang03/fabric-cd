@@ -118,7 +118,7 @@ spec:
             printMessage "encode modified_config.json to modified_config.pb" $res
             printHeader "step 5: compute update block"
             set -x
-            ./bin/configtxlator compute_update --channel_id $CHANNEL_NAME --original $TMP/config.pb --updated $TMP/modified_config.pb --output $TMP/config_update.pb
+            ./bin/configtxlator compute_update --channel_id $CHANNEL_NAME --original /tmp/config.pb --updated /tmp/modified_config.pb --output /tmp/config_update.pb
             res=$?
             set +x
             printMessage "compute update block" $res
