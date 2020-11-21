@@ -1,23 +1,33 @@
-{{- if .Values.smoketest.enabled }}
+{{- if .Values.joinChannelOrgx.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: smoke-test
+  name: join-channel-orgx
 spec:
   activeDeadlineSeconds: 300
   ttlStrategy:
-    secondsAfterCompletion: 3600
-    secondsAfterSuccess: 3600
-    secondsAfterFailure: 3600
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
   serviceAccountName: workflow
   entrypoint: main
 
   templates:
     - name: main
+      steps:
+        - - name: fetch0
+            template: fetch-tmpl
+        # - - name: join-channel
+        #     templateRef:
+        #       name:
+        #       template:
+        #     arguments:
+        #       parameters:
+        #         - name:
+        #           value:
+
+    - name: fetch-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
-      inputs:
-        parameters:
-          - name: channelname
       {{- if .Values.hostAlias }}
       hostAliases:
       {{- range .Values.hostAlias }}
@@ -39,7 +49,7 @@ spec:
         - name: core-yaml
           configMap:
             name: core-yaml
-        {{- range .Values.smoketest.secrets }}
+        {{- range .Values.joinChannelOrgx.secrets }}
         - name: {{ .name }}
           secret:
             secretName: {{ .secretName }}
@@ -53,36 +63,27 @@ spec:
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             ORDERER_URL={{ .Values.ordererUrl }}
             FABRIC_CFG_PATH=/etc/hyperledger
-            ORDERER_CA={{ .Values.smoketest.ordererCa }}
-            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.smoketest.corePeerTlsRootCert }}
+            ORDERER_CA={{ .Values.joinChannelOrgx.ordererCa }}
+            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.joinChannelOrgx.corePeerTlsRootCert }}
             echo "CHANNEL_NAME: $CHANNEL_NAME"
             echo "ORDERER_URL: $ORDERER_URL"
             . /script/setup.sh
             apk update
             apk upgrade
-            apk --no-cache add libc6-compat libstdc++ tzdata
+            apk --no-cache add libc6-compat libstdc++
             ./bin/peer version
-            printHeader "smoke-test"
+            printHeader "Fetch block 0"
             set -x
-            ./bin/peer chaincode invoke -o $ORDERER_URL -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.chaincode.id }} \
-              -c '{"Args":["createCommit", "dev_entity", "ent_dev", "0","[]", "ent_dev"]}' \
-            {{- range .Values.smoketest.targets }}
-              --peerAddresses {{ .peerAddress }} \
-              --tlsRootCertFiles /tmp/{{ .tlsRootCertFiles }} \
-            {{- end }}
-              --waitForEvent --waitForEventTimeout 300s >& /tmp/devinvoke.log
+            ./bin/peer channel fetch 0 /tmp/$CHANNEL_NAME.block -c $CHANNEL_NAME -o $ORDERER_URL --tls --cafile $ORDERER_CA >& /tmp/fetch0.log
             res=$?
             set +x
-            cat /tmp/devinvoke.log
-            printMessage "dev-invoke" $res
-            printHeader "dev-query"
-            set -x
-            ./bin/peer chaincode query -C $CHANNEL_NAME --tls --cafile $ORDERER_CA --name {{ .Values.chaincode.id }} \
-              -c '{"Args":["eventstore:queryByEntityName","dev_entity"]}' >& /tmp/devquery.log
-            res=$?
-            set +x
-            cat /tmp/devquery.log
-            printMessage "dev-query" $res
+            cat /tmp/fetch0.log
+            printMessage "fetch block 0" $res
+            if [ -f "/tmp/$CHANNEL_NAME.block" ]; then
+              echo "$CHANNEL_NAME.block found"
+            else
+              printMessage "find $CHANNEL_NAME.block" 1
+            fi
         envFrom:
           - configMapRef:
               name: orgadmin--cli
@@ -94,22 +95,19 @@ spec:
             subPath: setup.sh
           - mountPath: /etc/hyperledger
             name: core-yaml
-          {{- range .Values.smoketest.secrets }}
+          {{- range .Values.joinChannelOrgx.secrets }}
           - mountPath: {{ .mountPath }}
             name: {{ .name }}
             subPath: {{ .subPath }}
           {{- end }}
       outputs:
-        parameters:
-          - name: channel_block_s3_path
-            value: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel
         artifacts:
-          - name: smoke-tst
+          - name: join-channel-orgx
             path: /tmp/
             archive:
               none: {}
             s3:
-              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/smoke-test/
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/join-channel-orgx/
               {{- with .Values.s3 }}
 {{ toYaml . | indent 14 }}
               {{- end }}

@@ -38,9 +38,11 @@ spec:
         - name: core-yaml
           configMap:
             name: core-yaml
-        - name: org1-tlscacert
+        {{- range .Values.joinChannel.secrets }}
+        - name: {{ .name }}
           secret:
-            secretName: org1.net-tlscacert
+            secretName: {{ .secretName }}
+        {{- end }}
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]
@@ -49,7 +51,7 @@ spec:
           - |-
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             FABRIC_CFG_PATH=/etc/hyperledger
-            CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
+            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.joinChannel.corePeerTlsRootCert }}
             echo "CHANNEL_NAME: $CHANNEL_NAME"
             . /script/setup.sh
             apk update
@@ -83,9 +85,11 @@ spec:
             subPath: setup.sh
           - mountPath: /etc/hyperledger
             name: core-yaml
-          - mountPath: /tmp/org1.net-tlscacert.pem
-            name: org1-tlscacert
-            subPath: tlscacert.pem
+          {{- range .Values.joinChannel.secrets }}
+          - mountPath: {{ .mountPath }}
+            name: {{ .name }}
+            subPath: {{ .subPath }}
+          {{- end }}
       outputs:
         parameters:
           - name: channel_block_s3_path

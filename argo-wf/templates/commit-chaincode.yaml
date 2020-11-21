@@ -55,8 +55,8 @@ spec:
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             ORDERER_URL={{ .Values.ordererUrl }}
             FABRIC_CFG_PATH=/etc/hyperledger
-            ORDERER_CA=/tmp/org0.com-tlscacert.pem
-            CORE_PEER_TLS_ROOTCERT_FILE=/tmp/org1.net-tlscacert.pem
+            ORDERER_CA={{ .Values.commitChaincode.ordererCa }}
+            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.commitChaincode.corePeerTlsRootCert }}
             echo "CHANNEL_NAME: $CHANNEL_NAME"
             echo "ORDERER_URL: $ORDERER_URL"
             . /script/setup.sh

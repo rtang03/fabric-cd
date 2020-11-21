@@ -73,3 +73,16 @@ neworg:
     url: gupload.org1.net
     port: 15443
 
+joinChannelOrgx:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
