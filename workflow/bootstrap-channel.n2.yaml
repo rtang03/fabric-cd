@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: bootstrap-channel-org2
+spec:
+  entrypoint: main
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  templates:
+    - name: main
+      steps:
+        - - name: create-channel
+            templateRef:
+              name: create-channel
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"

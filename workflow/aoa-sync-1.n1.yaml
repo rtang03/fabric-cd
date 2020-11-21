@@ -3,6 +3,11 @@ kind: Workflow
 metadata:
   name: aoa-sync-org1-1
 spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
   entrypoint: main
   serviceAccountName: workflow
   templates:

@@ -150,4 +150,15 @@ spec:
             mountPath: /configtx
           - mountPath: /etc/hyperledger
             name: core-yaml
+      outputs:
+        artifacts:
+          - name: neworg
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/neworg/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
 {{- end }}

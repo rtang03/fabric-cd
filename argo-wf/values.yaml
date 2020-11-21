@@ -146,6 +146,8 @@ alias:
   input_sequence: "{{inputs.parameters.sequence}}"
   # used by neworg-config-update
   input_config_block_json: "{{inputs.parameters.config_block_json}}"
+  # used by update-channel
+  input_update_channel_env: "{{inputs.parameters.update_channel_env}}"
 
 no_istio:
   metadata:

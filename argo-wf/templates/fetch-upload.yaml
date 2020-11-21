@@ -120,4 +120,15 @@ spec:
           - mountPath: /tmp/tlscacert.pem
             name: org0-tlscacert
             subPath: tlscacert.pem
+      outputs:
+        artifacts:
+          - name: fetch-upload
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/fetch-upload/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
 {{- end }}

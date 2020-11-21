@@ -149,5 +149,23 @@ set +x
 printMessage "gupload config_update_in_envelope.pb to org1" $res
 checkArgoWfSucceeded "neworg-update-config" $NS
 
+echo "#####################################################################"
+echo "### Step 12: request n1 to update-channel"
+echo "#####################################################################"
+set -x
+curl
+res=$?
+set +x
+printMessage "" $res
+
+echo "#####################################################################"
+echo "### Step 13: join-channel"
+echo "#####################################################################"
+set -x
+curl
+res=$?
+set +x
+printMessage "" $res
+
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

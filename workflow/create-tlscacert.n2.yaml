@@ -4,12 +4,10 @@ metadata:
   generateName: dl-create-tlscacert-
 spec:
   activeDeadlineSeconds: 300
-  # podGC:
-  #   strategy: OnPodCompletion
   ttlStrategy:
-    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
-    secondsAfterSuccess: 3600     # Time to live after workflow is successful
-    secondsAfterFailure: 3600     # Time to live after workflow fails
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
   entrypoint: main
   serviceAccountName: workflow
 
