@@ -59,6 +59,9 @@ spec:
         parameters:
           - name: config_block_json
           - name: channelname
+          - name: cacert
+          - name: outfile
+          - name: url
       volumes:
         - name: gupload
           persistentVolumeClaim:
