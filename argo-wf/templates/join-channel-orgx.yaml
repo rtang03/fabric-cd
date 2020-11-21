@@ -18,20 +18,22 @@ spec:
         parameters:
           - name: channelname
       steps:
-        - - name: fetch0
+        - - name: fetch-block
             template: fetch-tmpl
             arguments:
               parameters:
                 - name: channelname
                   value: {{ .Values.alias.input_channelname | quote }}
-        # - - name: join-channel
-        #     templateRef:
-        #       name:
-        #       template:
-        #     arguments:
-        #       parameters:
-        #         - name:
-        #           value:
+        - - name: join-channel
+            templateRef:
+              name: join-channel
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: {{ .Values.alias.input_channelname | quote }}
+                - name: s3path
+                  value: {{ .Values.alias.step_fetch_block | quote }}
 
     - name: fetch-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
@@ -111,6 +113,9 @@ spec:
             subPath: {{ .subPath }}
           {{- end }}
       outputs:
+        parameters:
+          - name: fetch_block_s3_path
+            value: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/join-channel-orgx
         artifacts:
           - name: join-channel-orgx
             path: /tmp/

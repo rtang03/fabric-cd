@@ -218,6 +218,8 @@ alias:
   input_config_block_json: "{{inputs.parameters.config_block_json}}"
   # used by update-channel
   input_update_channel_env: "{{inputs.parameters.update_channel_env}}"
+  # used by join-channel-orgx
+  step_fetch_block: "{{steps.fetch-block.outputs.parameters.fetch_block_s3_path}}"
 
 no_istio:
   metadata:
