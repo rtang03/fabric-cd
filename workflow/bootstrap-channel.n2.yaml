@@ -62,7 +62,7 @@ spec:
             arguments:
               parameters:
                 - name: app
-                  value: "eventstore"
+                  value: "eventstore2"
         - - name: approve-chaincode
             templateRef:
               name: approve-chaincode
