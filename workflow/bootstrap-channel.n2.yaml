@@ -14,9 +14,70 @@ spec:
   templates:
     - name: main
       steps:
-        - - name: join-channel
+        # - - name: join-channel-orgx
+        #     templateRef:
+        #       name: join-channel-orgx
+        #       template: main
+        #     arguments:
+        #       parameters:
+        #         - name: channelname
+        #           value: "loanapp"
+        - - name: update-anchor-peer
             templateRef:
-              name: join-channel-orgx
+              name: update-anchor-peer
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: host
+                  value: peer0.org2.net
+                - name: port
+                  value: 15443
+            continueOn:
+              error: true
+              failed: true
+        - - name: package-install-chaincode
+            templateRef:
+              name: package-install-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: version
+                  value: 1
+        - - name: chaincode-id-resource
+            templateRef:
+              name: chaincode-id-resource
+              template: main
+            arguments:
+              parameters:
+                - name: ccid
+                  value: "{{steps.package-install-chaincode.outputs.parameters.packageid}}"
+        - - name: sync-chaincode
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "eventstore"
+        - - name: approve-chaincode
+            templateRef:
+              name: approve-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: sequence
+                  value: 1
+                - name: version
+                  value: 1
+        - - name: smoke-test
+            templateRef:
+              name: smoke-test
               template: main
             arguments:
               parameters:
