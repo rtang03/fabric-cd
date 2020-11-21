@@ -64,6 +64,9 @@ smoketest:
       mountPath: /tmp/org1.net-tlscacert.pem
       subPath: tlscacert.pem
 
+fetchUpload:
+  enabled: false
+
 neworg:
   enabled: false
 

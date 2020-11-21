@@ -1,4 +1,4 @@
-{{- if eq .Values.clusterscope false }}
+{{- if .Values.fetchUpload.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
