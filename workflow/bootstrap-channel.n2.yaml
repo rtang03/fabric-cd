@@ -14,14 +14,14 @@ spec:
   templates:
     - name: main
       steps:
-        # - - name: join-channel-orgx
-        #     templateRef:
-        #       name: join-channel-orgx
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
+        - - name: join-channel-orgx
+            templateRef:
+              name: join-channel-orgx
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
         - - name: update-anchor-peer
             templateRef:
               name: update-anchor-peer

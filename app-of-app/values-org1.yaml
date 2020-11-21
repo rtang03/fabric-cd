@@ -24,5 +24,5 @@ apps:
     rel: g1
     file: values-g1.yaml
   - path: hlf-cc
-    rel: eventstore
+    rel: eventstore1
     file: values-org1.yaml
