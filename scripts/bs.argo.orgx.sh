@@ -153,7 +153,7 @@ echo "#####################################################################"
 echo "### Step 12: request n1 to update-channel"
 echo "#####################################################################"
 set -x
-curl
+curl http://argo.server/api/v1/events/n1/update-channel -H "Authorization: $TOKEN" -d '{"channel":"loanapp","envelope":"o2_neworg_update--config_update_in_envelope.pb"}'
 res=$?
 set +x
 printMessage "" $res
@@ -162,7 +162,7 @@ echo "#####################################################################"
 echo "### Step 13: join-channel"
 echo "#####################################################################"
 set -x
-curl
+
 res=$?
 set +x
 printMessage "" $res

@@ -65,21 +65,18 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowEventBinding
 metadata:
-  name: event-
+  name: event-update-channel
 spec:
   event:
-    selector: payload.url != "" && payload.cacert != "" && payload.outfile != "" && discriminator == "fetch-upload"
+    selector: payload.channel != "" && payload.envelope != "" && discriminator == "update-channel"
   submit:
     workflowTemplateRef:
-      name: fetch-upload
+      name: update-channel
     arguments:
       parameters:
-        - name: cacert
+        - name: channelname
           valueFrom:
-            event: payload.cacert
-        - name: outfile
+            event: payload.channel
+        - name: update_channel_env
           valueFrom:
-            event: payload.outfile
-        - name: url
-          valueFrom:
-            event: payload.url
+            event: payload.envelope

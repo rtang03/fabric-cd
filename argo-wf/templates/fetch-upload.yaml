@@ -22,11 +22,10 @@ spec:
       steps:
         - - name: fetch
             template: fetch-tmpl
-        - - name: gupload
+        - - name: gupload-block
             templateRef:
               name: gupload-up-file
               template: upload-tmpl
-              clusterScope: false
             arguments:
               parameters:
                 - name: cacert
@@ -37,6 +36,22 @@ spec:
                   value: "config.json"
                 - name: outfile
                   value: {{ .Values.alias.input_outfile | quote }}
+                - name: pvc_gupload
+                  value: {{ .Values.pvc_gupload }}
+          - name: gupload-log
+            templateRef:
+              name: gupload-up-file
+              template: upload-tmpl
+            arguments:
+              parameters:
+                - name: cacert
+                  value: {{ .Values.alias.input_cacert | quote }}
+                - name: url
+                  value: {{ .Values.alias.input_url | quote }}
+                - name: infile
+                  value: "fetchconfig.log"
+                - name: outfile
+                  value: "fetchconfig.log"
                 - name: pvc_gupload
                   value: {{ .Values.pvc_gupload }}
 
@@ -98,6 +113,8 @@ spec:
             if [ -f "/tmp/config.json" ]; then
               cp /tmp/config.json /mnt
               printMessage "copy config.json" $?
+              cp /tmp/fetchconfig.log /mnt
+              printMessage "copy fetchconfig.log" $?
             else
               printMessage "config.json not found" 1
             fi

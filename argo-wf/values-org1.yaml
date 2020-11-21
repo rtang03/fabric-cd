@@ -70,3 +70,6 @@ smoketest:
       secretName: org1.net-tlscacert
       mountPath: /tmp/org1.net-tlscacert.pem
       subPath: tlscacert.pem
+
+updateChannel:
+  enabled: true

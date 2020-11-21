@@ -67,6 +67,9 @@ smoketest:
 neworg:
   enabled: false
 
+updateChannel:
+  enabled: false
+
 #hostAlias:
 #  - hostnames:
 #      - orderer0.org0.com

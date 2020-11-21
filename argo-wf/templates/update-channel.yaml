@@ -1,4 +1,4 @@
-{{- if .Values.createChannel.enabled }}
+{{- if .Values.updateChannel.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
@@ -14,6 +14,39 @@ spec:
 
   templates:
     - name: main
+      inputs:
+        parameters:
+          - name: channelname
+          - name: update_channel_env
+          - name: cacert
+          - name: url
+      steps:
+        - - name: update-channel
+            template: update-channel-tmpl
+            arguments:
+              parameters:
+                - name: channelname
+                  value: {{ .Values.alias.input_channelname | quote }}
+                - name: update_channel_env
+                  value: {{ .Values.alias.input_update_channel_env | quote }}
+        - - name: gupload-log
+            templateRef:
+              name: gupload-up-file
+              template: upload-tmpl
+            arguments:
+              parameters:
+                - name: cacert
+                  value: {{ .Values.alias.input_cacert | quote }}
+                - name: url
+                  value: {{ .Values.alias.input_url | quote }}
+                - name: infile
+                  value: "updatechannel.log"
+                - name: outfile
+                  value: "updatechannel.log"
+                - name: pvc_gupload
+                  value: {{ .Values.pvc_gupload }}
+
+    - name: update-channel-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
       inputs:
         parameters:
@@ -30,6 +63,9 @@ spec:
       {{- end }}
       {{- end }}
       volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload }}
         - name: fabricfiles
           persistentVolumeClaim:
             claimName: {{ .Values.pvc_fabricfiles }}
@@ -66,7 +102,7 @@ spec:
             apk --no-cache add libc6-compat libstdc++ tzdata
             ./bin/peer version
             ### check config.json exists
-            if [ -f "/tmp/$ENVELOPE" ]
+            if [ -f "/mnt/$ENVELOPE" ]
             then
               # echo "config_update_in_envelope.pb exists"
               echo "$ENVELOPE exists"
@@ -75,15 +111,19 @@ spec:
             fi
             printHeader "Update channel"
             set -x
-            ./bin/peer channel update -f /tmp/$ENVELOPE -c $CHANNEL_NAME -o $ORDERER_URL --tls --cafile $ORDERER_CA >& $TMP/updatechannel.log
+            ./bin/peer channel update -f /mnt/$ENVELOPE -c $CHANNEL_NAME -o $ORDERER_URL --tls --cafile $ORDERER_CA >& /tmp/updatechannel.log
             res=$?
             set +x
-            cat $TMP/updatechannel.log
+            cat /tmp/updatechannel.log
             printMessage "update channel" $res
+            cp /tmp/updatechannel.log /mnt
+            printMessage "copy updatechannel.log to gupload fileserver" $?
         envFrom:
           - configMapRef:
               name: orgadmin--cli
         volumeMounts:
+          - mountPath: /mnt
+            name: gupload
           - mountPath: /var/hyperledger
             name: fabricfiles
           - name: setup-script

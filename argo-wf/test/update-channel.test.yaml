@@ -16,5 +16,9 @@ spec:
         value: "loanapp"
       - name: update_channel_env
         value: "o2_neworg_update--config_update_in_envelope.pb"
+      - name: cacert
+        value: "org2.net-tlscacert"
+      - name: url
+        value: "gupload.org2.net:15443"
   workflowTemplateRef:
     name: update-channel
