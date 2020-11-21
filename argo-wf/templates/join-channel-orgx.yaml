@@ -14,9 +14,16 @@ spec:
 
   templates:
     - name: main
+      inputs:
+        parameters:
+          - name: channelname
       steps:
         - - name: fetch0
             template: fetch-tmpl
+            arguments:
+              parameters:
+                - name: channelname
+                  value: {{ .Values.alias.input_channelname | quote }}
         # - - name: join-channel
         #     templateRef:
         #       name:
@@ -28,6 +35,9 @@ spec:
 
     - name: fetch-tmpl
 {{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: channelname
       {{- if .Values.hostAlias }}
       hostAliases:
       {{- range .Values.hostAlias }}
