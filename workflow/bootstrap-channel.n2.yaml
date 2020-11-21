@@ -10,12 +10,13 @@ spec:
     secondsAfterSuccess: 3600
     secondsAfterFailure: 3600
   serviceAccountName: workflow
+
   templates:
     - name: main
       steps:
-        - - name: create-channel
+        - - name: join-channel
             templateRef:
-              name: create-channel
+              name: join-channel-orgx
               template: main
             arguments:
               parameters:

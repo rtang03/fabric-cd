@@ -160,13 +160,14 @@ set +x
 printMessage "" $res
 
 echo "#####################################################################"
-echo "### Step 13: join-channel"
+echo "### Step 13: bootstrap-channel"
 echo "#####################################################################"
 set -x
-
+argo submit -n $NS ../workflow/bootstrap-channel.$NS.yaml --watch --request-timeout 600s
 res=$?
 set +x
-printMessage "" $res
+printMessage "bootstrap-channel" $res
+checkArgoWfSucceeded "boostrap-channel" $NS
 
 duration=$SECONDS
 printf "${GREEN}$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n\n${NC}"

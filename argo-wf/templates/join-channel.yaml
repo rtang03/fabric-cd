@@ -71,8 +71,21 @@ spec:
               set +x
               cat /tmp/joinchannel.log
               printMessage "join channel" $res
+              set -x
+              CN=$(./bin/peer channel list | grep $CHANNEL_NAME -)
+              res=$?
+              set +x
+              printMessage "list channel $CHANNEL_NAME" $res
+              preventEmptyValue "peer channel list $CHANNEL_NAME" $CN
             else
+              set -x
+              CN=$(./bin/peer channel list | grep $CHANNEL_NAME -)
+              res=$?
+              set +x
+              printMessage "list channel $CHANNEL_NAME" $res
+              preventEmptyValue "$CHANNEL_NAME" $CN
               echo "channel already joined. join-channel skipped" | tee /tmp/joinchannel.log
+              exit 0
             fi
         envFrom:
           - configMapRef:
