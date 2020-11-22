@@ -16,6 +16,19 @@ ordererUrl: orderer0.org0.com:15443
 
 argocdServerUrl: argocd.server
 
+# Used by package-chaincode
+# NOTE: address: [Release Name of external CC container]-hlf-cc:7052
+connection_json: |
+  {
+                  "address": "eventstore1-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
 createChannel:
   enabled: true
   ordererCa: /tmp/org0.com-tlscacert.pem

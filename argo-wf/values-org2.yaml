@@ -14,6 +14,19 @@ hostAlias:
 
 ordererUrl: orderer0.org0.com:15443
 
+# Used by package-chaincode
+# NOTE: address: [Release Name of external CC container]-hlf-cc:7052
+connection_json: |
+  {
+                  "address": "eventstore2-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
 joinChannel:
   enabled: true
   corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem

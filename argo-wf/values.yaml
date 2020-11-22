@@ -157,16 +157,17 @@ s3:
     key: secretKey
 
 # Used by package-chaincode
-connection_json: |
-  {
-                  "address": "eventstore-hlf-cc:7052",
-                  "dial_timeout": "10s",
-                  "tls_required": false,
-                  "client_auth_required": false,
-                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
-                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
-                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
-                }
+#connection_json: |
+#  {
+#                  "address": "eventstore-hlf-cc:7052",
+#                  "dial_timeout": "10s",
+#                  "tls_required": false,
+#                  "client_auth_required": false,
+#                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+#                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+#                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+#                }
+
 # Used by package-chaincode
 metadata_json: |
   {"path":"","type":"external","label":"eventstorev1"}
