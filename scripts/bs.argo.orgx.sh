@@ -8,26 +8,26 @@
 SECONDS=0
 TARGET=dev-0.1
 
-echo "#################################"
-echo "### Step 1: Install WorkflowTemplates $NS"
-echo "#################################"
-set -x
-helm template ../argo-app --set ns=$NS,path=argo-wf,target=dev-0.1,rel=argo-template-$ORG,file=values-$ORG.yaml | argocd app create -f -
-res=$?
-set +x
-printMessage "install wfTemplate" $res
-
-set -x
-argocd app sync argo-template-$ORG
-res=$?
-set +x
-printMessage "app sync" $res
-
-set -x
-argocd app wait argo-template-$ORG
-res=$?
-set +x
-printMessage "wait wfTemplate" $res
+#echo "#################################"
+#echo "### Step 1: Install WorkflowTemplates $NS"
+#echo "#################################"
+#set -x
+#helm template ../argo-app --set ns=$NS,path=argo-wf,target=dev-0.1,rel=argo-template-$ORG,file=values-$ORG.yaml | argocd app create -f -
+#res=$?
+#set +x
+#printMessage "install wfTemplate" $res
+#
+#set -x
+#argocd app sync argo-template-$ORG
+#res=$?
+#set +x
+#printMessage "app sync" $res
+#
+#set -x
+#argocd app wait argo-template-$ORG
+#res=$?
+#set +x
+#printMessage "wait wfTemplate" $res
 
 #echo "#################################"
 #echo "### Step 2: App-of-apps $ORG"

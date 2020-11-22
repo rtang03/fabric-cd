@@ -17,6 +17,16 @@ spec:
         parameters:
           - name: url
           - name: message
+      {{- if .Values.hostAlias }}
+      hostAliases:
+      {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+            {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
       script:
         image: curlimages/curl:latest
         command:
