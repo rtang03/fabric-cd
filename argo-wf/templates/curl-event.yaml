@@ -37,7 +37,10 @@ spec:
             apk --no-cache add libc6-compat libstdc++ curl
             echo "url {{ .Values.alias.input_url }}"
             echo "data: {{ .Values.alias.input_message }}"
-            curl {{ .Values.alias.input_url }} -v -H "Authorization: $ARGO_TOKEN" -d {{ .Values.alias.input_message }}
+            curl {{ .Values.alias.input_url }} -H "Authorization: $ARGO_TOKEN" -d {{ .Values.alias.input_message }}
+            res=$?
+            echo "response code: $res"
+            exit $res
         envFrom:
           - secretRef:
               name: org1.net-guest-token
