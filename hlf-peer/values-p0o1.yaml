@@ -73,8 +73,6 @@ peer:
 secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
   peer:
-    ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-#    cred: "rca1-tls"
     ## Certificate, saved under key 'cert.pem'
     # cert: hlf--peer1-idcert
     cert: "peer0.org1.net-cert"

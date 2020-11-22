@@ -29,6 +29,8 @@ spec:
                   value: {{ .Values.alias.input_channelname | quote }}
                 - name: update_channel_env
                   value: {{ .Values.alias.input_update_channel_env | quote }}
+            continueOn:
+              failed: true
         - - name: gupload-log
             templateRef:
               name: gupload-up-file

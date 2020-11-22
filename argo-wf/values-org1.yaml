@@ -126,6 +126,7 @@ smoketest:
 
 fetchUpload:
   enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
   secrets:
     - name: org0-tlscacert
       secretName: org0.com-tlscacert

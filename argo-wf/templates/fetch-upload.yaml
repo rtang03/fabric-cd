@@ -22,6 +22,8 @@ spec:
       steps:
         - - name: fetch
             template: fetch-tmpl
+            continueOn:
+              failed: true
         - - name: gupload-block
             templateRef:
               name: gupload-up-file
@@ -93,6 +95,7 @@ spec:
         args:
           - |-
             FABRIC_CFG_PATH=/etc/hyperledger
+            ORDERER_CA={{ .Values.fetchUpload.ordererCa }}
             . /script/setup.sh
             apk update
             apk upgrade
@@ -101,7 +104,7 @@ spec:
             ### Fetch channel config and turn into config.json
             printHeader "Fetch channel config"
             set -x
-            ./bin/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile /tmp/tlscacert.pem >& /tmp/fetchconfig.log
+            ./bin/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
             res=$?
             set +x
             cat /tmp/fetchconfig.log
