@@ -36,7 +36,7 @@ spec:
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ curl
             set -x
-            curl {{ .Values.alias.input_url }} -fs -H "Authorization: $ARGO_TOKEN" -d {{ .Values.alias.input_message }}
+            curl {{ .Values.alias.input_url }} -v -H "Authorization: $ARGO_TOKEN" -d {{ .Values.alias.input_message }}
             res=$?
             set +x
             exit $res

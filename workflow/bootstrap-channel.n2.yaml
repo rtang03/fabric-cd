@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: bootstrap-channel-org2
+  generateName: bootstrap-ch-org2-
 spec:
   entrypoint: main
   activeDeadlineSeconds: 300
