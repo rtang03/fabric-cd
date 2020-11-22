@@ -35,11 +35,9 @@ spec:
             apk update
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ curl
-            set -x
+            echo "url {{ .Values.alias.input_url }}"
+            echo "data: {{ .Values.alias.input_message }}"
             curl {{ .Values.alias.input_url }} -v -H "Authorization: $ARGO_TOKEN" -d {{ .Values.alias.input_message }}
-            res=$?
-            set +x
-            exit $res
         envFrom:
           - secretRef:
               name: org1.net-guest-token

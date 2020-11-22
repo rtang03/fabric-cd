@@ -7,6 +7,7 @@ hostAlias:
       - orderer0.org0.com
       - peer0.org2.net
       - argocd.server
+      - argo.server
     ip: 35.202.107.80
   - hostnames:
       - gupload.org1.net
