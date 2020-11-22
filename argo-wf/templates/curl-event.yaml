@@ -12,6 +12,7 @@ spec:
 
   templates:
     - name: curl-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
       inputs:
         parameters:
           - name: url
