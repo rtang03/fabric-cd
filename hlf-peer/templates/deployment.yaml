@@ -258,12 +258,6 @@ spec:
             - mountPath: {{ include "hlf-peer.home" . }}/tls/client/cert
               name: tls-clientrootcert
             {{- end }}
-            {{- if .Values.secrets.channels }}
-            {{- range .Values.secrets.channels }}
-            - mountPath: /var/hyperledger/crypto-config/{{ $.Values.global.mspId }}/{{ . }}
-              name: {{ . }}
-            {{- end }}
-            {{- end }}
             {{- if .Values.secrets.adminCert }}
             - mountPath: {{ include "hlf-peer.home" . }}/admin/msp/admincerts
               name: admin-cert

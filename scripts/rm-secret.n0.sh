@@ -31,8 +31,4 @@ kubectl -n n0 delete secret orderer4.org0.com-cert
 kubectl -n n0 delete secret orderer4.org0.com-key
 kubectl -n n0 delete secret orderer4.org0.com-tls
 kubectl -n n0 delete secret orderer4.org0.com-tlsrootcert
-kubectl -n n0 delete secret org1.net-admincert
-kubectl -n n0 delete secret org1.net-cacert
-kubectl -n n0 delete secret org1.net-tlscacert
-kubectl -n n0 delete secret rca0-tls
-kubectl -n n0 delete secret tlsca0-tls
+kubectl -n n0 delete secret org0.com-tlscacert
