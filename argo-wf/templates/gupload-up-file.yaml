@@ -105,3 +105,36 @@ spec:
         volumeMounts:
           - mountPath: /mnt
             name: gupload
+    - name: file-exist-and-no-error
+{{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload | quote }}
+      inputs:
+        parameters:
+          - name: infile
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        workingDir: /var/gupload
+        args:
+          - |-
+            FILE={{ .Values.alias.input_infile }}
+            echo "Checking $FILE"
+            if [ -f "/var/gupload/fileserver/$FILE" ]; then
+              ERR=$(grep rror "/var/gupload/fileserver/$FILE")
+              if [ -z $ERR ]; then
+                echo "No error found"
+                exit 0
+              else
+                echo "Error found"
+                exit 1
+              fi
+            else
+              echo "$FILE not found"
+              exit 1
+            fi
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload
