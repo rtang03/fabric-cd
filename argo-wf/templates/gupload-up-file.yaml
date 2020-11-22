@@ -1,16 +1,13 @@
-{{- if eq .Values.clusterscope false }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
   name: gupload-up-file
 spec:
-  activeDeadlineSeconds: 3600
-  # podGC:
-  #   strategy: OnPodCompletion
+  activeDeadlineSeconds: 60
   ttlStrategy:
-    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
-    secondsAfterSuccess: 3600     # Time to live after workflow is successful
-    secondsAfterFailure: 3600     # Time to live after workflow fails
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
   serviceAccountName: workflow
   entrypoint: upload-tmpl
 
@@ -76,4 +73,35 @@ spec:
           - name: cacert
             subPath: tlscacert.pem
             mountPath: "/var/gupload/cert/tlscacert.pem"
-{{- end }}
+    - name: delete-files-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload | quote }}
+      inputs:
+        parameters:
+          - name: files
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        workingDir: /var/gupload
+        args:
+          - |-
+            IN={{ .Values.alias.input_files | quote }}
+            echo "$IN to delete"
+            if [ -z $IN ]; then
+              echo "No files"
+              exit 0
+            else
+              FILES=$(echo $IN | tr ";" "\n")
+              for file in $FILES
+              do
+                set -x
+                rm /mnt/$file
+                set +x
+              done
+            fi
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload

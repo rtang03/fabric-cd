@@ -9,6 +9,14 @@ ordererUrl: orderer0.org0.com:15443
 
 argocdServerUrl: argocd.server
 
+curl:
+  enabled: false
+  secrets:
+    - name: org1-guest-token
+      secretName: org1.net-guest-token
+      mountPath: /tmp/org1.net-guest-token
+      subPath: jwt
+
 createChannel:
   enabled: false
   ordererCa: /tmp/org0.com-tlscacert.pem
@@ -203,6 +211,7 @@ alias:
   # used by gupload
   input_infile: "{{inputs.parameters.infile}}"
   input_outfile: "{{inputs.parameters.outfile}}"
+  input_files: "{{inputs.parameters.files}}"
   # used by argocd-cli
   input_app: "{{inputs.parameters.app}}"
   # used by create-channel

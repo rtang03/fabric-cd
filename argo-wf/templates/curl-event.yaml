@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: curl-event
+spec:
+  activeDeadlineSeconds: 60
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+
+  templates:
+    - name: curl-tmpl
+      inputs:
+        parameters:
+          - name: url
+          - name: message
+      script:
+        image: curlimages/curl:latest
+        command:
+          - sh
+        source: >
+          curl {{ .Values.alias.input_url }} \
+            -fs \
+            -H "Authorization: $ARGO_TOKEN" \
+            -d {{ .Values.alias.input_message }}
+        envFrom:
+          - secretRef:
+              name: org1.net-guest-token

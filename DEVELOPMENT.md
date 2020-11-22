@@ -435,49 +435,62 @@ In the multi-org deployment workflow, it shall reply Argo Server, for workflow e
 with "client mode" (see [auth-mode](https://argoproj.github.io/argo/argo-server-auth-mode/)). Both UI and REST API requires
 access token (see [access-token](https://argoproj.github.io/argo/access-token/))
 
-**Authenicate**
+**Authenicate within the same namespace**
+
+The *ARGO_TOKEN* obtained from `argo auth token` depends on the Argo cli login credentials. *argo*
+cli requires the active port-forwarding of *Argo* server.
 
 ```shell script
 ARGO_TOKEN=$(argo auth token)
 echo $ARGO_TOKEN
 
-# using UI, open http://35.202.107.80   <== expose via istio gateway
+# using UI, open http://argo.server (ip address 35.202.107.80 <== expose via istio gateway)
 # login by copy-and-past the above access token in the login page
 ```
 
-**cUrl**
+**cUrl: invoke workflow within the same namespace**
 
 ```shell script
 curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
 ```
 
-**Obtain access token for different service account**
+**Obtain access token for service-account "workflow"**
 
-The access token will be used for UI log on.
+Each organization will use service account *workflow* for workflow execution. This *ARGO_TOKEN* may be
+different from previous one from `argo auth token`. In general, it is not used for UI login.
 
 ```shell script
 # Obtain access token from service account "workflow"
 SECRET=$(kubectl -n n1 get sa workflow -o=jsonpath='{.secrets[0].name}')
-ARGO_TOKEN="Bearer $(kubectl -n $NS1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
 ```
 
 **Service Account: guest**
 
-Each namespace need a service account *guest*; used by REST API.
+Organization needs a service account *guest*; if exposing *workflow* via by REST API.
+
+*Org1 create ARGO_TOKEN*
 
 ```shell script
 # CREATE SERVICE ACCOUNT "org2.net". This SA is used for inter-organization workflow, via Events
 kubectl -n n1 apply -f ./argo/service-account-guest.yaml
-kubectl -n n2 apply -f ./argo/service-account-guest.yaml
 
 # Access token
 SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
 ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
-
-# Repeat for other namespace
 ```
 
-Send the access token to other organization admin (e.g. org2), in order for sending in Argo Event.
+*OrgX create secret for Org1 ARGO_TOKEN in n2*
+```shell script
+kubectl -n n2 create secret generic org1.net-guest-token --from-literal=ARGO_TOKEN="$ARGO_TOKEN"
+```
+
+**IMPORTANT NOTE**: This is an out-of-band process. Org1 sys-admin will pass the ARGO_TOKEN to OrgX, during member onboarding.
+
+The access token will be used by OrgX to invoke workflow of org1, e.g. *fetch-upload* and *update-channel* workflows. Only org1
+will create guest account for OrgX.
+
+OrgX's workflow will send (curl) *Argo Event* to org1, along bearer token.
 
 **WorkflowTemplates**
 

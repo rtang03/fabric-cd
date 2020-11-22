@@ -27,6 +27,14 @@ connection_json: |
                   "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
                 }
 
+curl:
+  enabled: true
+  secrets:
+    - name: org1-guest-token
+      secretName: org1.net-guest-token
+      mountPath: /tmp/org1.net-guest-token
+      subPath: jwt
+
 joinChannel:
   enabled: true
   corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
