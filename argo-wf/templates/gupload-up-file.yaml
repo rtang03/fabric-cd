@@ -117,13 +117,12 @@ spec:
       container:
         image: {{ .Values.guploadImage }}
         command: ["sh", "-c"]
-        workingDir: /var/gupload
         args:
           - |-
             FILE={{ .Values.alias.input_infile }}
             echo "Checking $FILE"
-            if [ -f "/var/gupload/fileserver/$FILE" ]; then
-              ERR=$(grep rror "/var/gupload/fileserver/$FILE")
+            if [ -f "/mnt/$FILE" ]; then
+              ERR=$(grep rror "/mnt/$FILE")
               if [ -z $ERR ]; then
                 echo "No error found"
                 exit 0

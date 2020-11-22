@@ -32,7 +32,7 @@ spec:
                   value: "http://argo.server/api/v1/events/n1/fetch-upload"
                 - name: message
                   value: "{\\\"outfile\\\":\\\"channel_config--config.json\\\",\\\"cacert\\\":\\\"org2.net-tlscacert\\\",\\\"url\\\":\\\"gupload.org2.net:15443\\\"}"
-        - - name: sleep
+        - - name: wait-60s
             templateRef:
               name: utility
               template: sleep
