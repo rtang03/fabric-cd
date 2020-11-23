@@ -35,5 +35,6 @@ jobs:
         env:
           CI_USER: ${{ secrets.CI_USER }}
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: |
           git push "https://$CI_USER:$CI_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:master
