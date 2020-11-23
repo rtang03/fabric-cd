@@ -695,6 +695,7 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [install krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install)
 - [ksniff](https://github.com/eldadru/ksniff)
 https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95
+https://www.cncf.io/blog/2020/07/27/logging-in-kubernetes-efk-vs-plg-stack/
 
 ### TODO
 **Sops commit hook**
