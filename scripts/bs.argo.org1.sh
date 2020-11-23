@@ -192,8 +192,7 @@ gsutil acl ch -u AllUsers:R gs://fabric-cd-dev/workflow/secrets/n1/org1.net-tlsc
 res=$?
 set +x
 printMessage "make org1.net-tlscacert public" $?
-
-sleep 5
+sleep 1
 
 echo "#################################"
 echo "### Step 13: app sync org0: part 2"
@@ -206,19 +205,7 @@ printMessage "submit sync request - part2" $res
 checkArgoWfSucceeded "aoa-sync-2" n0
 
 echo "#################################"
-echo "### Step 14: app sync org1: part 2"
-echo "#################################"
-set -x
-argo submit -n n1 ../workflow/aoa-sync-2.n1.yaml --watch --request-timeout 300s
-res=$?
-set +x
-printMessage "submit sync request - part2" $res
-checkArgoWfSucceeded "aoa-sync-2" n1
-
-sleep 5
-
-echo "#################################"
-echo "### Step 15: bootstrap-channel"
+echo "### Step 14: bootstrap-channel"
 echo "#################################"
 set -x
 argo submit -n n1 ../workflow/bootstrap-channel.n1.yaml --watch --request-timeout 300s

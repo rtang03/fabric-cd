@@ -14,6 +14,63 @@ spec:
   templates:
     - name: main
       steps:
+        # STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+        - - name: load-org1tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org1.net-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org1.net-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
+        # STEP 2: send org2.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+          - name: load-org2tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org2.net-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org2.net-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
+        # STEP 3: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+          - name: load-org0tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org0.com-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org0.com-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
         # delete files from gupload fileserver
         - - name: delete-files
             templateRef:
@@ -23,6 +80,32 @@ spec:
               parameters:
                 - name: files
                   value: "fetchconfig.log;o2-config_update_in_envelope.pb"
+        - - name: curl-pull-tlscacert
+            templateRef:
+              name: curl-event
+              template: curl-tmpl
+            arguments:
+              parameters:
+                - name: url
+                  value: "http://argo.server/api/v1/events/n1/pull-tlscacert"
+                - name: message
+                  value: "{\\\"file\\\":\\\"org2.net-tlscacert.pem\\\",\\\"secret\\\":\\\"org2.net-tlscacert\\\",\\\"url\\\":\\\"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem\\\",\\\"key\\\":\\\"tlscacert.pem\\\"}"
+        - - name: sync-p0o2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "p0o2"
+          - name: sync-g2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "g2"
         # curl org1 to invoke fetch-upload workflow. The curl does not response of workflow execution result.
         # It simply put the workflow execution on queue.
         - - name: curl-fetch-block
@@ -110,7 +193,6 @@ spec:
             templateRef:
               name: join-channel-orgx
               template: main
-#            when: "{ {steps.neworg-config-update.outputs.parameters.result}} != 'no-difference'"
             arguments:
               parameters:
                 - name: channelname
@@ -176,4 +258,3 @@ spec:
               parameters:
                 - name: channelname
                   value: "loanapp"
-

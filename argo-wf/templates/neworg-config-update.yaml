@@ -130,6 +130,7 @@ spec:
             # > configtxlator: error: Error computing update: error computing config update: no differences detected between original and updated config
             CHECK=$(grep "no differences" "/tmp/compute_update.log")
             if [ -z $CHECK ]; then
+              echo "compute-difference ok" > /tmp/result
             else
               echo "no-difference" > /tmp/result
             fi
