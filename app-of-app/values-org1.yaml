@@ -1,0 +1,28 @@
+project: my-project
+target: dev-0.1
+ns: n1
+server: https://kubernetes.default.svc
+repoURL: git@github.com:rtang03/fabric-cd.git
+
+apps:
+  - path: orgadmin
+    rel: admin1
+    file: values-admin1.yaml
+    secret: secrets.admin1.yaml
+  - path: hlf-ca
+    rel: tlsca1
+    file: values-tlsca1.yaml
+    secret: secrets.org1.yaml
+  - path: hlf-ca
+    rel: rca1
+    file: values-rca1.yaml
+    secret: secrets.org1.yaml
+  - path: hlf-peer
+    rel: p0o1
+    file: values-p0o1.yaml
+  - path: gupload
+    rel: g1
+    file: values-g1.yaml
+  - path: hlf-cc
+    rel: eventstore1
+    file: values-org1.yaml

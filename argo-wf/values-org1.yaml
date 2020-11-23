@@ -1,0 +1,147 @@
+pvc_fabricfiles: pvc-org1
+pvc_gupload: pvc-gupload1
+mspId: Org1MSP
+
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org1.net
+      - argocd.server
+      - argo.server
+    ip: 35.202.107.80
+  - hostnames:
+      - gupload.org2.net
+    ip: 35.202.107.80
+
+ordererUrl: orderer0.org0.com:15443
+
+argocdServerUrl: argocd.server
+
+# Used by package-chaincode
+# NOTE: address: [Release Name of external CC container]-hlf-cc:7052
+connection_json: |
+  {
+                  "address": "eventstore1-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
+createChannel:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+  s3Key_Channeltx: workflow/genesis/channel.tx
+
+joinChannel:
+  enabled: true
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  secrets:
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+updateAnchorPeer:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+packageChaincode:
+  enabled: true
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  secrets:
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+approveChaincode:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+commitChaincode:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+smoketest:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+fetchUpload:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+
+updateChannel:
+  enabled: true
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem

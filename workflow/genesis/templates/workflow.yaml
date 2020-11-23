@@ -7,9 +7,6 @@ metadata:
 spec:
   # must complete in 10 min (600 seconds)
   activeDeadlineSeconds: 600
-  # keep workflows for 1d (3,600 seconds)
-  ttlStrategy:
-    secondsAfterCompletion: 3600
   # delete all pods as soon as they complete
   {{- if .Values.podGC }}
   podGC:
@@ -30,7 +27,7 @@ spec:
         claimName: {{ .Values.pvcName }}
     - name: configtx
       configMap:
-        name: admin0-orgadmin--configtx
+        name: orgadmin--configtx
 
   templates:
     - name: genesis-tmpl

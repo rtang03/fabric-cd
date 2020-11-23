@@ -1,0 +1,167 @@
+{{- if .Values.packageChaincode.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: package-install-chaincode
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: channelname
+          - name: version
+        artifacts:
+          - name: collection-json
+            path: /builders/packaging/connection.json
+            raw:
+              data: {{ .Values.connection_json | quote }}
+          - name: metadata-json
+            path: /builders/packaging/metadata.json
+            raw:
+              data: |
+                {{ .Values.metadata_json }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_fabricfiles }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        {{- range .Values.packageChaincode.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /tmp
+        args:
+          - |-
+            CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
+            FABRIC_CFG_PATH=/etc/hyperledger
+            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.packageChaincode.corePeerTlsRootCert }}
+            echo "CHANNEL_NAME: $CHANNEL_NAME"
+            echo "ORDERER_URL: $ORDERER_URL"
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            ./bin/peer version
+            printHeader "package chaincode"
+            if [ -f "/builders/packaging/connection.json" ]; then
+              echo "/builders/packaging/connection.json found"
+            else
+              printMessage "connection.json not found" 1
+            fi
+            if [ -f "/builders/packaging/metadata.json" ]; then
+              echo "/builders/packaging/metadata.json found"
+            else
+              printMessage "metadata.json not found" -1
+            fi
+            set -x
+            cp /builders/packaging/connection.json .
+            res=$?
+            set +x
+            printMessage "copy connection.json" $res
+            set -x
+            cp /builders/packaging/metadata.json .
+            res=$?
+            set +x
+            printMessage "copy metadata.json" $res
+            set -x
+            tar cfz code.tar.gz connection.json
+            res=$?
+            set +x
+            printMessage "tar code.tar.gz" $res
+            set -x
+            tar cfz {{ .Values.chaincode.id }}.tgz code.tar.gz metadata.json
+            res=$?
+            set +x
+            printMessage "package chaincode" $res
+            printHeader "queryinstalled"
+            set -x
+            /var/hyperledger/bin/peer lifecycle chaincode queryinstalled >& /tmp/installed.log
+            res=$?
+            set +x
+            cat /tmp/installed.log
+            # NOTE: currently, this installation assumes one chaincode per channel. If later, more chaincode
+            # is required per channel, below logic need modify
+            grep -q eventstore /tmp/installed.log
+            res=$?
+            if [ $res = 0 ]; then
+              echo "chaincode already installed"
+              set -x
+              sed -n "/{{ .Values.chaincode.id }}v{{ .Values.alias.input_version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" /tmp/installed.log > /tmp/packageid.txt
+              res=$?
+              set +x
+              cat /tmp/packageid.txt
+              printMessage "1: make packageid.txt" $res
+            else
+              echo "installation will take a few minutes"
+              /var/hyperledger/bin/peer lifecycle chaincode install /tmp/{{ .Values.chaincode.id }}.tgz >& /tmp/installcc.log
+              res=$?
+              set +x
+              cat /tmp/installcc.log
+              printMessage "install chaincode" $res
+              set -x
+              /var/hyperledger/bin/peer lifecycle chaincode queryinstalled >& /tmp/installed.log
+              sed -n "/{{ .Values.chaincode.id }}v{{ .Values.alias.input_version }}/{s/^Package ID: //; s/, Label:.*$//; p;}" /tmp/installed.log > /tmp/packageid.txt
+              res=$?
+              set +x
+              cat /tmp/packageid.txt
+              printMessage "2: make packageid.txt" $res
+            fi
+            # ensure packageid.txt is valid
+            [ -s /tmp/packageid.txt ]
+            res=$?
+            if [ $res = 0 ]; then
+              cat /tmp/packageid.txt
+            else
+              printMessage "packageid.txt exists" 1
+            fi
+        envFrom:
+          - configMapRef:
+              name: orgadmin--cli
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          {{- range .Values.packageChaincode.secrets }}
+          - mountPath: {{ .mountPath }}
+            name: {{ .name }}
+            subPath: {{ .subPath }}
+          {{- end }}
+      outputs:
+        parameters:
+          - name: packageid
+            valueFrom:
+              path: /tmp/packageid.txt
+        artifacts:
+          - name: chaincode
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/package-install-cc/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+{{- end }}

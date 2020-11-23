@@ -1,0 +1,88 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-consumer
+spec:
+  event:
+    selector: payload.message != "" && discriminator == "my-discriminator"
+    # selector: payload.message != "" && metadata["x-argo"] == ["true"] && discriminator == "my-discriminator"
+  submit:
+    workflowTemplateRef:
+      name: simple-echo
+    arguments:
+      parameters:
+        - name: message
+          valueFrom:
+            event: payload.message
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-pull-tlscacert
+spec:
+  event:
+    selector: payload.file != "" && payload.secret != "" && payload.key != "" && payload.path != "" && payload.url != "" && discriminator == "pull-tlscacert"
+  submit:
+    workflowTemplateRef:
+      name: download-and-create-secret
+    arguments:
+      parameters:
+        - name: filename
+          valueFrom:
+            event: payload.file
+        - name: key
+          valueFrom:
+            event: payload.key
+        - name: secretName
+          valueFrom:
+            event: payload.secret
+        - name: url
+          valueFrom:
+            event: payload.url
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-fetch-block
+spec:
+  event:
+    selector: payload.url != "" && payload.cacert != "" && payload.outfile != "" && discriminator == "fetch-upload"
+  submit:
+    workflowTemplateRef:
+      name: fetch-upload
+    arguments:
+      parameters:
+        - name: cacert
+          valueFrom:
+            event: payload.cacert
+        - name: outfile
+          valueFrom:
+            event: payload.outfile
+        - name: url
+          valueFrom:
+            event: payload.url
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: event-update-channel
+spec:
+  event:
+    selector: payload.channel != "" && payload.envelope != "" && payload.cacert != "" && payload.url != "" && discriminator == "update-channel"
+  submit:
+    workflowTemplateRef:
+      name: update-channel
+    arguments:
+      parameters:
+        - name: channelname
+          valueFrom:
+            event: payload.channel
+        - name: update_channel_env
+          valueFrom:
+            event: payload.envelope
+        - name: cacert
+          valueFrom:
+            event: payload.cacert
+        - name: url
+          valueFrom:
+            event: payload.url

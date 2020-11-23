@@ -1,0 +1,120 @@
+{{- if .Values.joinChannel.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: join-channel
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: channelname
+          - name: s3path
+        artifacts:
+          - name: channel-block
+            path: /tmp/{{ .Values.alias.input_channelname}}.block
+            s3:
+              key: "{{ .Values.alias.input_s3path }}/{{ .Values.alias.input_channelname }}.block"
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_fabricfiles }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        {{- range .Values.joinChannel.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
+            FABRIC_CFG_PATH=/etc/hyperledger
+            CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.joinChannel.corePeerTlsRootCert }}
+            echo "CHANNEL_NAME: $CHANNEL_NAME"
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ tzdata
+            ./bin/peer version
+            printHeader "Join channel"
+            sleep 1s
+            set -x
+            ./bin/peer channel getinfo -c $CHANNEL_NAME >& /tmp/getinfo.log
+            res=$?
+            set +x
+            if [ $res = 1 ]; then
+              set -x
+              ./bin/peer channel join -b /tmp/$CHANNEL_NAME.block >& /tmp/joinchannel.log
+              res=$?
+              set +x
+              cat /tmp/joinchannel.log
+              printMessage "join channel" $res
+              set -x
+              CN=$(./bin/peer channel list | grep $CHANNEL_NAME -)
+              res=$?
+              set +x
+              printMessage "list channel $CHANNEL_NAME" $res
+              preventEmptyValue "peer channel list $CHANNEL_NAME" $CN
+            else
+              set -x
+              CN=$(./bin/peer channel list | grep $CHANNEL_NAME -)
+              res=$?
+              set +x
+              printMessage "list channel $CHANNEL_NAME" $res
+              preventEmptyValue "$CHANNEL_NAME" $CN
+              echo "channel already joined. join-channel skipped" | tee /tmp/joinchannel.log
+              exit 0
+            fi
+        envFrom:
+          - configMapRef:
+              name: orgadmin--cli
+        volumeMounts:
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          {{- range .Values.joinChannel.secrets }}
+          - mountPath: {{ .mountPath }}
+            name: {{ .name }}
+            subPath: {{ .subPath }}
+          {{- end }}
+      outputs:
+        parameters:
+          - name: channel_block_s3_path
+            value: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/create-channel
+        artifacts:
+          - name: join-channel-log
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/join-channel/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+{{- end }}

@@ -1,0 +1,18 @@
+# see https://argoproj.github.io/argo/workflow-controller-configmap.yaml
+# NOTE: NO LONGER REQUIRED
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-repositories
+data:
+  gcp_dev: |
+    archiveLogs: true
+    s3:
+      endpoint: storage.googleapis.com
+      bucket: fabric-cd-dev
+      accessKeySecret:
+        name: gcp-s3-credentials
+        key: accessKey
+      secretKeySecret:
+        name: gcp-s3-credentials
+        key: secretKey

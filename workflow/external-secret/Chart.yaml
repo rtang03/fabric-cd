@@ -1,5 +1,0 @@
-apiVersion: v2
-appVersion: 0.6.3
-description: "retreive files from artifact repo and create secret"
-name: external-secret-flow
-version: 0.1.0

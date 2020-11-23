@@ -73,8 +73,6 @@ peer:
 secrets:
   ## These secrets should contain the Orderer crypto materials and credentials
   peer:
-    ## Credentials, saved under keys 'CA_USERNAME' and 'CA_PASSWORD'
-    cred: "rca1-tls"
     ## Certificate, saved under key 'cert.pem'
     # cert: hlf--peer1-idcert
     cert: "peer0.org1.net-cert"
@@ -93,13 +91,6 @@ secrets:
     # tlsClient: hlf--peer1-tls
     ## TLS client root CA certificates saved under any names (as there may be multiple)
     # tlsClientRootCerts: hlf--ord-tlsrootcert
-  ## This should contain "channel" transaction derived from a configtx.yaml
-  ## configtxgen -profile ComposerChannel -channelID composerchannel -outputCreateChannelTx composerchannel.tx
-  # channels:
-  # - foochannel
-  # - barchannel
-  channels:
-    - "channeltx"
   ## This should contain the Certificate of the Peer Organisation admin
   ## This is necessary to successfully run the peer
   # adminCert: hlf--peer-admincert

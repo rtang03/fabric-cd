@@ -1,0 +1,139 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: gupload-up-file
+spec:
+  activeDeadlineSeconds: 60
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  entrypoint: upload-tmpl
+
+  templates:
+    # Retrieve file via gupload
+    - name: upload-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+        {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+          {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.alias.input_pvc_gupload | quote }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: cacert
+          secret:
+            secretName: {{ .Values.alias.input_cacert | quote }}
+      inputs:
+        parameters:
+          - name: cacert
+          - name: url
+          - name: infile
+          - name: outfile
+          - name: pvc_gupload
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        workingDir: /var/gupload
+        args:
+          - |-
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++
+            if [ -f "/mnt/{{ .Values.alias.input_infile }}" ]; then
+              ./gupload --version
+              printHeader "Gupload to {{ .Values.alias.input_url }}: {{ .Values.alias.input_infile }} -> {{ .Values.alias.input_outfile }}"
+              set -x
+              ./gupload upload --cacert /var/gupload/cert/tlscacert.pem --public=false --infile /mnt/{{ .Values.alias.input_infile }} --outfile {{ .Values.alias.input_outfile }} --address {{ .Values.alias.input_url }}
+              res=$?
+              set +x
+              printMessage "gupload upload" $res
+            else
+              printMessage "/mnt/{{ .Values.alias.input_infile }} exist" 1
+            fi
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - name: cacert
+            subPath: tlscacert.pem
+            mountPath: "/var/gupload/cert/tlscacert.pem"
+    - name: delete-files-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload | quote }}
+      inputs:
+        parameters:
+          - name: files
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        workingDir: /var/gupload
+        args:
+          - |-
+            IN={{ .Values.alias.input_files | quote }}
+            echo "$IN to delete"
+            if [ -z $IN ]; then
+              echo "No files"
+              exit 0
+            else
+              FILES=$(echo $IN | tr ";" "\n")
+              for file in $FILES
+              do
+                set -x
+                rm /mnt/$file
+                set +x
+              done
+            fi
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload
+    - name: file-exist-and-no-error
+{{ toYaml .Values.no_istio | indent 6 }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload | quote }}
+      inputs:
+        parameters:
+          - name: infile
+      container:
+        image: {{ .Values.guploadImage }}
+        command: ["sh", "-c"]
+        args:
+          - |-
+            FILE={{ .Values.alias.input_infile }}
+            echo "Checking $FILE"
+            if [ -f "/mnt/$FILE" ]; then
+              ERR=$(grep rror "/mnt/$FILE")
+              if [ -z $ERR ]; then
+                echo "No error found"
+                exit 0
+              else
+                echo "Error found"
+                exit 1
+              fi
+            else
+              echo "$FILE not found"
+              exit 1
+            fi
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload

@@ -41,6 +41,9 @@ itemAlias:
   type: "{{item.type}}"
   csr: "{{item.csr}}"
 
+alias:
+  workflow_name: "{{workflow.name}}"
+
 # "{{inputs.parameters.id}}" is the templating syntax of Argo Workflow, for consuming input argument
 inputAlias:
   id: "{{inputs.parameters.id}}"

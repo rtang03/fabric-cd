@@ -1,0 +1,158 @@
+{{- if .Values.fetchUpload.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: fetch-upload
+spec:
+  activeDeadlineSeconds: 600
+  ttlStrategy:
+    secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
+    secondsAfterSuccess: 3600     # Time to live after workflow is successful
+    secondsAfterFailure: 3600     # Time to live after workflow fails
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: cacert
+          - name: outfile
+          - name: url
+      steps:
+        - - name: fetch
+            template: fetch-tmpl
+            continueOn:
+              failed: true
+        - - name: gupload-block
+            templateRef:
+              name: gupload-up-file
+              template: upload-tmpl
+            arguments:
+              parameters:
+                - name: cacert
+                  value: {{ .Values.alias.input_cacert | quote }}
+                - name: url
+                  value: {{ .Values.alias.input_url | quote }}
+                - name: infile
+                  value: "config.json"
+                - name: outfile
+                  value: {{ .Values.alias.input_outfile | quote }}
+                - name: pvc_gupload
+                  value: {{ .Values.pvc_gupload }}
+          - name: gupload-log
+            templateRef:
+              name: gupload-up-file
+              template: upload-tmpl
+            arguments:
+              parameters:
+                - name: cacert
+                  value: {{ .Values.alias.input_cacert | quote }}
+                - name: url
+                  value: {{ .Values.alias.input_url | quote }}
+                - name: infile
+                  value: "fetchconfig.log"
+                - name: outfile
+                  value: "fetchconfig.log"
+                - name: pvc_gupload
+                  value: {{ .Values.pvc_gupload }}
+
+    - name: fetch-tmpl
+{{ toYaml .Values.no_istio | indent 6 }}
+      {{- if .Values.hostAlias }}
+      hostAliases:
+      {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+            {{- end }}
+          ip: {{ .ip }}
+      {{- end }}
+      {{- end }}
+      volumes:
+        - name: gupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_gupload }}
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc_fabricfiles }}
+        - name: setup-script
+          configMap:
+            name: "orgadmin--setupsh"
+            defaultMode: 0755
+        - name: core-yaml
+          configMap:
+            name: core-yaml
+        {{- range .Values.fetchUpload.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        workingDir: /var/hyperledger
+        args:
+          - |-
+            FABRIC_CFG_PATH=/etc/hyperledger
+            ORDERER_CA={{ .Values.fetchUpload.ordererCa }}
+            . /script/setup.sh
+            apk update
+            apk upgrade
+            apk --no-cache add libc6-compat libstdc++ jq
+            ./bin/peer version
+            ### Fetch channel config and turn into config.json
+            printHeader "Fetch channel config"
+            set -x
+            ./bin/peer channel fetch config /tmp/config_block.pb -o $ORDERER_URL -c $CHANNEL_NAME --tls --cafile $ORDERER_CA >& /tmp/fetchconfig.log
+            res=$?
+            set +x
+            cat /tmp/fetchconfig.log
+            printMessage "fetch config block" $res
+            printHeader "Decoding config block to JSON and isolating config"
+            set -x
+            ./bin/configtxlator proto_decode --input /tmp/config_block.pb --type common.Block | jq .data.data[0].payload.data.config > /tmp/config.json
+            res=$?
+            set +x
+            printMessage "decode block and extract channel config: config.json" $res
+            if [ -f "/tmp/config.json" ]; then
+              cp /tmp/config.json /mnt
+              printMessage "copy config.json" $?
+              cp /tmp/fetchconfig.log /mnt
+              printMessage "copy fetchconfig.log" $?
+            else
+              printMessage "config.json not found" 1
+            fi
+        env:
+          - name: ORDERER_URL
+            value: {{ .Values.ordererUrl }}
+        envFrom:
+          - configMapRef:
+              name: orgadmin--cli
+        volumeMounts:
+          - mountPath: /mnt
+            name: gupload
+          - mountPath: /var/hyperledger
+            name: fabricfiles
+          - name: setup-script
+            mountPath: /script/setup.sh
+            subPath: setup.sh
+          - mountPath: /etc/hyperledger
+            name: core-yaml
+          {{- range .Values.fetchUpload.secrets }}
+          - mountPath: {{ .mountPath }}
+            name: {{ .name }}
+            subPath: {{ .subPath }}
+          {{- end }}
+      outputs:
+        artifacts:
+          - name: fetch-upload
+            path: /tmp/
+            archive:
+              none: {}
+            s3:
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}/fetch-upload/
+              {{- with .Values.s3 }}
+{{ toYaml . | indent 14 }}
+              {{- end }}
+{{- end }}

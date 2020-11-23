@@ -1,5 +1,6 @@
-## Continuous Deployment
-Continuous deployment for fabric-es
+# Continuous Deployment
+GitOps Continuous deployment for *fabric-es* and its projects.
+
 
 ```text
 Dear Everyone,
@@ -9,241 +10,221 @@ All steps are not future-proof, any change may break. It works, maybe I don't kn
 Take your own risk  🎃
 ```
 
-### Pre-requisite
-- GKE 1.16.13-gke.401/regular channel
-- n1-standard-4: 4 vcpu/15GB x 1 node
-- Istio v1.4.10
-- installation of gcloud cli, kubectl and istioctl
-- helm charts v3
-- Fabric v2.2.0
+### Directory Structure
+**CD Application**
+- app-of-app: ArgoCD application-of-application helm chart
+- argo-app: ArgoCD application helm chart
+- argo-wf: Argo WorkflowTemplate helm chart
+- argocd: Deployment manifests for *ArgoCD* server
 
-*Installation of istioctl*
-Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
-istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6).
+**Hyperledger Application**
+- chaincode: for building chaincode docker image
+- gupload: grpc file uploader helm chart
+- hlf-ca: Hyperledger Fabric CA server helm chart
+- hlf-cc: Hyperledger Fabric Chaincode helm chart
+- hlf-ord: Hyperledger Fabric Orderer helm chart
+- hlf-peer: Hyperledger Fabric Peer helm chart
+- networking: Istio manifests
+- orgadmin: cli for organization administrator
+- workflow: Argo Workflow manifest for first-time bootraping
+
+### Usable Release: dev-0.1
+Quickstart deployment
+
+- Target branch: `dev-0.1`
+- Topology: 2-org;1-peer Fabric-only (org0/org1/org2)
+- namespace: n0/n1/n2
+- Configtx: Standard
+- GCP project: fdi-cd
+- GKE: dev-core-b
+- GCS bucket: fabric-cd-dev
+- GCP KMS: projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key
+
+**Requirements**
+
+- All applications are deployed to project *fdi-cd* of GKE account *hktfp.5.gmail.com*.
+- All `secrets.*.yaml` are encrypted with GCP KMS key *sops-key* of keyring *fdi*. Encrypt/decrypt are made via service accounts.
+- *rtang03* is only deployer. All ArgoCD application deployment and synchronization requires github SSH key of *rtang03*.
+
+**List of deployment manifest**
+
+- argo/*
+- argocd/*
+- networking/*
+- workflow/*
+- scripts/env.*.sh
+
+**List of application value files**
+
+- .sops.yaml and */.sops.yaml
+- app-of-app/values-*.yaml
+- argo-wf/values-*.yaml
+- gupload/values-*.yaml
+- hlf-ca/values-*.yaml
+- hlf-ca/secrets.*.yaml
+- hlf-cc/values-*.yaml
+- hlf-ord/values-*.yaml
+- hlf-peer/values-*.yaml
+- orgadmin/secrets.*.yaml
+- orgadmin/values-*.yaml
+
+**Update Host Alias in values files**
+In GCP, istio is in-cluster deployment, newly created GKE cluster will have different istio gateway ip address.
+Every newly created cluster, you need to update host alias in values files.
 
 ```shell script
-# client installation of istioctl v1.4.10
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
+# obtain ingressgateway ip address
+kubectl -n istio-system get svc | grep ingressgateway
 ```
 
-### Update Private DNS
-Currently, an one-off setup of private zone DNS in Google Networking is required for:
-- orderer0.org0.com
-- orderer1.org0.com
-- orderer2.org0.com
-- orderer3.org0.com
-- orderer4.org0.com
-- gupload.org1.net
-- gupload.org1.net
-- gupload.org2.net
-- gupload.org3.net
-- peer0.org1.net
-- peer0.org2.net
-- peer0.org3.net
+Update ip address of below values files:
+- hlf-peer/values-p0o1.yaml
+- hlf-peer/values-p0o2.yaml
+- hlf-ord/values-o0.yaml
+- hlf-ord/values-o1.yaml
+- hlf-ord/values-o2.yaml
+- hlf-ord/values-o3.yaml
+- hlf-ord/values-o4.yaml
+- workflow/bootstrap/values.yaml
 
-All A record is set equal to istio gateway ip.
 
-### Preparation Step
+### Getting Started: first-time network setup
 
-**Step 0: after GKE is created, update local machine credentials**
+**Checklist**:
+
+1. MUST READ [DEVELOPMENT](https://github.com/rtang03/fabric-cd/doc/DEVELOPMENT.md)
+1. *GKE* cluster creation
+1. *Argo* and *ArgoCD* installation on GKE in-cluster
+1. GCP Cloud DNS, KMS, Storage setup
+1. Remove pre-existing GCS storage bucket `fabric-cd-dev`. The workflows output artifacts to bucket. The non-empty paths will give error when outputing.
+
+In local machine:
+- login with *gcloud*, installed with *kubectl*, *gsutil* cli
+- install SOPS, *Argo* and *ArgoCD* CLI
+- activate *Argo* and *ArgoCD* port-forwarding
+- update `/etc/hosts` to point to *Argo* and *ArgoCD*, the IP comes from Istio gateway
+
+```text
+# /etc/hosts
+35.202.107.80 argocd.server
+35.202.107.80 argo.server
+```
+
+**Install org0 and org1**
+
+The run may take 30+ minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
+status.
 
 ```shell script
-# gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_ID
-gcloud container clusters get-credentials dev-core-b --zone us-central1-c
+cd scripts
 
-# disable itio probe rewrite globally
-kubectl get cm istio-sidecar-injector -n istio-system -o yaml | sed -e 's/"rewriteAppHTTPProbe": true/"rewriteAppHTTPProbe": false/' | kubectl apply -f -
+# Optionally, if there is running application from previous installation
+# this will uninstall all ArgoCD applications and workflows in all namespace.
+./uninstall.argo.sh
 
-# Step 1: Here assumes auto-injection is used. I attempt manual injection, but did not work.
-kubectl create namespace n0
-kubectl create namespace n1
-kubectl create namespace n2
-kubectl create namespace n3
-kubectl label namespace n0 istio-injection=enabled
-kubectl label namespace n1 istio-injection=enabled
-kubectl label namespace n2 istio-injection=enabled
-kubectl label namespace n3 istio-injection=enabled
-
-# Step 2: Create persistence volume claim for org0 and org1
-# Creation of pvc is intentionally decouple from helm charts; different deployment may require very different storage
-# requirement. Also, different cloud provider has different offering.
-# In GCP, here assumes to use "standard" storageClass.
+# First time setup, will remove pre-existing PVC for org0 and org1; and create new ones
+# ALL DATA WILL BE REMOVED
 ./recreate-pvc.sh org1
+
+# Similarly for org2
 ./recreate-pvc.sh org2
-./recreate-pvc.sh org3
+
+# Bootstrap Org0 and Org1
+./bs.argo.org1.sh
+
+# Bootstrap Org2
+./bs.argo.orgx.sh org2
 ```
 
-**Goto GKE, obtain the IP for Istio Ingress Gateway**
-Update ip address for hlf-peer.gcp.yaml, and all values files of "hlf-operator" jobs.
-
-```yaml
-peer:
-  hostAlias:
-    - hostnames:
-        - orderer0.org0.com
-        - orderer1.org0.com
-        - orderer2.org0.com
-        - orderer3.org0.com
-        - orderer4.org0.com
-        - peer0.org1.net
-      ip: 35.xxx.xxx.xxx
-```
-
-### Initial Setup
-For every new cluster, it needs to install istio CRD. For `uninstall', re-install of istio is not required.
-
+Successful deployment should show something below.
 ```shell script
-# One time Install istio
-kubectl -n n0 apply -f networking/istio-n0.yaml
-kubectl -n n1 apply -f networking/istio-n1.yaml
-kubectl -n n2 apply -f networking/istio-n2.yaml
-kubectl -n n3 apply -f networking/istio-n3.yaml
+Name:                bootstrap-ch-org2-mrzz8
+Namespace:           n2
+ServiceAccount:      workflow
+Status:              Succeeded
+Conditions:
+ Completed           True
+ResourcesDuration:   8m18s*(1 cpu),8m18s*(100Mi memory)
+
+STEP                                  TEMPLATE                                  DURATION
+ ✔ bootstrap-ch-org2-mrzz8            main
+ ├-·-✔ load-org0tlscacert             download-and-create-secret/main
+ | | ├---✔ retrieve                   retrieve-tmpl                             28s
+ | | ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        3s
+ | | └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   2s
+ | ├-✔ load-org1tlscacert             download-and-create-secret/main
+ | | ├---✔ retrieve                   retrieve-tmpl                             24s
+ | | ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        2s
+ | | └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   3s
+ | └-✔ load-org2tlscacert             download-and-create-secret/main
+ |   ├---✔ retrieve                   retrieve-tmpl                             26s
+ |   ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        4s
+ |   └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   2s
+ ├---✔ delete-files                   gupload-up-file/delete-files-tmpl         5s
+ ├---✔ curl-pull-tlscacert            curl-event/curl-tmpl                      4s
+ ├-·-✔ sync-g2                        argocd-cli/argocd-app-sync                28s
+ | └-✔ sync-p0o2                      argocd-cli/argocd-app-sync                1m
+ ├---✔ curl-fetch-block               curl-event/curl-tmpl                      3s
+ ├---✔ wait-1                         utility/sleep                             33s
+ ├---✔ check-fetchconfig-log-exist    gupload-up-file/file-exist-and-no-error   5s
+ ├---✔ neworg-config-update           neworg-config-update/main
+ |   ├---✔ neworg                     neworg-tmpl                               23s
+ |   └---✔ gupload                    gupload-up-file/upload-tmpl               7s
+ ├---✔ curl-update-channel            curl-event/curl-tmpl                      3s
+ ├---✔ wait-2                         utility/sleep                             33s
+ ├---✔ check-updatechannel-log-exist  gupload-up-file/file-exist-and-no-error   4s
+ ├---✔ join-channel-orgx              join-channel-orgx/main
+ |   ├---✔ fetch-block                fetch-tmpl                                8s
+ |   └---✔ join-channel               join-channel/main                         11s
+ ├---✔ update-anchor-peer             update-anchor-peer/main                   19s
+ ├---✔ package-install-chaincode      package-install-chaincode/main            15s
+ ├---✔ chaincode-id-resource          chaincode-id-resource/main
+ |   ├---✔ delete-ccid                delete-ccid                               2s
+ |   └---✔ create-ccid                create-ccid                               2s
+ ├---✔ sync-chaincode                 argocd-cli/argocd-app-sync                15s
+ ├---✔ approve-chaincode              approve-chaincode/main                    13s
+ └---✔ smoke-test                     smoke-test/main                           13s
 ```
 
-### Releases
-All releases' custom configuration is at `releases` directory, in form of helm charts value files.
+### Tear-down
 ```shell script
-# execute one by one
-bootstrap.gcp.sh org1
-bootstrap.gcp.sh org2
-bootstrap.gcp.sh org3
-```
+cd scripts
 
-### Cleanup
-```shell script
-# uninstall helm charts for org0 and org1
-./uninstall.sh org1
-./uninstall.sh org2
-./uninstall.sh org3
+./uninstall.argo.sh
 
-# and then, delete/recreate ALL pvc
 ./recreate-pvc.sh org1
+
 ./recreate-pvc.sh org2
-./recreate-pvc.sh org3
-
-# remove istio objects
-# if you want to re-run installation of the same cluster, you are not necessarily removing istio object
-kubectl -n n0 delete -f networking/istio-n0.yaml
-kubectl -n n1 delete -f networking/istio-n1.yaml
 ```
 
-*Useful Command*
+Lastly, remove the 'fabric-cd-dev' storage bucket.
+
+
+### Prepare secrets file
+Credentials, secrets, and passwords are re-located to `secrets.*.yaml`, in corresponding Helm chart directories. For example,
+see `orgadmin/secrets.admin1-example.yaml`, `tlsca_caadmin` must be a base64 encoded value, and created as k8s Secret resource.
+
 ```shell script
-# show streaming logs
-kubectl -n n0 logs -f [ORDERER_POD_ID] -c orderer
-kubectl -n n1 logs -f [PEER_POD_ID] -c peer
+# encode ==> dGxzY2ExLWFkbWluCg==
+echo -n 'tlsca1-admin' | base64
 
-# For orderer debugging when orderering is actively running; you may tty into it, and alter the logging mode
-# kubectl -n [Namespace] exec -it [ORDERER_POD_ID] -c orderer
-
-# install curl inside orderer or peer
-# apk add curl
-# e.g: {"spec":"debug"} {"spec":"grpc=debug:debug"} {"spec":"info"}
-curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:8443/logspec
-
-# Similarly, for peer debugging, the port is changed to :9443
-# kubectl -n [Namespace] exec -it [PEER_POD_ID] -c peer
-
-# after postgresql is installed, you can valiate it; by decoding the secret
-export POSTGRES_PASSWORD=$(kubectl get secret --namespace default psql-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
-
-# you can launch a port-forward, so that the psql client in host system can access it
-kubectl port-forward --namespace default svc/psql-postgresql 5433:5432
-
-# login with psql
-PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5433
-
-# debug helm chart with --dry-run --debug
-helm install rca0 -f ./hlf-ca/values-rca0.yaml -n n0 --dry-run --debug ./hlf-ca
-
-# debug grpc transport
-# login the container and turn on grpc debug
-# export GODEBUG=http2debug=2
-
-# optionaly, create alias for kubectl and istioctl, and add to your shell's e.g. ./zshrc
-# alias k0="kubectl -n n0"
-# alias k1="kubectl -n n1"
-# alias i0="istioctl -n n0"
-# alias i1="istioctl -n n1"
+# decode => tlsca1-admin
+echo -n 'dGxzY2ExLWFkbWluCg==' | base64 -d
 ```
 
-### External chaincode container
-To remove the shortcoming of DockerInDocker chaincode, here uses the external chaincode, which requires v2.0+.
-See [Fabric Documentation](https://hyperledger-fabric.readthedocs.io/en/latest/cc_launcher.html)
+`orgadmin/secrets.admin1-example.yaml` is an encoded yaml. You copy its file content into `orgadmin/secrets.admin1.yaml`;
+and then run below command to perform sops encryption. `-i` means in-place replacement; the previous unencrypted/encoded
+yaml will be replaced. Repeat the same steps for every `secrets.*.yaml`. The yaml property ending with "_unencrypted" will skip encryption.
 
-The chaincode `dist` is located at `chaincode/fabric-es`. It will be made a docker image via Github Action, by adding a new tag.
 ```shell script
-git tag v0.0.3
-git push origin v0.0.3
+# encrypt
+sops -e -i orgadmin/secrets.admin1.yaml
+
+# decrypt
+sops -d orgadmin/secrets.admin1.yaml
 ```
 
-The new image publishes to [my Github container registry](https://github.com/users/rtang03/packages/container/package/eventstore).
-Every organization should use this common chaincode.
 
-Similarly, I publish the `gupload` grpc upload server/client to Github container registry.
+### For gitOps Contributors
+Please see [DEVELOPMENT](https://github.com/rtang03/fabric-cd/doc/DEVELOPMENT.md)
 
-### Helm charts
-Availble app:
-- gupload: grpc file uploader
-- hlf-ca: Hyperledger Fabric Certificate Authority
-- hlf-couchdb: CouchDB
-- hlf-ord: Hyperledger Fabric Orderer
-- hlf-peer: Hyperledger Fabric Peer
-- hlf-cc: Hyperledger Fabric Chaincode
-- hlf-operator: administrative tasks via k8s jobs
-- orgadmin: administrative cli
-
-`hlf-operator` involves below list of k8s jobs
-- *bootstrap*: (a) multiples step to install `org1`; and (b) `orgX` Note that `orgX` has few steps than `org1`
-- *fetch*: fetch block by `org1`, and then `gupload` to `orgX`
-- *joinchannel*: join channel by `orgX`
-- *neworg*: create new configtx.yaml of `orgX`, and then `gupload` to `org1`
-- *updatechannel*: `org1` update channel with `orgX`'s channel-update-envelope
-
-### Helm
-```shell script
-# search public helm repository
-helm search repo stable
-
-# add argo helm chart repo
-helm repo add argo https://argoproj.github.io/argo-helm
-
-# when there is external helm dependency in Chart.yaml
-# helm dep update will add postgresql dependency in orgadmin
-cd orgadmin
-helm dep update
-
-# if you want to install a standsalone postgres to defautl namespace, for standalone testing purpose
-# helm install psql --set postgresqlPassword=hello bitnami/postgresql
-```
-
-### Networking
-Here uses Istio Service Mesh, and istio CRD is located `networking` directory.
-
-Note that k8s will reply on DNS in host network. I find that "org0.com" is public domain. We need to create private zone
-in GCP Cloud DNS, with A record, of "orderer0.org0.com", equal to ip address of istiogateway.
-
-Currently, I have no idea why the peer requires hostAlias for endpoint ip resolution. If no hostAlias, peer fails to send
-gossips. It seems running peer rely on /etc/hosts, instead of DNS resolutions. On the other hand, when running installation
-job, the "peer" cli will only rely on DNS resolutions.
-
-Before understanding how it works, currently will use both hostAlias and private DNS. And, all peers and orderers shall
-work as expected.
-
-### Naming convention
-*Helm chart value file*
-[release name]-[app name].[cloud].yaml => admin0-orgadmin.gcp.yaml
-
-### External Reference
-- [External chaincode](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523)
-- [External chaincode sample code](https://github.com/vanitas92/fabric-external-chaincodes)
-- [install istio/gke](https://istio.io/latest/docs/setup/platform-setup/gke/)
-- [k8s api spec](https://pkg.go.dev/k8s.io/api@v0.16.13)
-- [hlf-ca helm chart](https://github.com/helm/charts/tree/master/stable/hlf-ca)
-- [postgres helm chart](https://github.com/bitnami/charts/tree/master/bitnami/postgresql)
-- [example: nginx ingress](https://matthewpalmer.net/kubernetes-app-developer/articles/kubernetes-ingress-guide-nginx-example.html)
-- [fabric helm chart](https://medium.com/google-cloud/helm-chart-for-fabric-for-kubernetes-80408b9a3fb6)
-- [kubect documentation](https://kubectl.docs.kubernetes.io/)
-- [k8s dashboard](https://github.com/kubernetes/dashboard#kubernetes-dashboard)
-- [gke nginx example](https://github.com/GoogleCloudPlatform/community/blob/master/tutorials/nginx-ingress-gke/index.md)
-- [Hyperledger on Azure](https://github.com/Azure/Hyperledger-Fabric-on-Azure-Kubernetes-Service/blob/master/fabricTools/deployments/peer/fabric-peer-template-couchDB.yaml)

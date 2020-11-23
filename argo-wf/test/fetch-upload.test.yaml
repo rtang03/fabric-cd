@@ -1,0 +1,26 @@
+# This is used to test "fetch-upload" workflowTemplate, with below command:
+# argo -n n1 submit fetch-upload-test.yaml
+# curl http://argo.server/api/v1/events/n1/fetch-upload -H "Authorization: $ARGO_TOKEN" -d '{"outfile":"channel_config--config.json","cacert":"org2.net-tlscacert","url":"gupload.org2.net:15443"}'
+# Note: gupload2 is required to serve.
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: test-fetch-upload-
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  arguments:
+    parameters:
+      - name: cacert
+        value: org2.net-tlscacert
+      - name: outfile
+        value: "channel_config--config.json"
+      - name: url
+        value: "gupload.org2.net:15443"
+  workflowTemplateRef:
+    name: fetch-upload
+

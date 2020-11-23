@@ -8,9 +8,6 @@ metadata:
 spec:
   # must complete in 10 min (600 seconds)
   activeDeadlineSeconds: 600
-  # keep workflows for 1d (86,400 seconds)
-  ttlStrategy:
-    secondsAfterCompletion: 86400
   # delete all pods as soon as they complete
   {{- if .Values.podGC }}
   podGC:
@@ -368,7 +365,7 @@ spec:
             s3:
               endpoint: storage.googleapis.com
               bucket: {{ .Values.outputArtifact.bucket }}
-              key: workflow/cryptogen/{{ .Values.mspId | lower }}-crypto-config.tgz
+              key: workflow/{{ .Values.alias.workflow_name }}/{{ .Values.mspId | lower }}-crypto-config.tgz
               accessKeySecret:
                 name: gcp-s3-credentials
                 key: accessKey

@@ -3,7 +3,7 @@ global:
   image:
     repository: "ghcr.io/rtang03/argocd"
     tag: "1.7.7-rel.1"
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
   securityContext:
     fsGroup: 2000
 
@@ -20,3 +20,25 @@ repoServer:
   volumeMounts:
     - name: "gcp-service-account"
       mountPath: "/app/config/gcp"
+
+server:
+  # turn off tls mode, and leverage istio to enable tls
+  extraArgs:
+    - --insecure
+  podAnnotations:
+    sidecar.istio.io/proxyCPU: "10m"
+    sidecar.istio.io/proxyCPULimit: "50m"
+    sidecar.istio.io/rewriteAppHTTPProbers: "false"
+    sidecar.istio.io/logLevel: "info"
+  config:
+    accounts.cli: apiKey, login
+    statusbadge.enabled: 'true'
+    # https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#helm-chart-repositories
+    # need to add non standard helm chart for istio, in order for argocd to work
+    helm.repositories: |
+      - url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+        name: istio.io
+    repositories: |
+      - type: helm
+        url: https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts
+        name: istio.io

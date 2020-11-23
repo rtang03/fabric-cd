@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: 0.1
+description: Chart for app-of-app for ArgoCD
+name: app-of-app
+sources:
+  - https://github.com/rtang03/fabric-cd
+version: 0.1.0

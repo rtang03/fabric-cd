@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: test-argocd-cli
+spec:
+  activeDeadlineSeconds: 300
+  # podGC:
+  #   strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  arguments:
+    parameters:
+      - name: app
+        value: "admin1"
+  workflowTemplateRef:
+    name: argocd-cli

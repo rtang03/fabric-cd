@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: utility
+spec:
+  activeDeadlineSeconds: 60
+  podGC:
+    strategy: OnPodCompletion
+  serviceAccountName: workflow
+
+  templates:
+    - name: sleep
+{{ toYaml .Values.no_istio | indent 6 }}
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: library/alpine:3.12.0
+        command: ["sh", "-c"]
+        args:
+          - |-
+            echo "Sleep for {{ .Values.alias.input_message }}"
+            sleep "{{ .Values.alias.input_message }}"
+            echo "sleep finish"

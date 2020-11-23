@@ -15,9 +15,9 @@ global:
 #  pullPolicy: IfNotPresent
 
 ### Default
-service:
-  type: NodePort
-  port: 7054
+#service:
+#  type: NodePort
+#  port: 7054
 
 config:
   type: tls

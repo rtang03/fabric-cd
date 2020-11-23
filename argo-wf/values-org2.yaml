@@ -1,0 +1,137 @@
+pvc_fabricfiles: pvc-org2
+pvc_gupload: pvc-gupload2
+mspId: Org2MSP
+
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - peer0.org2.net
+      - argocd.server
+      - argo.server
+    ip: 35.202.107.80
+  - hostnames:
+      - gupload.org1.net
+    ip: 35.202.107.80
+
+ordererUrl: orderer0.org0.com:15443
+
+# Used by package-chaincode
+# NOTE: address: [Release Name of external CC container]-hlf-cc:7052
+connection_json: |
+  {
+                  "address": "eventstore2-hlf-cc:7052",
+                  "dial_timeout": "10s",
+                  "tls_required": false,
+                  "client_auth_required": false,
+                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+                }
+
+curl:
+  enabled: true
+  secrets:
+    - name: org1-guest-token
+      secretName: org1.net-guest-token
+      mountPath: /tmp/org1.net-guest-token
+      subPath: jwt
+
+joinChannel:
+  enabled: true
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+updateAnchorPeer:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+packageChaincode:
+  enabled: true
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+approveChaincode:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+smoketest:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  targets:
+    - peerAddress: peer0.org1.net:15443
+      tlsRootCertFiles: org1.net-tlscacert.pem
+    - peerAddress: peer0.org2.net:15443
+      tlsRootCertFiles: org2.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org1-tlscacert
+      secretName: org1.net-tlscacert
+      mountPath: /tmp/org1.net-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem
+
+neworg:
+  enabled: true
+  # latest channel block (block 0), uploaded by "fetch1"
+  channelConfg: channel_config--config.json
+  secret:
+    - name: guploadtlscacert
+      secret: org1.net-tlscacert
+      path: "/var/gupload/cert"
+  # used by configMap configtx.yaml
+  configtx:
+    anchorPeer: peer0.org2.net
+    anchorPeerPort: 15443
+  # dial address of gupload
+  address:
+    url: gupload.org1.net
+    port: 15443
+
+joinChannelOrgx:
+  enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+  secrets:
+    - name: org0-tlscacert
+      secretName: org0.com-tlscacert
+      mountPath: /tmp/org0.com-tlscacert.pem
+      subPath: tlscacert.pem
+    - name: org2-tlscacert
+      secretName: org2.net-tlscacert
+      mountPath: /tmp/org2.net-tlscacert.pem
+      subPath: tlscacert.pem

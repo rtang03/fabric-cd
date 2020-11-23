@@ -1,0 +1,47 @@
+# NOTE: it does not work now; need to wait the PR to argo-helm is accepted
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: argo-gateway
+  namespace: argo
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "argo.server"
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: PASSTHROUGH
+      hosts:
+        - "argo.server"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: argo
+  namespace: argo
+spec:
+  hosts:
+    - argo.server
+  gateways:
+    - argo-gateway
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - argo.server
+      route:
+        - destination:
+            host: argo-server.argo.svc.cluster.local
+            port:
+              number: 2746

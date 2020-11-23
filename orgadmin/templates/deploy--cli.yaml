@@ -35,7 +35,7 @@ spec:
         {{- if .Values.orderer.enabled }}
         - name: configtx
           configMap:
-            name: {{ include "orgadmin.fullname" . }}--configtx
+            name: "orgadmin--configtx"
         {{- end }}
         {{- if .Values.orderer.enabled }}
         - name: org1mspcacerts
@@ -71,12 +71,6 @@ spec:
             secretName: {{ . }}
         {{- end }}
         {{- end }}
-        # {{- if .Values.peer.enabled }}
-        # - name: ord-tlssigncert
-        #   secret:
-        #     optional: true
-        #     secretName: {{ .Values.peer.secret.ordTlsSignCert | quote }}
-        # {{- end }}
         {{- if .Values.peer.enabled }}
         - name: org0-tls-ca-cert
           secret:
@@ -137,7 +131,7 @@ spec:
               sleep 48h
           envFrom:
             - configMapRef:
-                name: {{ include "orgadmin.fullname" . }}--cli
+                name: orgadmin--cli
           volumeMounts:
             - mountPath: /var/hyperledger
               name: fabricfiles
@@ -170,10 +164,6 @@ spec:
               name: {{ . }}
             {{- end }}
             {{- end }}
-            # {{- if .Values.peer.enabled }}
-            # - mountPath: "{{ $.Values.cli.firstOrgDir }}/peer0.org1.net/ord/tls-msp/signcerts"
-            #   name: ord-tlssigncert
-            # {{- end }}
             {{- if .Values.peer.enabled }}
             - mountPath: "{{ $.Values.cli.firstOrgDir }}/peer0.org1.net/ord/org0/tlscacerts"
               name: org0-tls-ca-cert

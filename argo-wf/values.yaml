@@ -1,0 +1,238 @@
+pvc_fabricfiles: pvc-org1
+pvc_gupload: pvc-gupload1
+
+clusterscope: false
+
+guploadImage: ghcr.io/rtang03/gupload:0.1.6
+
+ordererUrl: orderer0.org0.com:15443
+
+argocdServerUrl: argocd.server
+
+curl:
+  enabled: false
+  secrets:
+    - name: org1-guest-token
+      secretName: org1.net-guest-token
+      mountPath: /tmp/org1.net-guest-token
+      subPath: jwt
+
+createChannel:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+  s3Key_Channeltx: workflow/genesis/channel.tx
+
+joinChannel:
+  enabled: false
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  secrets:
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+updateAnchorPeer:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+packageChaincode:
+  enabled: false
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  secrets:
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+approveChaincode:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+commitChaincode:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  targets:
+#    - peerAddress: peer0.org1.net:15443
+#      tlsRootCertFiles: org1.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+smoketest:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org1.net-tlscacert.pem
+#  targets:
+#    - peerAddress: peer0.org1.net:15443
+#      tlsRootCertFiles: org1.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+fetchUpload:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+
+neworg:
+  enabled: false
+
+updateChannel:
+  enabled: false
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+#    - name: org1-tlscacert
+#      secretName: org1.net-tlscacert
+#      mountPath: /tmp/org1.net-tlscacert.pem
+#      subPath: tlscacert.pem
+
+joinChannelOrgx:
+  enabled: false
+#  ordererCa: /tmp/org0.com-tlscacert.pem
+#  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
+#  secrets:
+#    - name: org0-tlscacert
+#      secretName: org0.com-tlscacert
+#      mountPath: /tmp/org0.com-tlscacert.pem
+#      subPath: tlscacert.pem
+
+#hostAlias:
+#  - hostnames:
+#      - orderer0.org0.com
+#      - peer0.org1.net
+#    ip: 35.202.107.80
+#  - hostnames:
+#      - gupload.org2.net
+#    ip: 35.202.107.80
+
+s3:
+  endpoint: storage.googleapis.com
+  bucket: fabric-cd-dev
+  accessKeySecret:
+    name: gcp-s3-credentials
+    key: accessKey
+  secretKeySecret:
+    name: gcp-s3-credentials
+    key: secretKey
+
+# Used by package-chaincode
+#connection_json: |
+#  {
+#                  "address": "eventstore-hlf-cc:7052",
+#                  "dial_timeout": "10s",
+#                  "tls_required": false,
+#                  "client_auth_required": false,
+#                  "client_key": "-----BEGIN EC PRIVATE KEY----- ... -----END EC PRIVATE KEY-----",
+#                  "client_cert": "-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----",
+#                  "root_cert": "-----BEGIN CERTIFICATE---- ... -----END CERTIFICATE-----"
+#                }
+
+# Used by package-chaincode
+metadata_json: |
+  {"path":"","type":"external","label":"eventstorev1"}
+
+chaincode:
+  id: eventstore
+  contract: eventstore
+  version: 1
+  lang: node
+
+alias:
+  # general
+  workflow_name: "{{workflow.name}}"
+  input_s3path: "{{inputs.parameters.s3path}}"
+  input_cacert: "{{inputs.parameters.cacert}}"
+  # used by simple-echo
+  input_message: "{{inputs.parameters.message}}"
+  # used by dl-create-secret
+  input_pvc_gupload: "{{inputs.parameters.pvc_gupload}}"
+  input_url: "{{inputs.parameters.url}}"
+  input_secretName: "{{inputs.parameters.secretName}}"
+  input_filename: "{{inputs.parameters.filename}}"
+  input_path: "{{inputs.parameters.path}}"
+  input_key: "{{inputs.parameters.key}}"
+  key1: "{{inputs.parameters.key1}}"
+  path1: "{{inputs.parameters.path1}}"
+  value1: "{{inputs.parameters.value1}}"
+  key2: "{{inputs.parameters.key2}}"
+  path2: "{{inputs.parameters.path2}}"
+  value2: "{{inputs.parameters.value2}}"
+  output_value1: "{{steps.retrieve.outputs.parameters.value1}}"
+  # used by gupload
+  input_infile: "{{inputs.parameters.infile}}"
+  input_outfile: "{{inputs.parameters.outfile}}"
+  input_files: "{{inputs.parameters.files}}"
+  # used by argocd-cli
+  input_app: "{{inputs.parameters.app}}"
+  # used by create-channel
+  input_channelname: "{{inputs.parameters.channelname}}"
+  # used by update-anchor-peer
+  input_host: "{{inputs.parameters.host}}"
+  input_port: "{{inputs.parameters.port}}"
+  # used by package-install-chaincode
+  input_version: "{{inputs.parameters.version}}"
+  # used by cc-id
+  input_ccid: "{{inputs.parameters.ccid}}"
+  # used by approve-chaincode
+  input_sequence: "{{inputs.parameters.sequence}}"
+  # used by neworg-config-update
+  input_config_block_json: "{{inputs.parameters.config_block_json}}"
+  # used by update-channel
+  input_update_channel_env: "{{inputs.parameters.update_channel_env}}"
+  # used by join-channel-orgx
+  step_fetch_block: "{{steps.fetch-block.outputs.parameters.fetch_block_s3_path}}"
+
+no_istio:
+  metadata:
+    annotations:
+      sidecar.istio.io/inject: "false"

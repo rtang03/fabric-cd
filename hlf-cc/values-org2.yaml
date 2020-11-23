@@ -1,0 +1,4 @@
+global:
+  TZ: Asia/Hong_Kong
+
+image: "ghcr.io/rtang03/eventstore:0.0.4"

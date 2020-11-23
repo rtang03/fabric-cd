@@ -1,0 +1,260 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bootstrap-ch-org2-
+spec:
+  entrypoint: main
+  activeDeadlineSeconds: 600
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+
+  templates:
+    - name: main
+      steps:
+        # STEP 1: send org1.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+        - - name: load-org1tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org1.net-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org1.net-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
+        # STEP 2: send org2.net-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+          - name: load-org2tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org2.net-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org2.net-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
+        # STEP 3: send org0.com-tlscacert.pem to to n2 /var/gupload/fileserver; and create secret
+          - name: load-org0tlscacert
+            arguments:
+              parameters:
+                - name: filename
+                  value: "org0.com-tlscacert.pem"
+                - name: key
+                  value: "tlscacert.pem"
+                - name: path
+                  value: /var/gupload/fileserver
+                - name: pvc_gupload
+                  value: "pvc-gupload2"
+                - name: secretName
+                  value: "org0.com-tlscacert"
+                - name: url
+                  value: "https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n0/org0.com-tlscacert/tlscacert.pem"
+            templateRef:
+              name: download-and-create-secret
+              template: main
+        # delete files from gupload fileserver
+        - - name: delete-files
+            templateRef:
+              name: gupload-up-file
+              template: delete-files-tmpl
+            arguments:
+              parameters:
+                - name: files
+                  value: "fetchconfig.log;o2-config_update_in_envelope.pb"
+        - - name: curl-pull-tlscacert
+            templateRef:
+              name: curl-event
+              template: curl-tmpl
+            arguments:
+              parameters:
+                - name: url
+                  value: "http://argo.server/api/v1/events/n1/pull-tlscacert"
+                - name: message
+                  value: "{\\\"file\\\":\\\"org2.net-tlscacert.pem\\\",\\\"secret\\\":\\\"org2.net-tlscacert\\\",\\\"url\\\":\\\"https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n2/org2.net-tlscacert/tlscacert.pem\\\",\\\"key\\\":\\\"tlscacert.pem\\\"}"
+        - - name: sync-p0o2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "p0o2"
+          - name: sync-g2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "g2"
+        # curl org1 to invoke fetch-upload workflow. The curl does not response of workflow execution result.
+        # It simply put the workflow execution on queue.
+        - - name: curl-fetch-block
+            templateRef:
+              name: curl-event
+              template: curl-tmpl
+            arguments:
+              parameters:
+                - name: url
+                  value: "http://argo.server/api/v1/events/n1/fetch-upload"
+                - name: message
+                  value: "{\\\"outfile\\\":\\\"channel_config--config.json\\\",\\\"cacert\\\":\\\"org2.net-tlscacert\\\",\\\"url\\\":\\\"gupload.org2.net:15443\\\"}"
+        - - name: wait-1
+            templateRef:
+              name: utility
+              template: sleep
+            arguments:
+              parameters:
+                - name: message
+                  value: 30s
+        # check fetchconfig.log exist in gupload fileserver and withtout error
+        # fetchconfig.log exist only if "fetch-upload" is successfully processed
+        - - name: check-fetchconfig-log-exist
+            templateRef:
+              name: gupload-up-file
+              template: file-exist-and-no-error
+            arguments:
+              parameters:
+                - name: infile
+                  value: "fetchconfig.log"
+        # add org2 configtx to the newly fetchblock, and send to org1 again
+        # NOTE: The join-channel step will continue, even neworg workflow fails
+        # the neworg workflow will fail, if org2 is already join channel
+        - - name: neworg-config-update
+            templateRef:
+              name: neworg-config-update
+              template: main
+            continueOn:
+              failed: true
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: config_block_json
+                  value: "channel_config--config.json"
+                - name: cacert
+                  value: "org1.net-tlscacert"
+                - name: outfile
+                  value: "o2-config_update_in_envelope.pb"
+                - name: url
+                  value: "gupload.org1.net:15443"
+        # curl org1 to invoke update-channel workflow
+        - - name: curl-update-channel
+            templateRef:
+              name: curl-event
+              template: curl-tmpl
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
+            arguments:
+              parameters:
+                - name: url
+                  value: "http://argo.server/api/v1/events/n1/update-channel"
+                - name: message
+                  value: "{\\\"channel\\\":\\\"loanapp\\\",\\\"envelope\\\":\\\"o2-config_update_in_envelope.pb\\\",\\\"url\\\":\\\"gupload.org2.net:15443\\\",\\\"cacert\\\":\\\"org2.net-tlscacert\\\"}"
+        - - name: wait-2
+            templateRef:
+              name: utility
+              template: sleep
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
+            arguments:
+              parameters:
+                - name: message
+                  value: 30s
+        # check updatechannel.log exist in gupload fileserver and withtout error
+        # updatechannel.log exist only if "update-channel" is successfully processed
+        - - name: check-updatechannel-log-exist
+            templateRef:
+              name: gupload-up-file
+              template: file-exist-and-no-error
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
+            arguments:
+              parameters:
+                - name: infile
+                  value: "updatechannel.log"
+        - - name: join-channel-orgx
+            templateRef:
+              name: join-channel-orgx
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+        - - name: update-anchor-peer
+            templateRef:
+              name: update-anchor-peer
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: host
+                  value: peer0.org2.net
+                - name: port
+                  value: 15443
+            continueOn:
+              error: true
+              failed: true
+        - - name: package-install-chaincode
+            templateRef:
+              name: package-install-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: version
+                  value: 1
+        - - name: chaincode-id-resource
+            templateRef:
+              name: chaincode-id-resource
+              template: main
+            arguments:
+              parameters:
+                - name: ccid
+                  value: "{{steps.package-install-chaincode.outputs.parameters.packageid}}"
+        - - name: sync-chaincode
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "eventstore2"
+        - - name: approve-chaincode
+            templateRef:
+              name: approve-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: sequence
+                  value: 1
+                - name: version
+                  value: 1
+        - - name: smoke-test
+            templateRef:
+              name: smoke-test
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
