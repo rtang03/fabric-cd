@@ -1,7 +1,7 @@
 # Continuous Deployment
 GitOps Continuous deployment for *fabric-es* and its projects.
 
-(This page is under construction).
+
 ```text
 Dear Everyone,
 
