@@ -14,6 +14,7 @@ spec:
   templates:
     - name: main
       steps:
+        # delete files from gupload fileserver
         - - name: delete-files
             templateRef:
               name: gupload-up-file
@@ -21,7 +22,9 @@ spec:
             arguments:
               parameters:
                 - name: files
-                  value: "fetchconfig.log"
+                  value: "fetchconfig.log;o2-config_update_in_envelope.pb"
+        # curl org1 to invoke fetch-upload workflow. The curl does not response of workflow execution result.
+        # It simply put the workflow execution on queue.
         - - name: curl-fetch-block
             templateRef:
               name: curl-event
@@ -40,7 +43,9 @@ spec:
               parameters:
                 - name: message
                   value: 60s
-        - - name: check-log-exist
+        # check fetchconfig.log exist in gupload fileserver and withtout error
+        # fetchconfig.log exist only if "fetch-upload" is successfully processed
+        - - name: check-fetchconfig-log-exist
             templateRef:
               name: gupload-up-file
               template: file-exist-and-no-error
@@ -48,22 +53,52 @@ spec:
               parameters:
                 - name: infile
                   value: "fetchconfig.log"
-        # - - name: neworg
-        #     templateRef:
-        #       name: neworg-config-update
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
-        #         - name: config_block_json
-        #           value: "channel_config--config.json"
-        #         - name: cacert
-        #           value: "org1.net-tlscacert"
-        #         - name: outfile
-        #           value: "o2_neworg_update--config_update_in_envelope.pb"
-        #         - name: url
-        #           value: "gupload.org1.net:15443"
+        # add org2 configtx to the newly fetchblock, and send to org1 again
+        - - name: neworg-configtx-upload-org1
+            templateRef:
+              name: neworg-config-update
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: config_block_json
+                  value: "channel_config--config.json"
+                - name: cacert
+                  value: "org1.net-tlscacert"
+                - name: outfile
+                  value: "o2-config_update_in_envelope.pb"
+                - name: url
+                  value: "gupload.org1.net:15443"
+        # curl org1 to invoke update-channel workflow
+        - - name: curl-update-channel
+            templateRef:
+              name: curl-event
+              template: curl-tmpl
+            arguments:
+              parameters:
+                - name: url
+                  value: "http://argo.server/api/v1/events/n1/update-channel"
+                - name: message
+                  value: "{\\\"channel\\\":\\\"loanapp\\\",\\\"envelope\\\":\\\"o2-config_update_in_envelope.pb\\\",\\\"url\\\":\\\"gupload.org2.net:15443\\\",\\\"cacert\\\":\\\"org1.net-tlscacert\\\"}"
+        - - name: wait-70s
+            templateRef:
+              name: utility
+              template: sleep
+            arguments:
+              parameters:
+                - name: message
+                  value: 70s
+        # check fetchconfig.log exist in gupload fileserver and withtout error
+        # fetchconfig.log exist only if "fetch-upload" is successfully processed
+        - - name: check-updatechannel-log-exist
+            templateRef:
+              name: gupload-up-file
+              template: file-exist-and-no-error
+            arguments:
+              parameters:
+                - name: infile
+                  value: "updatechannel.log"
         # - - name: join-channel-orgx
         #     templateRef:
         #       name: join-channel-orgx

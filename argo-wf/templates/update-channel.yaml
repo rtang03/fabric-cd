@@ -102,12 +102,13 @@ spec:
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ tzdata
             ./bin/peer version
-            ### check config.json exists
+            ### check config_update exists
             if [ -f "/mnt/$ENVELOPE" ]
             then
               # echo "config_update_in_envelope.pb exists"
               echo "$ENVELOPE exists"
             else
+              echo "Error: config_update_in_envelope.pb not found" > /mnt/updatechannel.log
               printMessage "find config_update_in_envelope.pb" 1
             fi
             printHeader "Update channel"
@@ -116,9 +117,8 @@ spec:
             res=$?
             set +x
             cat /tmp/updatechannel.log
-            printMessage "update channel" $res
             cp /tmp/updatechannel.log /mnt
-            printMessage "copy updatechannel.log to gupload fileserver" $?
+            printMessage "update channel" $res
         envFrom:
           - configMapRef:
               name: orgadmin--cli
