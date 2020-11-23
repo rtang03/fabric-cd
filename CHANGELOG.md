@@ -2,10 +2,11 @@
 
 ## [Unreleased](https://github.com/rtang03/fabric-cd/tree/HEAD)
 
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.0.4...HEAD)
+[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...HEAD)
 
 **Implemented enhancements:**
 
+- change to automatic change log via Github Action [\#52](https://github.com/rtang03/fabric-cd/issues/52)
 - expose argo workflow API Server [\#42](https://github.com/rtang03/fabric-cd/issues/42)
 - integrate ArgoCD with helm-secrets and GCP [\#37](https://github.com/rtang03/fabric-cd/issues/37)
 - attempt ArgoCD [\#9](https://github.com/rtang03/fabric-cd/issues/9)
@@ -37,22 +38,6 @@
 - clean up [\#39](https://github.com/rtang03/fabric-cd/pull/39) ([rtang03](https://github.com/rtang03))
 - debug remove echo [\#33](https://github.com/rtang03/fabric-cd/pull/33) ([rtang03](https://github.com/rtang03))
 - first deploy via argo cd [\#12](https://github.com/rtang03/fabric-cd/pull/12) ([rtang03](https://github.com/rtang03))
-
-## [v0.0.4](https://github.com/rtang03/fabric-cd/tree/v0.0.4) (2020-09-22)
-
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.0.3...v0.0.4)
-
-## [v0.0.3](https://github.com/rtang03/fabric-cd/tree/v0.0.3) (2020-09-22)
-
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.0.2...v0.0.3)
-
-## [v0.0.2](https://github.com/rtang03/fabric-cd/tree/v0.0.2) (2020-09-21)
-
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.0.1...v0.0.2)
-
-## [v0.0.1](https://github.com/rtang03/fabric-cd/tree/v0.0.1) (2020-09-20)
-
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...v0.0.1)
 
 
 
