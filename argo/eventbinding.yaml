@@ -68,7 +68,7 @@ metadata:
   name: event-update-channel
 spec:
   event:
-    selector: payload.channel != "" && payload.envelope != "" && discriminator == "update-channel"
+    selector: payload.channel != "" && payload.envelope != "" && payload.cacert != "" && payload.url != "" && discriminator == "update-channel"
   submit:
     workflowTemplateRef:
       name: update-channel
@@ -80,3 +80,9 @@ spec:
         - name: update_channel_env
           valueFrom:
             event: payload.envelope
+        - name: cacert
+          valueFrom:
+            event: payload.cacert
+        - name: url
+          valueFrom:
+            event: payload.url

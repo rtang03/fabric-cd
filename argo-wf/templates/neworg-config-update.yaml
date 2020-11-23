@@ -85,7 +85,7 @@ spec:
             apk upgrade
             apk --no-cache add libc6-compat libstdc++ jq
             ./bin/peer version
-
+            touch /tmp/result
             if [ -f "/mnt/$CONFIG" ]
             then
               echo "$CONFIG exists"
@@ -93,34 +93,46 @@ spec:
               printMessage "find config.json" 1
             fi
             printHeader "step 1: generate channel definition"
+            sleep 1
             set -x
             ./bin/configtxgen -configPath /configtx -printOrg {{ .Values.mspId }} > /tmp/{{ .Values.mspId }}-configtx.json
             res=$?
             set +x
             printMessage "generate channel definition" $res
             printHeader "step 2: modify config to append new org"
+            sleep 1
             set -x
             jq -s '.[0] * {"channel_group":{"groups":{"Application":{"groups": {"{{ .Values.mspId }}":.[1]}}}}}' /mnt/$CONFIG /tmp/{{ .Values.mspId }}-configtx.json > /tmp/modified_config.json
             res=$?
             set +x
             printMessage "modify config to append new org: {{ .Values.mspId }}" $res
             printHeader "step 3: encode config.json to config.pb"
+            sleep 1
             set -x
             ./bin/configtxlator proto_encode --input /mnt/$CONFIG --type common.Config --output /tmp/config.pb
             res=$?
             set +x
             printMessage "encode config.json to config.pb" $res
             printHeader "step 4: encode modified_config.json to modified_config.pb"
+            sleep 1
             set -x
             ./bin/configtxlator proto_encode --input /tmp/modified_config.json --type common.Config --output /tmp/modified_config.pb
             res=$?
             set +x
             printMessage "encode modified_config.json to modified_config.pb" $res
             printHeader "step 5: compute update block"
+            sleep 1
             set -x
-            ./bin/configtxlator compute_update --channel_id $CHANNEL_NAME --original /tmp/config.pb --updated /tmp/modified_config.pb --output /tmp/config_update.pb
+            ./bin/configtxlator compute_update --channel_id $CHANNEL_NAME --original /tmp/config.pb --updated /tmp/modified_config.pb --output /tmp/config_update.pb >& /tmp/compute_update.log
             res=$?
             set +x
+            # when the current org has already joined channel will return below error
+            # > configtxlator: error: Error computing update: error computing config update: no differences detected between original and updated config
+            CHECK=$(grep "no differences" "/tmp/compute_update.log")
+            if [ -z $CHECK ]; then
+            else
+              echo "no-difference" > /tmp/result
+            fi
             printMessage "compute update block" $res
             printHeader "step 6: decode update block"
             set -x
@@ -129,12 +141,14 @@ spec:
             set +x
             printMessage "decode update block" $res
             printHeader "step 7: create update_envelope"
+            sleep 1
             set -x
             echo "{\"payload\":{\"header\":{\"channel_header\":{\"channel_id\":\"$CHANNEL_NAME\", \"type\":2}},\"data\":{\"config_update\":$(cat /tmp/config_update.json)}}}" | jq . > /tmp/config_update_in_envelope.json
             res=$?
             set +x
             printMessage "create update_envelope" $res
             printHeader "step 8: encode update_envelope"
+            sleep 1
             set -x
             ./bin/configtxlator proto_encode --input /tmp/config_update_in_envelope.json --type common.Envelope --output /tmp/config_update_in_envelope.pb
             res=$?
@@ -159,6 +173,10 @@ spec:
           - mountPath: /etc/hyperledger
             name: core-yaml
       outputs:
+        parameters:
+          - name: result
+            valueFrom:
+              path: "/tmp/result"
         artifacts:
           - name: neworg
             path: /tmp/

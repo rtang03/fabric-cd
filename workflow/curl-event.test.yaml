@@ -54,14 +54,10 @@ spec:
                 - name: infile
                   value: "fetchconfig.log"
         # add org2 configtx to the newly fetchblock, and send to org1 again
-        # NOTE: The join-channel step will continue, even neworg workflow fails
-        # the neworg workflow will fail, if org2 is already join channel
-        - - name: neworg-configtx-upload
+        - - name: neworg-configtx-upload-org1
             templateRef:
               name: neworg-config-update
               template: main
-            continueOn:
-              failed: true
             arguments:
               parameters:
                 - name: channelname
@@ -79,7 +75,6 @@ spec:
             templateRef:
               name: curl-event
               template: curl-tmpl
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
             arguments:
               parameters:
                 - name: url
@@ -90,7 +85,6 @@ spec:
             templateRef:
               name: utility
               template: sleep
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
             arguments:
               parameters:
                 - name: message
@@ -101,20 +95,18 @@ spec:
             templateRef:
               name: gupload-up-file
               template: file-exist-and-no-error
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
             arguments:
               parameters:
                 - name: infile
                   value: "updatechannel.log"
-        - - name: join-channel-orgx
-            templateRef:
-              name: join-channel-orgx
-              template: main
-            when: "{{steps.neworg-configtx-upload.outputs.parameters.result}} != no-difference"
-            arguments:
-              parameters:
-                - name: channelname
-                  value: "loanapp"
+        # - - name: join-channel-orgx
+        #     templateRef:
+        #       name: join-channel-orgx
+        #       template: main
+        #     arguments:
+        #       parameters:
+        #         - name: channelname
+        #           value: "loanapp"
         # - - name: update-anchor-peer
         #     templateRef:
         #       name: update-anchor-peer
