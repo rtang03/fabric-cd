@@ -56,7 +56,7 @@ spec:
         # add org2 configtx to the newly fetchblock, and send to org1 again
         # NOTE: The join-channel step will continue, even neworg workflow fails
         # the neworg workflow will fail, if org2 is already join channel
-        - - name: neworg-configtx-upload
+        - - name: neworg-config-update
             templateRef:
               name: neworg-config-update
               template: main
@@ -79,7 +79,7 @@ spec:
             templateRef:
               name: curl-event
               template: curl-tmpl
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
             arguments:
               parameters:
                 - name: url
@@ -90,7 +90,7 @@ spec:
             templateRef:
               name: utility
               template: sleep
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
             arguments:
               parameters:
                 - name: message
@@ -101,7 +101,7 @@ spec:
             templateRef:
               name: gupload-up-file
               template: file-exist-and-no-error
-            when: "{{steps.neworg-configtx-upload.exitCode}} == 0"
+            when: "{{steps.neworg-config-update.status}} == Succeeded"
             arguments:
               parameters:
                 - name: infile
@@ -110,70 +110,70 @@ spec:
             templateRef:
               name: join-channel-orgx
               template: main
-            when: "{{steps.neworg-configtx-upload.outputs.parameters.result}} != no-difference"
+#            when: "{ {steps.neworg-config-update.outputs.parameters.result}} != 'no-difference'"
             arguments:
               parameters:
                 - name: channelname
                   value: "loanapp"
-        # - - name: update-anchor-peer
-        #     templateRef:
-        #       name: update-anchor-peer
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
-        #         - name: host
-        #           value: peer0.org2.net
-        #         - name: port
-        #           value: 15443
-        #     continueOn:
-        #       error: true
-        #       failed: true
-        # - - name: package-install-chaincode
-        #     templateRef:
-        #       name: package-install-chaincode
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
-        #         - name: version
-        #           value: 1
-        # - - name: chaincode-id-resource
-        #     templateRef:
-        #       name: chaincode-id-resource
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: ccid
-        #           value: "{{steps.package-install-chaincode.outputs.parameters.packageid}}"
-        # - - name: sync-chaincode
-        #     templateRef:
-        #       name: argocd-cli
-        #       template: argocd-app-sync
-        #     arguments:
-        #       parameters:
-        #         - name: app
-        #           value: "eventstore2"
-        # - - name: approve-chaincode
-        #     templateRef:
-        #       name: approve-chaincode
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
-        #         - name: sequence
-        #           value: 1
-        #         - name: version
-        #           value: 1
-        # - - name: smoke-test
-        #     templateRef:
-        #       name: smoke-test
-        #       template: main
-        #     arguments:
-        #       parameters:
-        #         - name: channelname
-        #           value: "loanapp"
-        #
+        - - name: update-anchor-peer
+            templateRef:
+              name: update-anchor-peer
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: host
+                  value: peer0.org2.net
+                - name: port
+                  value: 15443
+            continueOn:
+              error: true
+              failed: true
+        - - name: package-install-chaincode
+            templateRef:
+              name: package-install-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: version
+                  value: 1
+        - - name: chaincode-id-resource
+            templateRef:
+              name: chaincode-id-resource
+              template: main
+            arguments:
+              parameters:
+                - name: ccid
+                  value: "{{steps.package-install-chaincode.outputs.parameters.packageid}}"
+        - - name: sync-chaincode
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "eventstore2"
+        - - name: approve-chaincode
+            templateRef:
+              name: approve-chaincode
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+                - name: sequence
+                  value: 1
+                - name: version
+                  value: 1
+        - - name: smoke-test
+            templateRef:
+              name: smoke-test
+              template: main
+            arguments:
+              parameters:
+                - name: channelname
+                  value: "loanapp"
+

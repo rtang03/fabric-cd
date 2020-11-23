@@ -59,6 +59,8 @@ packageChaincode:
 
 approveChaincode:
   enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
   secrets:
     - name: org0-tlscacert
       secretName: org0.com-tlscacert
@@ -71,6 +73,8 @@ approveChaincode:
 
 smoketest:
   enabled: true
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  corePeerTlsRootCert: /tmp/org2.net-tlscacert.pem
   targets:
     - peerAddress: peer0.org1.net:15443
       tlsRootCertFiles: org1.net-tlscacert.pem
