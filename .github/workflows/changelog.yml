@@ -15,7 +15,6 @@ jobs:
     name: Generate changelog for master branch
     steps:
       - uses: actions/checkout@v1
-
       - name: Generate changelog
         uses: charmixer/auto-changelog-action@v1.1
         with:
