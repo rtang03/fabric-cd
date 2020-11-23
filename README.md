@@ -10,25 +10,63 @@ All steps are not future-proof, any change may break. It works, maybe I don't kn
 Take your own risk  🎃
 ```
 
-### Availble Application
-- gupload: grpc file uploader
-- hlf-ca: Hyperledger Fabric Certificate Authority
-- hlf-couchdb: CouchDB
-- hlf-ord: Hyperledger Fabric Orderer
-- hlf-peer: Hyperledger Fabric Peer
-- hlf-cc: Hyperledger Fabric Chaincode
-- hlf-operator: administrative tasks via k8s jobs
-- orgadmin: administrative cli
-- argo-app: ArgoCD application manifest
+### Directory Structure
+**CD Application**
+- app-of-app: ArgoCD application-of-application helm chart
+- argo-app: ArgoCD application helm chart
+- argo-wf: Argo WorkflowTemplate helm chart
+- argocd: Deployment manifests for *ArgoCD* server
 
-`hlf-operator` involves below list of k8s jobs
-- *bootstrap*: (a) multiples step to install `org1`; and (b) `orgX` Note that `orgX` has few steps than `org1`
-- *fetch*: fetch block by `org1`, and then `gupload` to `orgX`
-- *joinchannel*: join channel by `orgX`
-- *neworg*: create new configtx.yaml of `orgX`, and then `gupload` to `org1`
-- *updatechannel*: `org1` update channel with `orgX`'s channel-update-envelope
+**Hyperledger Application**
+- chaincode: for building chaincode docker image
+- gupload: grpc file uploader helm chart
+- hlf-ca: Hyperledger Fabric CA server helm chart
+- hlf-cc: Hyperledger Fabric Chaincode helm chart
+- hlf-ord: Hyperledger Fabric Orderer helm chart
+- hlf-peer: Hyperledger Fabric Peer helm chart
+- networking: Istio manifests
+- orgadmin: cli for organization administrator
+- workflow: Argo Workflow manifest for first-time bootraping
 
-### INSTRUCTIONS
+### Usable Release: dev-0.1
+Quickstart deployment
+
+- Target branch: `dev-0.1`
+- Topology: 2-org;1-peer Fabric-only (org0/org1/org2)
+- namespace: n0/n1/n2
+- Configtx: Standard
+- GCP project: fdi-cd
+- GKE: dev-core-b
+- GCS bucket: fabric-cd-dev
+- GCP KMS: projects/fdi-cd/locations/us-central1/keyRings/fdi/cryptoKeys/sops-key
+
+**Requirements**
+
+- All applications are deployed to project *fdi-cd* of GKE account *hktfp.5.gmail.com*.
+- All `secrets.*.yaml` are encrypted with GCP KMS key *sops-key* of keyring *fdi*. Encrypt/decrypt are made via service accounts.
+- *rtang03* is only deployer. All ArgoCD application deployment and synchronization requires github SSH key of *rtang03*.
+
+**List of deployment manifest**
+
+- argo/*
+- argocd/*
+- networking/*
+- workflow/*
+- scripts/env.*.sh
+
+**List of application value files**
+
+- .sops.yaml and */.sops.yaml
+- app-of-app/values-*.yaml
+- argo-wf/values-*.yaml
+- gupload/values-*.yaml
+- hlf-ca/values-*.yaml
+- hlf-ca/secrets.*.yaml
+- hlf-cc/values-*.yaml
+- hlf-ord/values-*.yaml
+- hlf-peer/values-*.yaml
+- orgadmin/secrets.*.yaml
+- orgadmin/values-*.yaml
 
 **Update Host Alias in values files**
 In GCP, istio is in-cluster deployment, newly created GKE cluster will have different istio gateway ip address.
@@ -49,76 +87,120 @@ Update ip address of below values files:
 - hlf-ord/values-o4.yaml
 - workflow/bootstrap/values.yaml
 
-See below snippets
-```yaml
-peer:
-  hostAlias:
-    - hostnames:
-        - orderer0.org0.com
-        - orderer1.org0.com
-        - orderer2.org0.com
-        - orderer3.org0.com
-        - orderer4.org0.com
-        - peer0.org1.net
-      ip: 35.xxx.xxx.xxx
+
+### Getting Started: first-time network setup
+
+**Checklist**:
+
+1. MUST READ [DEVELOPMENT](https://github.com/rtang03/fabric-cd/doc/DEVELOPMENT.md)
+1. *GKE* cluster creation
+1. *Argo* and *ArgoCD* installation on GKE in-cluster
+1. GCP Cloud DNS, KMS, Storage setup
+1. Remove pre-existing GCS storage bucket `fabric-cd-dev`. The workflows output artifacts to bucket. The non-empty paths will give error when outputing.
+
+In local machine:
+- login with *gcloud*, installed with *kubectl*, *gsutil* cli
+- install SOPS, *Argo* and *ArgoCD* CLI
+- activate *Argo* and *ArgoCD* port-forwarding
+- update `/etc/hosts` to point to *Argo* and *ArgoCD*, the IP comes from Istio gateway
+
+```text
+# /etc/hosts
+35.202.107.80 argocd.server
+35.202.107.80 argo.server
 ```
 
-### Naming Convention
-See `./scripts/env.org2.sh`
+**Install org0 and org1**
+
+The run may take 30+ minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
+status.
 
 ```shell script
-## Org0
-DOMAIN0=org0.com
-MSPID0=Org0MSP
-NS0=n0
-ORG0=org0
-REL_O0=o0
-REL_O1=o1
-REL_O2=o2
-REL_O3=o3
-REL_O4=o4
-REL_ORGADMIN0=admin0
-REL_RCA0=rca0
-REL_TLSCA0=tlsca0
-TLSCACERT0=org0.com-tlscacert
+cd scripts
 
-## Org1
-DOMAIN1=org1.net
-MSPID1=Org1MSP
-NS1=n1
-ORG1=org1
-JOB_BOOTSTRAP_A=b1
-JOB_BOOTSTRAP_B=b2
-JOB_FETCH_BLOCK=fetch1
-JOB_UPDATE_CHANNEL=upch1
-REL_GUPLOAD=g1
-REL_ORGADMIN1=admin1
-REL_PEER=p0o1
-REL_RCA1=rca1
-REL_TLSCA1=tlsca1
-PEER=peer0.org1.net
-TLSCACERT1=org1.net-tlscacert
+# Optionally, if there is running application from previous installation
+# this will uninstall all ArgoCD applications and workflows in all namespace.
+./uninstall.argo.sh
+
+# First time setup, will remove pre-existing PVC for org0 and org1; and create new ones
+# ALL DATA WILL BE REMOVED
+./recreate-pvc.sh org1
+
+# Similarly for org2
+./recreate-pvc.sh org2
+
+# Bootstrap Org0 and Org1
+./bs.argo.org1.sh
+
+# Bootstrap Org2
+./bs.argo.orgx.sh org2
 ```
 
-**Argo CD application manifest**
-In `argo-app/templates/application.yaml`, it configures the default for each Argo CD application. Make sure you are working
-on the desired `targetRevision`, i.e., github development branch.
+Successful deployment should show something below.
+```shell script
+Name:                bootstrap-ch-org2-mrzz8
+Namespace:           n2
+ServiceAccount:      workflow
+Status:              Succeeded
+Conditions:
+ Completed           True
+ResourcesDuration:   8m18s*(1 cpu),8m18s*(100Mi memory)
 
-```yaml
-# argo-app/templates/application.yaml
-project: my-project
-targetRevision: dev-0.1
-repoURL: git@github.com:rtang03/fabric-cd.git
-server: https://kubernetes.default.svc
-ns: n1
-path: orgadmin
-rel: admin1
-file: values-admin1.yaml
+STEP                                  TEMPLATE                                  DURATION
+ ✔ bootstrap-ch-org2-mrzz8            main
+ ├-·-✔ load-org0tlscacert             download-and-create-secret/main
+ | | ├---✔ retrieve                   retrieve-tmpl                             28s
+ | | ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        3s
+ | | └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   2s
+ | ├-✔ load-org1tlscacert             download-and-create-secret/main
+ | | ├---✔ retrieve                   retrieve-tmpl                             24s
+ | | ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        2s
+ | | └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   3s
+ | └-✔ load-org2tlscacert             download-and-create-secret/main
+ |   ├---✔ retrieve                   retrieve-tmpl                             26s
+ |   ├---✔ delete-secret-tmpl         secret-resource/delete-secret-tmpl        4s
+ |   └---✔ create-secret-tmpl         secret-resource/create-secret-1key-tmpl   2s
+ ├---✔ delete-files                   gupload-up-file/delete-files-tmpl         5s
+ ├---✔ curl-pull-tlscacert            curl-event/curl-tmpl                      4s
+ ├-·-✔ sync-g2                        argocd-cli/argocd-app-sync                28s
+ | └-✔ sync-p0o2                      argocd-cli/argocd-app-sync                1m
+ ├---✔ curl-fetch-block               curl-event/curl-tmpl                      3s
+ ├---✔ wait-1                         utility/sleep                             33s
+ ├---✔ check-fetchconfig-log-exist    gupload-up-file/file-exist-and-no-error   5s
+ ├---✔ neworg-config-update           neworg-config-update/main
+ |   ├---✔ neworg                     neworg-tmpl                               23s
+ |   └---✔ gupload                    gupload-up-file/upload-tmpl               7s
+ ├---✔ curl-update-channel            curl-event/curl-tmpl                      3s
+ ├---✔ wait-2                         utility/sleep                             33s
+ ├---✔ check-updatechannel-log-exist  gupload-up-file/file-exist-and-no-error   4s
+ ├---✔ join-channel-orgx              join-channel-orgx/main
+ |   ├---✔ fetch-block                fetch-tmpl                                8s
+ |   └---✔ join-channel               join-channel/main                         11s
+ ├---✔ update-anchor-peer             update-anchor-peer/main                   19s
+ ├---✔ package-install-chaincode      package-install-chaincode/main            15s
+ ├---✔ chaincode-id-resource          chaincode-id-resource/main
+ |   ├---✔ delete-ccid                delete-ccid                               2s
+ |   └---✔ create-ccid                create-ccid                               2s
+ ├---✔ sync-chaincode                 argocd-cli/argocd-app-sync                15s
+ ├---✔ approve-chaincode              approve-chaincode/main                    13s
+ └---✔ smoke-test                     smoke-test/main                           13s
 ```
 
-You need not edit this templated file directly; you should override its values via cli, shown later.
+### Tear-down
+```shell script
+cd scripts
 
-### Secrets file
+./uninstall.argo.sh
+
+./recreate-pvc.sh org1
+
+./recreate-pvc.sh org2
+```
+
+Lastly, remove the 'fabric-cd-dev' storage bucket.
+
+
+### Prepare secrets file
 Credentials, secrets, and passwords are re-located to `secrets.*.yaml`, in corresponding Helm chart directories. For example,
 see `orgadmin/secrets.admin1-example.yaml`, `tlsca_caadmin` must be a base64 encoded value, and created as k8s Secret resource.
 
@@ -143,31 +225,6 @@ sops -d orgadmin/secrets.admin1.yaml
 ```
 
 
-### Initial Network Bootstrapping for DEV
-For the setup of org0 and org1, use `bootstrap.argo.org1.sh` script.
+### For gitOps Contributors
+Please see [DEVELOPMENT](https://github.com/rtang03/fabric-cd/doc/DEVELOPMENT.md)
 
-**Checklist**
-Below running bootstrapping the initial network from scratch:
-1. Go to GCP web UI; make sure the *gcs storage* `workflow/secrets` and `workflow/genesis` are both empty.
-The workflows in `bootstrap.argo.sh` will output artifacts to `fabric-cd-dev` storage bucket. The non-empty
-paths will give the workflow error when outputing artifacts.
-1. Go to argocd web UI, make sure no running applications. If neccessary, run `uninstall.argo.sh` under `scripts` directory.
-1. If `uninstall.argo.sh` is run, also run `./recreate-pvc.sh org1` to recreate the pvc. Repeat the same for `org2`.
-1. Make the *argo* and *argocd*'s port forwarding is live.
-
-**REMARK**: while the tls of *argo* and *argocd* web server is not ready, the installation script will require port-forwarding.
-Future enhancment will replace port-forwaring with API servers.
-
-**Install org0 and org1**
-The run may take 20 ~ 30 minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
-status.
-
-```shell script
-cd scripts
-bootstrap.argo.org1.sh
-```
-
-**Post installation step**
-1. Go to [GCS Storage UI](https://console.cloud.google.com/storage/browser/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert), to make org1.net *tlscacert.pem* PUBLIC.
-The public link should be https://storage.googleapis.com/fabric-cd-dev/workflow/secrets/n1/org1.net-tlscacert/tlscacert.pem
-1. Repeat the same step for orderer0.org0.com *tlscacert.pem*

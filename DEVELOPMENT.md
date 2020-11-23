@@ -1,5 +1,5 @@
 # DEVELOPER SECTION
-This document is for use by repo contributor.
+This document is for use by gitOps contributor.
 
 **IMPORTANT NOTE**
 
