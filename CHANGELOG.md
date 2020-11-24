@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/rtang03/fabric-cd/tree/HEAD)
 
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...HEAD)
+[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.1.0-dev...HEAD)
+
+**Merged pull requests:**
+
+- fix: misplaced files [\#63](https://github.com/rtang03/fabric-cd/pull/63) ([rtang03](https://github.com/rtang03))
+
+## [v0.1.0-dev](https://github.com/rtang03/fabric-cd/tree/v0.1.0-dev) (2020-11-23)
+
+[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...v0.1.0-dev)
 
 **Implemented enhancements:**
 
