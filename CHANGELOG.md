@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.1.0-dev...HEAD)
 
+**Implemented enhancements:**
+
+- improve documentation [\#54](https://github.com/rtang03/fabric-cd/issues/54)
+
 **Merged pull requests:**
 
 - fix: misplaced files [\#63](https://github.com/rtang03/fabric-cd/pull/63) ([rtang03](https://github.com/rtang03))
