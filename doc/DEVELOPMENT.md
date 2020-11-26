@@ -712,6 +712,7 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [ksniff](https://github.com/eldadru/ksniff)
 - [ksniff and wireshark](https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95)
 - [loggin in k8s](https://www.cncf.io/blog/2020/07/27/logging-in-kubernetes-efk-vs-plg-stack/)
+- [Deploy redis on k8s](https://medium.com/swlh/production-checklist-for-redis-on-kubernetes-60173d5a5325)
 
 ### TODO
 **Sops commit hook**
