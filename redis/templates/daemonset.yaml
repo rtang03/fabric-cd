@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: thp-disable
-  namespace: kube-system
 spec:
   selector:
     matchLabels:
