@@ -43,6 +43,9 @@ spec:
             - mountPath: /redis-master
               name: config
       volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
         - name: data
           emptyDir: {}
         - name: config
