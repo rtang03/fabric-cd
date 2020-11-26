@@ -15,6 +15,13 @@ spec:
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
+      initContainers:
+        - name: disable-thp
+          image: busybox
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never >/host-sys/kernel/mm/transparent_hugepage/enabled"]
       containers:
         - name: redis
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
