@@ -1,7 +1,7 @@
 #!/bin/bash
 
 . ./setup.sh
-. "env.$ORG1.sh"
+. "env.org1.sh"
 
 SECONDS=0
 # IMPORTANT NOTE: TARGET is the Release Branch. Make sure correct TARGET for each deployment

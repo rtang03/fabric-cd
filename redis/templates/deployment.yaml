@@ -11,6 +11,9 @@ spec:
       app: {{ include "redis.name" . }}
       release: {{ .Release.Name }}
   template:
+    metadata:
+      labels:
+{{ include "labels.standard" . | indent 8 }}
     spec:
       containers:
         - name: redis
