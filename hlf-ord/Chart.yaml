@@ -4,4 +4,6 @@ description: Hyperledger Fabric Orderer chart
 name: hlf-ord
 sources:
   - https://github.com/hyperledger/fabric
-version: 0.6.3
+version: 1.0.0
+maintainers:
+  - name: Ross Tang

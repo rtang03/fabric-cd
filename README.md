@@ -130,10 +130,10 @@ cd scripts
 ./recreate-pvc.sh org2
 
 # Bootstrap Org0 and Org1
-./bs.argo.org1.sh
+./bootstrap.org1.sh
 
 # Bootstrap Org2
-./bs.argo.orgx.sh org2
+./bootstrap.orgx.sh org2
 ```
 
 Successful deployment should show something below.

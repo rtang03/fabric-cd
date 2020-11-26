@@ -12,7 +12,7 @@ echo "#################################"
 echo "### Step 1: Install WorkflowTemplates $NS"
 echo "#################################"
 set -x
-helm template ../argo-app --set ns=$NS,path=argo-wf,target=dev-0.1,rel=argo-template-$ORG,file=values-$ORG.yaml | argocd app create -f -
+helm template ../argo-app --set ns=$NS,path=argo-wf,target=$TARGET,rel=argo-template-$ORG,file=values-$ORG.yaml | argocd app create -f -
 res=$?
 set +x
 printMessage "install wfTemplate" $res
@@ -33,7 +33,7 @@ echo "#################################"
 echo "### Step 2: App-of-apps $ORG"
 echo "#################################"
 set -x
-helm template ../argo-app --set ns=argocd,path=app-of-app,target=dev-0.1,rel=apps-$ORG,file=values-$ORG.yaml | argocd app create -f -
+helm template ../argo-app --set ns=argocd,path=app-of-app,target=$TARGET,rel=apps-$ORG,file=values-$ORG.yaml | argocd app create -f -
 res=$?
 set +x
 printMessage "install $ORG manifests" $res

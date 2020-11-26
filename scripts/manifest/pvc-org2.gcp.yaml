@@ -42,18 +42,18 @@ spec:
   resources:
     requests:
       storage: "1Gi"
-#---
-#kind: PersistentVolumeClaim
-#apiVersion: v1
-#metadata:
-#  name: pvc-p0o2db
-#  labels:
-#    app: hlf-couchdb
-#    release: "p0o2db"
-#    namespace: n2
-#spec:
-#  accessModes:
-#    - "ReadWriteOnce"
-#  resources:
-#    requests:
-#      storage: "1Gi"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-redis2
+  labels:
+    app: redis
+    release: "redis2"
+    namespace: n2
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "1Gi"

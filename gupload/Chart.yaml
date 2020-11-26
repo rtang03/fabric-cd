@@ -1,6 +1,7 @@
 apiVersion: v2
+appVersion: 0.1.6
 name: gupload
 description: Helm chart for gupload
-type: application
-version: 0.0.1
-appVersion: 0.1.6
+version: 1.0.0
+maintainers:
+  - name: Ross Tang

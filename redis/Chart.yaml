@@ -1,11 +1,10 @@
 apiVersion: v2
 # appVersion = RELEASE TARGET
-appVersion: 0.2.0
-description: chart for generating ArgoCD application
-name: argocd-application
+appVersion: 1.8.0
+description: chart for Redisearch
+name: redis
 sources:
   - https://github.com/rtang03/fabric-cd
-# chart is stabled version: 1.0.0
 version: 1.0.0
 maintainers:
   - name: Ross Tang

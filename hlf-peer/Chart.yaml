@@ -4,4 +4,6 @@ description: Hyperledger Fabric Peer chart
 name: hlf-peer
 sources:
   - https://github.com/hyperledger/fabric
-version: 0.6.3
+version: 1.0.0
+maintainers:
+  - name: Ross Tang

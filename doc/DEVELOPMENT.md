@@ -563,6 +563,22 @@ volume claims.
 # kubectl -n n1 delete -f networking/istio-n1.yaml
 ```
 
+### Working new target
+Whenever you are working on new development branch, you need to move the deployment targets in below files.
+- `app-of-app/values-*.yaml`
+- `bootstrap.*.sh`
+
+```yaml
+# e.g. app-of-app/values.org0.yaml
+project: my-project
+target: dev-0.2 # <==== MODIFY IT
+```
+
+```shell script
+# e.g. workflow/bootstrap.org0.sh
+TARGET=dev-0.2  # <==== MODIFY IT
+```
+
 ### Useful commands
 **gpg**
 
@@ -694,8 +710,8 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [ArgoCD + Istio: sample](https://github.com/speedwing/eks-argocd-bootstrap)
 - [install krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install)
 - [ksniff](https://github.com/eldadru/ksniff)
-https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95
-https://www.cncf.io/blog/2020/07/27/logging-in-kubernetes-efk-vs-plg-stack/
+- [ksniff and wireshark](https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95)
+- [loggin in k8s](https://www.cncf.io/blog/2020/07/27/logging-in-kubernetes-efk-vs-plg-stack/)
 
 ### TODO
 **Sops commit hook**
