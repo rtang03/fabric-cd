@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- helm chart for RediSearch [\#64](https://github.com/rtang03/fabric-cd/issues/64)
 - improve documentation [\#54](https://github.com/rtang03/fabric-cd/issues/54)
 - Redis Helm Chart up and running [\#66](https://github.com/rtang03/fabric-cd/pull/66) ([rtang03](https://github.com/rtang03))
 
@@ -48,7 +49,6 @@
 - test: Changelog.yml [\#59](https://github.com/rtang03/fabric-cd/pull/59) ([rtang03](https://github.com/rtang03))
 - feat: Releasing dev-0.1 [\#50](https://github.com/rtang03/fabric-cd/pull/50) ([rtang03](https://github.com/rtang03))
 - merge to master [\#45](https://github.com/rtang03/fabric-cd/pull/45) ([rtang03](https://github.com/rtang03))
-- clean up [\#39](https://github.com/rtang03/fabric-cd/pull/39) ([rtang03](https://github.com/rtang03))
 - debug remove echo [\#33](https://github.com/rtang03/fabric-cd/pull/33) ([rtang03](https://github.com/rtang03))
 - first deploy via argo cd [\#12](https://github.com/rtang03/fabric-cd/pull/12) ([rtang03](https://github.com/rtang03))
 
