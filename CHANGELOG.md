@@ -2,7 +2,19 @@
 
 ## [Unreleased](https://github.com/rtang03/fabric-cd/tree/HEAD)
 
-[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...HEAD)
+[Full Changelog](https://github.com/rtang03/fabric-cd/compare/v0.1.0-dev...HEAD)
+
+**Implemented enhancements:**
+
+- improve documentation [\#54](https://github.com/rtang03/fabric-cd/issues/54)
+
+**Merged pull requests:**
+
+- fix: misplaced files [\#63](https://github.com/rtang03/fabric-cd/pull/63) ([rtang03](https://github.com/rtang03))
+
+## [v0.1.0-dev](https://github.com/rtang03/fabric-cd/tree/v0.1.0-dev) (2020-11-23)
+
+[Full Changelog](https://github.com/rtang03/fabric-cd/compare/f1276fc57313c5392dabf11c437a61fc1831a011...v0.1.0-dev)
 
 **Implemented enhancements:**
 
@@ -35,7 +47,6 @@
 - test: Changelog.yml [\#59](https://github.com/rtang03/fabric-cd/pull/59) ([rtang03](https://github.com/rtang03))
 - feat: Releasing dev-0.1 [\#50](https://github.com/rtang03/fabric-cd/pull/50) ([rtang03](https://github.com/rtang03))
 - merge to master [\#45](https://github.com/rtang03/fabric-cd/pull/45) ([rtang03](https://github.com/rtang03))
-- clean up [\#39](https://github.com/rtang03/fabric-cd/pull/39) ([rtang03](https://github.com/rtang03))
 - debug remove echo [\#33](https://github.com/rtang03/fabric-cd/pull/33) ([rtang03](https://github.com/rtang03))
 - first deploy via argo cd [\#12](https://github.com/rtang03/fabric-cd/pull/12) ([rtang03](https://github.com/rtang03))
 
