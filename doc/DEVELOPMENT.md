@@ -542,6 +542,9 @@ kubectl create -f logging/fluentbit-cm.yaml
 kubectl create -f logging/ds.yaml
 
 kubectl port-forward -n logging service/elastic-istio-kb-http 5601
+
+# obtain the password for Kibana user "elastic"
+kubectl get secret elastic-istio-es-elastic-user -n logging  -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 ```
 
 Kibana is using self-signed cert.
