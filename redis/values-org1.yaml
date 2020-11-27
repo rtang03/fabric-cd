@@ -1,0 +1,2 @@
+config:
+  maxmemory: 100mb

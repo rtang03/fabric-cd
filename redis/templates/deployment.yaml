@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "redis.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "redis.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
+      labels:
+{{ include "labels.standard" . | indent 8 }}
+    spec:
+      initContainers:
+        - name: disable-thp
+          image: busybox
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never >/host-sys/kernel/mm/transparent_hugepage/enabled"]
+      containers:
+        - name: redis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - redis-server
+            - "/redis-master/redis.conf"
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /redis-master
+              name: config
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+        - name: data
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: {{ include "redis.fullname" . }}
+            items:
+              - key: redis-config
+                path: redis.conf

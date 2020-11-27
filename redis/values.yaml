@@ -1,0 +1,18 @@
+global:
+  TZ: Asia/Hong_Kong
+  mspId: Org0MSP
+  logging: info
+
+image:
+  repository: redislabs/redisearch
+  tag: 1.8.3
+  pullPolicy: IfNotPresent
+
+config:
+  maxmemory: 100mb
+
+resources:
+  limits:
+    cpu: 100m
+  requests:
+    cpu: 10m

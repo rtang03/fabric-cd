@@ -1,5 +1,5 @@
 project: my-project
-target: dev-0.1
+target: dev-0.2
 ns: n1
 server: https://kubernetes.default.svc
 repoURL: git@github.com:rtang03/fabric-cd.git
@@ -25,4 +25,7 @@ apps:
     file: values-g1.yaml
   - path: hlf-cc
     rel: eventstore1
+    file: values-org1.yaml
+  - path: redis
+    rel: redis1
     file: values-org1.yaml

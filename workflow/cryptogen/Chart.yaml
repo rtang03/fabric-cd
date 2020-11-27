@@ -1,5 +1,7 @@
 apiVersion: v2
-appVersion: 0.6.3
+appVersion: 0.2.0
 description: "cryptogen for either tlsca or rca; output the crypto-config directory to artifact repo"
 name: cryptogen-flow
-version: 0.1.0
+version: 1.0.0
+maintainers:
+  - name: Ross Tang
