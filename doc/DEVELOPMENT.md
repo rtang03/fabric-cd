@@ -529,6 +529,22 @@ curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $AR
 
 This enables Argo Events, such that the cross-organization workflow orchrestration is performed.
 
+### Logging: ElasticSearch + Fluent Bit + Kibana
+
+- See [source of manifest](https://github.com/fai555/istio-eck-fluent-bit)
+
+```shell script
+kubectl apply -f https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml
+
+kubectl create namespace logging
+kubectl create -f logging/service-account.yaml
+kubectl create -f logging/fluentbit-cm.yaml
+kubectl create -f logging/ds.yaml
+
+kubectl port-forward -n logging service/elastic-istio-kb-http 5601
+```
+
+Kibana is using self-signed cert.
 
 ### External chaincode container
 To remove the shortcoming of DockerInDocker chaincode, here uses the external chaincode, which requires v2.0+.
@@ -713,6 +729,10 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [ksniff and wireshark](https://itnext.io/verifying-service-mesh-tls-in-kubernetes-using-ksniff-and-wireshark-2e993b26bf95)
 - [loggin in k8s](https://www.cncf.io/blog/2020/07/27/logging-in-kubernetes-efk-vs-plg-stack/)
 - [Deploy redis on k8s](https://medium.com/swlh/production-checklist-for-redis-on-kubernetes-60173d5a5325)
+- [logging istio + efk](https://medium.com/intelligentmachines/centralised-logging-for-istio-1-5-with-eck-elastic-cloud-on-kubernetes-and-fluent-bit-680db15af1e2)
+- [logging istio + efk (src)](https://github.com/fai555/istio-eck-fluent-bit)
+- [fluentbit](https://medium.com/swlh/fluentbit-stream-processing-with-kubernetes-plugin-caefffd9f9e4)
+https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html#k8s-setting-up-your-own-certificate
 
 ### TODO
 **Sops commit hook**
