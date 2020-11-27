@@ -12,6 +12,11 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
@@ -33,10 +38,7 @@ spec:
             - containerPort: 6379
               protocol: TCP
           resources:
-            limits:
-              cpu: 100m
-            requests:
-              cpu: 100m
+{{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
             - mountPath: /data
               name: data

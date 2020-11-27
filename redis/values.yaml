@@ -10,3 +10,9 @@ image:
 
 config:
   maxmemory: 100mb
+
+resources:
+  limits:
+    cpu: 100m
+  requests:
+    cpu: 10m

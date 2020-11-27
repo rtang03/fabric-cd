@@ -1,1 +1,25 @@
-
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auth-server.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  CLIENT_APPLICATION_NAME: "root_client"
+  CLIENT_SECRET: password
+  JWT_EXP_IN_SECOND: 3600
+  JWT_SECRET: secret
+  LOG_LEVEL: "info"
+  ORG_ADMIN_EMAIL: admin@org1.net
+  ORG_ADMIN_ID: admin-org1.net
+  ORG_ADMIN_SECRET: admin-org1.netPW
+  PORT: 8080
+  REDIS_HOST: redis01
+  REDIS_PORT: 6379
+  REFRESH_TOKEN_EXP_IN_SEC: 86400
+  TYPEORM_DATABASE: auth_db
+  TYPEORM_HOST: postgres01
+  TYPEORM_PASSWORD: docker
+  TYPEORM_PORT: 5432
+  TYPEORM_USERNAME: postgres
+  TZ: "Asia/Hong_Kong"
