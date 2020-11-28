@@ -15,7 +15,7 @@ data:
   ORG_ADMIN_SECRET: "admin-org1.netPW"
   PORT: {{ .Values.config.port | quote }}
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
-  REDIS_PORT: {{ .Values.config.redisPort }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
   REFRESH_TOKEN_EXP_IN_SEC: {{ .Values.config.refreshTokenExpInSec | quote }}
   TYPEORM_DATABASE: "auth_db"
   TYPEORM_HOST: {{ .Values.config.postgresHost | quote }}
