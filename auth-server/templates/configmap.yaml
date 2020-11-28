@@ -19,7 +19,7 @@ data:
   REFRESH_TOKEN_EXP_IN_SEC: {{ .Values.config.refreshTokenExpInSec | quote }}
   TYPEORM_DATABASE: "auth_db"
   TYPEORM_HOST: {{ .Values.config.postgresHost | quote }}
-  TYPEORM_PASSWORD: "docker"
+  TYPEORM_PASSWORD: "password"
   TYPEORM_PORT: {{ .Values.config.postgresPort | quote }}
   TYPEORM_USERNAME: "postgres"
   TZ: {{ .Values.global.TZ  | quote }}
