@@ -4,8 +4,8 @@ global:
   logging: info
 
 image:
-  repository: ho1ho/auth-server
-  tag: 0.7.0
+  repository: ghcr.io/rtang03/auth-server
+  tag: 0.7.1
   pullPolicy: IfNotPresent
 
 config:

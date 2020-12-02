@@ -10,6 +10,7 @@ data:
   JWT_EXP_IN_SECOND: {{ .Values.config.jwtExpInSecond | quote }}
   JWT_SECRET: "secret"
   LOG_LEVEL: {{ .Values.global.logging | quote }}
+  LOG_TARGET: "console"
   ORG_ADMIN_EMAIL: "admin@org1.net"
   ORG_ADMIN_ID: "admin-org1.net"
   ORG_ADMIN_SECRET: "admin-org1.netPW"
