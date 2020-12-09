@@ -1,0 +1,60 @@
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: thp-disable
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: thp-disable
+  template:
+    metadata:
+      labels:
+        name: thp-disable
+    spec:
+      tolerations:
+      - key: "database"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-nodepool
+                operator: In
+                values:
+                - database
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 1
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+      initContainers:
+        - name: disable-thp
+          image: busybox
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never >/host-sys/kernel/mm/transparent_hugepage/enabled"]
+          resources:
+            limits:
+              cpu: 20m
+              memory: 55Mi
+            requests:
+              cpu: 20m
+              memory: 55Mi
+      containers:
+        - name: busybox
+          image: busybox
+          command: ["watch", "-n", "600", "cat", "/sys/kernel/mm/transparent_hugepage/enabled"]
+          resources:
+            limits:
+              cpu: 20m
+              memory: 55Mi
+            requests:
+              cpu: 20m
+              memory: 55Mi
