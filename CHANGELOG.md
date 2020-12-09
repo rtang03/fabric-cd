@@ -6,7 +6,9 @@
 
 **Implemented enhancements:**
 
+- helm chart for RediSearch [\#64](https://github.com/rtang03/fabric-cd/issues/64)
 - improve documentation [\#54](https://github.com/rtang03/fabric-cd/issues/54)
+- Redis Helm Chart up and running [\#66](https://github.com/rtang03/fabric-cd/pull/66) ([rtang03](https://github.com/rtang03))
 
 **Merged pull requests:**
 
