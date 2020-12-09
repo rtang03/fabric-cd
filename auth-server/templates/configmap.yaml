@@ -6,20 +6,21 @@ metadata:
 {{- include "labels.standard" . | nindent 4 }}
 data:
   CLIENT_APPLICATION_NAME: "root_client"
-  CLIENT_SECRET: password
-  JWT_EXP_IN_SECOND: 3600
-  JWT_SECRET: secret
-  LOG_LEVEL: "info"
-  ORG_ADMIN_EMAIL: admin@org1.net
-  ORG_ADMIN_ID: admin-org1.net
-  ORG_ADMIN_SECRET: admin-org1.netPW
-  PORT: 8080
-  REDIS_HOST: redis01
-  REDIS_PORT: 6379
-  REFRESH_TOKEN_EXP_IN_SEC: 86400
-  TYPEORM_DATABASE: auth_db
-  TYPEORM_HOST: postgres01
-  TYPEORM_PASSWORD: docker
-  TYPEORM_PORT: 5432
-  TYPEORM_USERNAME: postgres
-  TZ: "Asia/Hong_Kong"
+  CLIENT_SECRET: "password"
+  JWT_EXP_IN_SECOND: {{ .Values.config.jwtExpInSecond | quote }}
+  JWT_SECRET: "secret"
+  LOG_LEVEL: {{ .Values.global.logging | quote }}
+  LOG_TARGET: "console"
+  ORG_ADMIN_EMAIL: "admin@org1.net"
+  ORG_ADMIN_ID: "admin-org1.net"
+  ORG_ADMIN_SECRET: "admin-org1.netPW"
+  PORT: {{ .Values.config.port | quote }}
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
+  REFRESH_TOKEN_EXP_IN_SEC: {{ .Values.config.refreshTokenExpInSec | quote }}
+  TYPEORM_DATABASE: "auth_db"
+  TYPEORM_HOST: {{ .Values.config.postgresHost | quote }}
+  TYPEORM_PASSWORD: "password"
+  TYPEORM_PORT: {{ .Values.config.postgresPort | quote }}
+  TYPEORM_USERNAME: "postgres"
+  TZ: {{ .Values.global.TZ  | quote }}

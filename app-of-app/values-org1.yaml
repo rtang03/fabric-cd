@@ -29,3 +29,6 @@ apps:
   - path: redis
     rel: redis1
     file: values-org1.yaml
+  - path: auth-server
+    rel: auth-server1
+    file: values-org1.yaml

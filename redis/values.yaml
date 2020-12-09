@@ -16,3 +16,8 @@ resources:
     cpu: 100m
   requests:
     cpu: 10m
+
+persistence:
+  # alway enabled
+  enabled: true
+  # pvcName: pvc-redis1
