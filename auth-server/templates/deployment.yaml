@@ -35,9 +35,10 @@ spec:
             - sh
             - -c
             - |
-              # wait for sidecar proxy
               sleep 10s
-              dockerize -wait tcp://$TYPEORM_HOST:$TYPEORM_PORT -timeout 60s && echo "Database $TYPEORM_HOST:$TYPEORM_PORT is ready"
+              set -x
+              dockerize -wait tcp://$REDIS_HOST:$REDIS_PORT -timeout 60s && echo "Redis $REDIS_HOST:$REDIS_PORT is ready"
+              dockerize -wait tcp://$TYPEORM_HOST:$TYPEORM_PORT -timeout 60s && echo "Psql $TYPEORM_HOST:$TYPEORM_PORT is ready"
       containers:
         - name: main
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
