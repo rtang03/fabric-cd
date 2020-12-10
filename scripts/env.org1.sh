@@ -29,3 +29,10 @@ REL_RCA1=rca1
 REL_TLSCA1=tlsca1
 PEER=peer0.org1.net
 TLSCACERT1=org1.net-tlscacert
+
+## DEFAULT
+ORG=org1
+NS=n1
+
+DOMAIN=org1.net
+MSPID=Org1MSP

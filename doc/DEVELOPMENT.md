@@ -735,7 +735,7 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [logging istio + efk](https://medium.com/intelligentmachines/centralised-logging-for-istio-1-5-with-eck-elastic-cloud-on-kubernetes-and-fluent-bit-680db15af1e2)
 - [logging istio + efk (src)](https://github.com/fai555/istio-eck-fluent-bit)
 - [fluentbit](https://medium.com/swlh/fluentbit-stream-processing-with-kubernetes-plugin-caefffd9f9e4)
-https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html#k8s-setting-up-your-own-certificate
+- [setup tls for elastic](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html#k8s-setting-up-your-own-certificate)
 
 ### TODO
 **Sops commit hook**

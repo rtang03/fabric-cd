@@ -16,3 +16,17 @@ config:
   port: 8080
   postgresHost: admin1-postgresql-0
   postgresPort: 5432
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

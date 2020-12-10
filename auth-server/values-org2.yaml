@@ -1,0 +1,18 @@
+global:
+  TZ: Asia/Hong_Kong
+  mspId: Org2MSP
+  logging: info
+
+image:
+  repository: ghcr.io/rtang03/auth-server
+  tag: 0.7.1
+  pullPolicy: IfNotPresent
+
+config:
+  jwtExpInSecond: 3600
+  redisHost: redis2
+  redisPort: 6379
+  refreshTokenExpInSec: 86400
+  port: 8080
+  postgresHost: admin2-postgresql-0
+  postgresPort: 5432

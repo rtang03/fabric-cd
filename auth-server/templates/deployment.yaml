@@ -10,17 +10,73 @@ spec:
     matchLabels:
       app: {{ include "auth-server.name" . }}
       release: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
+      initContainers:
+        - name: wait-for-db
+          image: jwilder/dockerize
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: {{ include "auth-server.fullname" . }}
+          command:
+            - sh
+            - -c
+            - |
+              # wait for sidecar proxy
+              sleep 10s
+              dockerize -wait tcp://$TYPEORM_HOST:$TYPEORM_PORT -timeout 60s && echo "Database $TYPEORM_HOST:$TYPEORM_PORT is ready"
       containers:
         - name: main
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 8080
               protocol: TCP
+              name: http
           envFrom:
             - configMapRef:
                 name: {{ include "auth-server.fullname" . }}
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
