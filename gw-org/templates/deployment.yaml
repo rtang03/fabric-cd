@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gw-org.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "gw-org.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
+      labels:
+{{ include "labels.standard" . | indent 8 }}
+    spec:
+      hostAliases:
+        {{- range .Values.hostAlias }}
+        - hostnames:
+            {{- range .hostnames }}
+            - {{ . }}
+          {{- end }}
+          ip: {{ .ip }}
+        {{- end }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.pvcName }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: connection-yaml
+          configMap:
+            name: {{ include "gw-org.fullname" . }}--ccp
+            items:
+              - key: connection.yaml
+                path: connection.yaml
+        {{- range .Values.secrets }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      initContainers:
+        - name: wait
+          image: jwilder/dockerize
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: {{ include "gw-org.fullname" . }}
+          command: ["sh", "-c"]
+          args:
+            - |-
+              set -x
+              {{- range .Values.connection.peers }}
+              dockerize -wait http://{{ .healthz }} -timeout 60s && echo "peer {{ .healthz }} is ready"
+              {{- end }}
+              dockerize -wait tcp://$REDIS_HOST:$REDIS_PORT -timeout 60s && echo "redis $REDIS_HOST:$REDIS_PORT is ready"
+              dockerize -wait http://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
+      containers:
+        - name: main
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4001
+              protocol: TCP
+              name: http
+          envFrom:
+            - configMapRef:
+                name: {{ include "gw-org.fullname" . }}
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 4001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 4001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /var/hyperledger
+              name: data
+            - mountPath: /etc/hyperledger/fabric/connection.yaml
+              name: connection-yaml
+              subPath: connection.yaml
+            {{- range .Values.secrets }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .name }}
+              subPath: {{ .subPath }}
+            {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

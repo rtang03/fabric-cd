@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gw-org.fullname" . }}--ccp
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  connection.yaml: |
+    name: test-net_openplatform
+    version: 1.0.0
+    client:
+      organization: {{ .Values.global.mspId }}
+      connection:
+        timeout:
+          peer:
+            endorser: '300'
+    channels:
+      {{ .Values.connection.channelName }}:
+        orderers:
+          {{- range .Values.connection.orderers }}
+          - {{ .name }}
+          {{- end }}
+        peers:
+          {{- range .Values.connection.peers }}
+          {{ .name }}:
+            endorsingPeer: true
+            chaincodeQuery: true
+            ledgerQuery: true
+            eventSource: true
+          {{- end }}
+        chaincodes:
+          - eventstore
+    organizations:
+      {{ .Values.global.mspId }}:
+        mspid: {{ .Values.global.mspId }}
+        peers:
+          {{- range .Values.connection.peers }}
+          - {{ .name }}
+          {{- end }}
+        certificateAuthorities:
+          - {{ .Values.connection.ca.name }}
+        adminPrivateKey:
+          path: /tmp/org1.net-admin-key.pem
+        signedCert:
+          path: /tmp/org1.net-admin-cert.pem
+    orderers:
+      {{- range .Values.connection.orderers }}
+      {{ .name }}:
+        url: grpcs://{{ .url }}
+        grpcOptions:
+          ssl-target-name-override: {{ .grpcOptions.nameOverride }}
+        tlsCACerts:
+          path: {{ $.Values.connection.ordererCa }}
+      {{- end }}
+    peers:
+      {{- range .Values.connection.peers }}
+      {{ .name }}:
+        url: grpcs://{{ .url }}
+        eventUrl: grpcs://{{ .eventUrl }}
+        tlsCACerts:
+          path: {{ .tlscacert }}
+        grpcOptions:
+          ssl-target-name-override: {{ .grpcOptions.nameOverride }}
+      {{- end }}
+    certificateAuthorities:
+      {{ .Values.connection.ca.name }}:
+        url: http://{{ .Values.connection.ca.url }}
+        caName: {{ .Values.connection.ca.name }}
+        # tlsCACerts:
+        #   path: { { .Values.connection.ca.tlscacerts.path }}
+        registrar:
+          - enrollId: {{ .Values.connection.registrar.enrollId }}
+            enrollSecret: {{ .Values.connection.registrar.enrollSecret }}
+        httpOptions:
+          verify: false
+

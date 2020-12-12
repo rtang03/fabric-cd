@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "gw-org.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 4001

@@ -32,3 +32,6 @@ apps:
   - path: auth-server
     rel: auth-server1
     file: values-org1.yaml
+  - path: gw-org
+    rel: gw-org1
+    file: values-org1.yaml

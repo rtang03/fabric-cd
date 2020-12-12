@@ -1,0 +1,10 @@
+apiVersion: v2
+# appVersion = RELEASE TARGET
+appVersion: 0.7.1
+description: chart for gw-org
+name: gw-org
+sources:
+  - https://github.com/rtang03/fabric-cd
+version: 1.0.0
+maintainers:
+  - name: Ross Tang

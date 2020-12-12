@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gw-org.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  CONNECTION_PROFILE: /etc/hyperledger/fabric/connection.yaml
+  AUTHORIZATION_SERVER_URI: http://{{ .Values.config.authServerUri }}/oauth/authenticate
+  CA_ENROLLMENT_ID_ADMIN: {{ .Values.connection.registrar.enrollId }}
+  CA_ENROLLMENT_SECRET_ADMIN: {{ .Values.connection.registrar.enrollSecret }}
+  CA_NAME: {{ .Values.connection.ca.name }}
+  ORG_CA_URL: {{ .Values.connection.ca.url }}
+  ORG_ADMIN_ID: {{ .Values.config.orgAdmin }}
+  ORG_ADMIN_SECRET: {{ .Values.config.orgAdminSecret }}
+  GATEWAY_HOST: {{ .Values.config.gatewayHost }}
+  REDIS_HOST: {{ .Values.config.redisHost }}
+  QUERY_PORT: 5001
+  REMOTE_URI: "http://gw-org2:4001/graphql\ http://gw-org3:4001/graphql"
