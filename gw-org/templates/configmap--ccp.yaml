@@ -66,8 +66,8 @@ data:
       {{ .Values.connection.ca.name }}:
         url: http://{{ .Values.connection.ca.url }}
         caName: {{ .Values.connection.ca.name }}
-        # tlsCACerts:
-        #   path: { { .Values.connection.ca.tlscacerts.path }}
+        tlsCACerts:
+          path: { { .Values.connection.ca.tlscacerts.path }}
         registrar:
           - enrollId: {{ .Values.connection.registrar.enrollId }}
             enrollSecret: {{ .Values.connection.registrar.enrollSecret }}

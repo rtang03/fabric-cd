@@ -46,8 +46,9 @@ connection:
   ca:
     name: rca1-hlf-ca
     url: rca1-hlf-ca:7054
-#    tlscacerts:
-#      path: /var/artifacts/crypto-config/Org1MSP/msp/tlscacerts/tls-ca-cert.pem
+    tlscacerts:
+      # path: /var/artifacts/crypto-config/Org1MSP/msp/tlscacerts/tls-ca-cert.pem
+      path: /tmp/org1.net-tlscacert.pem
   channelName: loanapp
   ordererCa: /tmp/org0.com-tlscacert.pem
   peers:
