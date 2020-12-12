@@ -89,11 +89,11 @@ secrets:
     secretName: org1.net-tlscacert
     mountPath: /tmp/org1.net-tlscacert.pem
     subPath: tlscacert.pem
-  - name: adminCert
+  - name: admin-cert
     secretName: peer0.org1.net-admincert
     mountPath: /tmp/org1.net-admin-cert.pem
     subPath: org1.net-admin-cert.pem
-  - name: adminKey
+  - name: admin-key
     secretName: peer0.org1.net-adminkey
     mountPath: /tmp/org1.net-admin-key.pem
     subPath: org1.net-admin-key.pem
