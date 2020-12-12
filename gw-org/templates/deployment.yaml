@@ -63,7 +63,7 @@ spec:
             - |-
               set -x
               {{- range .Values.connection.peers }}
-              dockerize -wait http://{{ .healthz }} -timeout 60s && echo "peer {{ .healthz }} is ready"
+              dockerize -wait tcp://{{ .healthz }} -timeout 60s && echo "peer {{ .healthz }} is ready"
               {{- end }}
               dockerize -wait tcp://$REDIS_HOST:$REDIS_PORT -timeout 60s && echo "redis $REDIS_HOST:$REDIS_PORT is ready"
               dockerize -wait http://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
