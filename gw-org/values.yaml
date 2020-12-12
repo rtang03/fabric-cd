@@ -44,7 +44,7 @@ connection:
     enrollId: rca-org1-admin
     enrollSecret: rca-org1-adminPW
   ca:
-    name: rca1-hlf-ca
+    name: rca1
     url: rca1-hlf-ca:7054
     tlscacerts:
       # path: /var/artifacts/crypto-config/Org1MSP/msp/tlscacerts/tls-ca-cert.pem
