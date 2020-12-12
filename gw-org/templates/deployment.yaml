@@ -34,12 +34,8 @@ spec:
         {{- end }}
       volumes:
         - name: data
-          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.pvcName }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
         - name: connection-yaml
           configMap:
             name: {{ include "gw-org.fullname" . }}--ccp
