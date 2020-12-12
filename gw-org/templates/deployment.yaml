@@ -78,24 +78,24 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "gw-org.fullname" . }}
-          livenessProbe:
-            successThreshold: 1
-            failureThreshold: 3
-            httpGet:
-              scheme: HTTP
-              path: /healthcheck
-              port: 4001
-            initialDelaySeconds: 20
-            periodSeconds: 10
-          readinessProbe:
-            successThreshold: 1
-            failureThreshold: 3
-            httpGet:
-              scheme: HTTP
-              path: /healthcheck
-              port: 4001
-            initialDelaySeconds: 20
-            periodSeconds: 10
+          # livenessProbe:
+          #   successThreshold: 1
+          #   failureThreshold: 3
+          #   httpGet:
+          #     scheme: HTTP
+          #     path: /healthcheck
+          #     port: 4001
+          #   initialDelaySeconds: 20
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   successThreshold: 1
+          #   failureThreshold: 3
+          #   httpGet:
+          #     scheme: HTTP
+          #     path: /healthcheck
+          #     port: 4001
+          #   initialDelaySeconds: 20
+          #   periodSeconds: 10
           volumeMounts:
             - mountPath: /var/hyperledger
               name: data
