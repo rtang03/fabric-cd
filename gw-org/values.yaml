@@ -32,8 +32,8 @@ persistence:
   pvcName: pvc-p0o1
 
 config:
-  orgAdmin: admin-org1.net
-  orgAdminSecret: admin-org1.netPW
+  orgAdmin: admin-peer0.org1.net
+  orgAdminSecret: admin-peer0.org1.netPW
   gatewayHost: gw-org1
   redisHost: redis1
   packageName: gw-org1
@@ -41,8 +41,8 @@ config:
 
 connection:
   registrar:
-    enrollId: rca-org1-admin
-    enrollSecret: rca-org1-adminPW
+    enrollId: rca1-admin
+    enrollSecret: rca1-adminPW
   ca:
     name: rca1
     url: rca1-hlf-ca:7054
