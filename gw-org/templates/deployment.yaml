@@ -66,7 +66,7 @@ spec:
               dockerize -wait tcp://{{ .healthz }} -timeout 60s && echo "peer {{ .healthz }} is ready"
               {{- end }}
               dockerize -wait tcp://$REDIS_HOST:$REDIS_PORT -timeout 60s && echo "redis $REDIS_HOST:$REDIS_PORT is ready"
-              dockerize -wait http://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
+              dockerize -wait tcp://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
       containers:
         - name: main
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
