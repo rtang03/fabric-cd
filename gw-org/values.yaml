@@ -52,7 +52,7 @@ connection:
   ordererCa: /tmp/org0.com-tlscacert.pem
   peers:
     - name: peer0
-      healthz: p0o1-hlf-peer:80
+      healthz: p0o1-hlf-peer:9443
       url: p0o1-hlf-peer:7051
       eventUrl: p0o1-hlf-peer:7053
       grpcOptions:
