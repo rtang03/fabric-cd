@@ -15,5 +15,5 @@ data:
   ORG_ADMIN_SECRET: {{ .Values.config.orgAdminSecret | quote }}
   GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
-  QUERY_PORT: 5001
+  QUERY_PORT: "5001"
   REMOTE_URI: "http://gw-org2:4001/graphql\ http://gw-org3:4001/graphql"
