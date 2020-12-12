@@ -13,6 +13,8 @@ data:
   ORG_CA_URL: {{ .Values.connection.ca.url | quote }}
   ORG_ADMIN_ID: {{ .Values.config.orgAdmin | quote }}
   ORG_ADMIN_SECRET: {{ .Values.config.orgAdminSecret | quote }}
+  LOG_LEVEL: {{ .Values.global.logging | quote }}
+  LOG_TARGET: "console"
   GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
   REDIS_PORT: "6379"

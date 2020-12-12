@@ -1,0 +1,19 @@
+{{- if .Values.durability.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: durability-test
+spec:
+  # should use very long active time
+  # activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  serviceAccountName: workflow
+  entrypoint: main
+
+  templates:
+    - name: main
+{{ toYaml .Values.no_istio | indent 6 }}
+{{- end }}
