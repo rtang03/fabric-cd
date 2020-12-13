@@ -2,7 +2,7 @@ global:
   TZ: Asia/Hong_Kong
   mspId: Org0MSP
   workingDir: /home/app
-  logging: info
+  logging: debug
 
 image:
   repository: ghcr.io/rtang03/gw-org1
@@ -101,8 +101,8 @@ secrets:
 
 resources:
   limits:
-    cpu: 200m
-    memory: 1024Mi
+    cpu: 1000m
+    memory: 1280Mi
   requests:
     cpu: 50m
     memory: 512Mi
