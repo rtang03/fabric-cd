@@ -1,2 +1,7 @@
 config:
   maxmemory: 100mb
+
+persistence:
+  # alway enabled
+  enabled: true
+  pvcName: pvc-redis2
