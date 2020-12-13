@@ -31,9 +31,9 @@ spec:
         - name: redis
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          command:
-            - redis-server
-            - "/redis-master/redis.conf"
+          # command:
+          #   - redis-server
+          #   - "/redis-master/redis.conf"
           ports:
             - containerPort: 6379
               protocol: TCP
