@@ -5,7 +5,7 @@ global:
 
 image:
   repository: redislabs/redisearch
-  tag: 1.6.14
+  tag: 1.8.3
   pullPolicy: IfNotPresent
 
 config:
