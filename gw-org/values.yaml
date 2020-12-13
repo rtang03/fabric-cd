@@ -2,7 +2,8 @@ global:
   TZ: Asia/Hong_Kong
   mspId: Org0MSP
   workingDir: /home/app
-  logging: debug
+  # info | debug
+  logging: info
 
 image:
   repository: ghcr.io/rtang03/gw-org1
