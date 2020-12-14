@@ -1,0 +1,8 @@
+# orgAdmin credentials
+config:
+  orgadmin: YWRtaW4tcGVlcjAub3JnMi5uZXQ=
+  orgadminpw: YWRtaW4tcGVlcjAub3JnMi5uZXRQVw==
+# connection profile
+connection:
+  caEnrollId: cmNhMi1hZG1pbg==
+  caEnrollSecret: cmNhMi1hZG1pblBX

@@ -49,6 +49,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "auth-server.fullname" . }}
+            - secretRef:
+                name: {{ include "auth-server.fullname" . }}
           livenessProbe:
             successThreshold: 1
             failureThreshold: 3

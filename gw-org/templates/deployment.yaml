@@ -74,6 +74,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "gw-org.fullname" . }}
+            - secretRef:
+                name: {{ include "gw-org.fullname" . }}
           livenessProbe:
             successThreshold: 1
             failureThreshold: 3

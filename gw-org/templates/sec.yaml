@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "gw-org.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+type: Opaque
+data:
+  ORG_ADMIN_ID: {{ $.Values.config.orgadmin }}
+  ORG_ADMIN_SECRET: {{ $.Values.config.orgadminpw }}
+  CA_ENROLLMENT_ID_ADMIN:  {{ $.Values.connection.caEnrollId }}
+  CA_ENROLLMENT_SECRET_ADMIN: {{ $.Values.connection.caEnrollSecret }}

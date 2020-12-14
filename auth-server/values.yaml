@@ -9,6 +9,7 @@ image:
   pullPolicy: IfNotPresent
 
 config:
+  orgadminEmail: admin@org1.net
   jwtExpInSecond: 3600
   redisHost: redis1
   redisPort: 6379

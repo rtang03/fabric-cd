@@ -1,0 +1,11 @@
+jwtSecret: c2VjcmV0
+rootClientApp:
+  clientSecret: c2VjcmV0
+# orgAdmin credentials
+orgAdmin:
+  orgadmin: YWRtaW4tcGVlcjAub3JnMi5uZXQ=
+  orgadminpw: YWRtaW4tcGVlcjAub3JnMS5uZXRQVw==
+# postgres connection
+externalDatabase:
+  username: cG9zdGdyZXM=
+  password: cGFzc3dvcmQ=

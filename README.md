@@ -110,7 +110,7 @@ In local machine:
 35.202.107.80 argo.server
 ```
 
-**Install org0 and org1**
+**A. Install fabric-network - org0 and org1**
 
 The run may take 30+ minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
 status.
@@ -185,6 +185,13 @@ STEP                                  TEMPLATE                                  
  ├---✔ approve-chaincode              approve-chaincode/main                    13s
  └---✔ smoke-test                     smoke-test/main                           13s
 ```
+
+
+**B. Install redis and gw-orgX - org0 and org1**
+```shell
+argo submit -n n1 workflow/aoa-sync-gw-org.n1.yaml --watch --request-timeout 300s
+```
+
 
 ### Tear-down
 ```shell script
