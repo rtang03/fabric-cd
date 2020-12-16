@@ -8,7 +8,7 @@ global:
 image:
   repository: ghcr.io/rtang03/gw-org1
   tag: 0.7.1
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 hostAlias:
   - hostnames:
