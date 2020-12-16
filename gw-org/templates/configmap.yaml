@@ -10,7 +10,7 @@ data:
   CA_NAME: {{ .Values.connection.ca.name | quote }}
   ORG_CA_URL: {{ .Values.connection.ca.url | quote }}
   LOG_LEVEL: {{ .Values.global.logging | quote }}
-  LOG_TARGET: "console|file"
+  LOG_TARGET: "console"
   GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
   REDIS_PORT: "6379"

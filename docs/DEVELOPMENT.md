@@ -302,27 +302,16 @@ brew install argocd
 
 **Deploy project specific configuration**
 
-```shell script
-kubectl -n argocd apply -f argocd/project.yaml
-
-# Generate JWT, for use by automated process
-# Remind to gitignore "download" directory.
-# In ArgoCD, no JWT will persist. Need to store it locally
-argocd proj role create-token my-project ci-role > download/ARGO_TOKEN_CI.txt
-```
-
 **Port Forwarding**
 
 ```shell script
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
+
 **Authenticate**
 
 ```shell script
-# get all accounts, "admin", "cli"
-argocd account list
-
 # the initial password is pod-id
 POD=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
 
@@ -343,7 +332,19 @@ kubectl -n n2 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 
 # optionally, save it locally; for repeated use, during development
 # Remind to gitignore "download" directory.
-echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
+echo $CONTENT > download/ARGOCD_TOKEN_CLI.txt
+
+# get all accounts, "admin", "cli"
+argocd account list
+```
+
+```shell script
+kubectl -n argocd apply -f argocd/project.yaml
+
+# Generate JWT, for use by automated process
+# Remind to gitignore "download" directory.
+# In ArgoCD, no JWT will persist. Need to store it locally
+argocd proj role create-token my-project ci-role > download/ARGOCD_TOKEN_CI.txt
 ```
 
 The above jwt is required in order to run bootstraping scripts.
@@ -354,7 +355,7 @@ is required as well.
 **Add your git repo**
 
 As a pre-requisite, you need to create ssh key in your github.com account; and having ssh key in below path.
-In your fork repo, the below git url and ssh will be different. Notice that we intentionally not configuring
+In your fork repo, the below git url and ssh will be different. Notice that we are intentionally not configuring
 the ssh as part of *argocd-cm* configMap, preventing the ssh private key from commiting to github.
 
 ```shell script
