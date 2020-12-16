@@ -11,6 +11,10 @@ spec:
       targetPort: 4001
       protocol: TCP
       name: http-request
+    - port: 5001
+      targetPort: 5001
+      protocol: TCP
+      name: http-queryhandler
   selector:
     app: {{ include "gw-org.name" . }}
     release: {{ .Release.Name }}

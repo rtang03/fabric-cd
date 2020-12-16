@@ -16,3 +16,4 @@ data:
   REDIS_PORT: "6379"
   QUERY_PORT: "5001"
   REMOTE_URI: "http://gw-org2:4001/graphql\ http://gw-org3:4001/graphql"
+  WALLET: /var/hyperledger/crypto-config/{{ .Values.global.mspId }}/{{ .Values.config.gatewayHost }}

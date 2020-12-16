@@ -55,9 +55,17 @@ spec:
             - configMapRef:
                 name: {{ include "gw-org.fullname" . }}
           command: ["sh", "-c"]
+          volumeMounts:
+            - mountPath: /var/hyperledger
+              name: data
           args:
             - |-
               set -x
+              if [-d "$WALLET" ]; then
+                echo "Wallet exists"
+              else
+                mkdir -p $WALLET
+              fi
               {{- range .Values.connection.peers }}
               dockerize -wait tcp://{{ .healthz }} -timeout 60s && echo "peer {{ .healthz }} is ready"
               {{- end }}
@@ -71,6 +79,9 @@ spec:
             - containerPort: 4001
               protocol: TCP
               name: http
+            - containerPort: 5001
+              protocol: TCP
+              name: http-queryhandler
           envFrom:
             - configMapRef:
                 name: {{ include "gw-org.fullname" . }}
