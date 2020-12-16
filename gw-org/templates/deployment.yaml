@@ -81,7 +81,7 @@ spec:
               name: http
             - containerPort: 5001
               protocol: TCP
-              name: http-queryhandler
+              name: http-qh
           envFrom:
             - configMapRef:
                 name: {{ include "gw-org.fullname" . }}
