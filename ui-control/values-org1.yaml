@@ -6,7 +6,7 @@ image:
   tag: 0.7.1
 
 config:
-  authServerUri: http://auth-server1:8080
+  authServerUri: auth-server1:8080
   gwOrgExternalHost: http://localhost:4001
   gwOrgInternalHost: http://gw-org1:4001
   queryHandlerExternalHost: http://localhost:5001/graphql
