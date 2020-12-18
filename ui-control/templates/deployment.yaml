@@ -27,7 +27,7 @@ spec:
       volumes:
         - name: env-local
           configMap:
-            name: --envlocal
+            name: {{ include "ui-control.fullname" . }}--envlocal
             items:
               - key: .env.local
                 path: .env.local
