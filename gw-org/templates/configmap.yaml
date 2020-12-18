@@ -5,15 +5,23 @@ metadata:
   labels:
 {{- include "labels.standard" . | nindent 4 }}
 data:
-  CONNECTION_PROFILE: "/etc/hyperledger/fabric/connection.yaml"
   AUTHORIZATION_SERVER_URI: "http://{{ .Values.config.authServerUri }}/oauth/authenticate"
   CA_NAME: {{ .Values.connection.ca.name | quote }}
-  ORG_CA_URL: {{ .Values.connection.ca.url | quote }}
+  CHANNEL_NAME: "loanapp"
+  CONNECTION_PROFILE: "/etc/hyperledger/fabric/connection.yaml"
+  GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
   LOG_LEVEL: {{ .Values.global.logging | quote }}
   LOG_TARGET: "console"
-  GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
+  MSPID: "Org1MSP"
+  # used by model-organization
+  ORGNAME: "org1.net"
+  ORG_CA_URL: {{ .Values.connection.ca.url | quote }}
+  # used by model-organization
+  ORGURL: "http://localhost:4001/graphql"
+  # redundant
+  QUERY_PORT: "5001"
+  # redundant
   REDIS_HOST: {{ .Values.config.redisHost | quote }}
   REDIS_PORT: "6379"
-  QUERY_PORT: "5001"
   REMOTE_URI: "http://gw-org2:4001/graphql\ http://gw-org3:4001/graphql"
   WALLET: /var/hyperledger/crypto-config/{{ .Values.global.mspId }}/{{ .Values.config.gatewayHost }}

@@ -31,10 +31,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "auth-server.fullname" . }}
-          command:
-            - sh
-            - -c
-            - |
+          command: ["sh", "-c"]
+          args:
+            - |-
               sleep 10s
               set -x
               dockerize -wait tcp://$REDIS_HOST:$REDIS_PORT -timeout 60s && echo "Redis $REDIS_HOST:$REDIS_PORT is ready"

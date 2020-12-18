@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ui-control.fullname" . }}--envlocal
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  .env.local: |
+    AUTH_HOST={{ .Values.config.authServerUri | quote }}
+    GW_ORG_EXTERNAL_HOST= {{ .Values.config.gwOrgExternalHost | quote }}
+    GW_ORG_INTERNAL_HOST={{ .Values.config.gwOrgInternalHost | quote }}
+    HOST="localhost"
+    PORT="3000"
+    QH_EXTERNAL_HOST={{ .Values.config.queryHandlerExternalHost | quote }}

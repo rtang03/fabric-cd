@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ui-control.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "ui-control.name" . }}
+      release: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # trace|debug|info|warning|error|critical|off
+        sidecar.istio.io/logLevel: "info"
+      labels:
+{{ include "labels.standard" . | indent 8 }}
+    spec:
+      volumes:
+        - name: env-local
+          configMap:
+            name: --envlocal
+            items:
+              - key: .env.local
+                path: .env.local
+      initContainers:
+        - name: wait
+          image: jwilder/dockerize
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c"]
+          args:
+            - |-
+              set -x
+              dockerize -wait tcp://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
+      containers:
+        - name: main
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+              name: http
+          envFrom:
+            - configMapRef:
+                name: {{ include "ui-control.fullname" . }}
+          volumeMounts:
+            - mountPath: /usr/src/app/.env.local
+              name: env-local
+              subPath: .env.local
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              scheme: HTTP
+              path: /healthcheck
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
