@@ -4,11 +4,12 @@ global:
 image:
   repository: ghcr.io/rtang03/ui-control-org1
   tag: 0.7.1
+  pullPolicy: IfNotPresent
 
 config:
-  authServerUri: auth-server1:8080
-  gwOrgExternalHost: http://localhost:4001
-  gwOrgInternalHost: http://gw-org1:4001
+  waitForAuthServer: auth-server1:8080
+  authServerUri: http://auth-server1:8080
+  gwOrgExternalHost: http://localhost:4001/graphql
   queryHandlerExternalHost: http://localhost:5001/graphql
 
 resources:

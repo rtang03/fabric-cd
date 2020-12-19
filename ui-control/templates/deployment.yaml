@@ -39,10 +39,11 @@ spec:
           args:
             - |-
               set -x
-              dockerize -wait tcp://{{ .Values.config.authServerUri }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
+              dockerize -wait tcp://{{ .Values.config.waitForAuthServer }} -timeout 60s && echo "auth-server {{ .Values.config.authServerUri }} is ready"
       containers:
         - name: main
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 3000
               protocol: TCP
