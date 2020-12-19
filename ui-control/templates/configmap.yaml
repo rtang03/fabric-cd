@@ -7,8 +7,6 @@ metadata:
 data:
   AUTH_HOST: {{ .Values.config.authServerUri | quote }}
   GW_ORG_EXTERNAL_HOST: {{ .Values.config.gwOrgExternalHost | quote }}
-  GW_ORG_INTERNAL_HOST: {{ .Values.config.gwOrgInternalHost | quote }}
-  HOST: "localhost"
   LOG_LEVEL: {{ .Values.global.logging | quote }}
   LOG_TARGET: "console"
   PORT: "3000"
