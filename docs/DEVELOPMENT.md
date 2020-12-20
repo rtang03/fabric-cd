@@ -566,9 +566,15 @@ This enables Argo Events, such that the cross-organization workflow orchrestrati
 - See [source of manifest](https://github.com/fai555/istio-eck-fluent-bit)
 
 ```shell script
-kubectl apply -f https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml
-
 kubectl create namespace logging
+
+# Optional Step
+# kubectl delete -f https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml
+# kubectl delete -f logging/service-account.yaml
+# kubectl delete -f logging/fluentbit-cm.yaml
+# kubectl delete -f logging/ds.yaml
+
+kubectl apply -f https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml
 kubectl create -f logging/service-account.yaml
 kubectl create -f logging/fluentbit-cm.yaml
 kubectl create -f logging/ds.yaml

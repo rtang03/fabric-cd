@@ -13,7 +13,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /
+            exact: /
       route:
         - destination:
             host: {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
