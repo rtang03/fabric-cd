@@ -3,12 +3,24 @@ kind: VirtualService
 metadata:
   name: {{ include "gw-org.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
 spec:
   hosts:
-  - {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-  http:
-  - route:
-    - destination:
-        host: {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-        port:
-          number: 4001
+    - gw.{{ .Values.global.domain }}
+    - {{ include "gw-org.fullname" . }}
+  gateways:
+    - {{ .Values.global.istiogateway }}
+  tls:
+    - match:
+        - port: {{ .Values.global.istiogatewayPort }}
+          sniHosts:
+            - gw.{{ .Values.global.domain }}
+        - port: 4001
+          sniHosts:
+            - {{ include "gw-org.fullname" . }}
+      route:
+        - destination:
+            host: {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 4001

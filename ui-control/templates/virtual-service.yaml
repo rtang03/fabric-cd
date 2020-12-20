@@ -3,12 +3,24 @@ kind: VirtualService
 metadata:
   name: {{ include "ui-control.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
 spec:
   hosts:
-  - {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-  http:
-  - route:
-    - destination:
-        host: {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-        port:
-          number: 3000
+    - web.{{ .Values.global.domain }}
+    - {{ include "ui-control.fullname" . }}
+  gateways:
+    - {{ .Values.global.istiogateway }}
+  tls:
+    - match:
+        - port: {{ .Values.global.istiogatewayPort }}
+          sniHosts:
+            - web.{{ .Values.global.domain }}
+        - port: 3000
+          sniHosts:
+            - {{ include "ui-control.fullname" . }}
+      route:
+        - destination:
+            host: {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 3000

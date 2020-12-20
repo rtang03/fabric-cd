@@ -4,6 +4,9 @@ global:
   workingDir: /home/app
   # info | debug
   logging: info
+  domain: org2.net
+  istiogateway: p0o2-gateway
+  istiogatewayPort: 15443
 
 image:
   repository: ghcr.io/rtang03/gw-org2

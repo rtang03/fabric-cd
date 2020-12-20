@@ -3,6 +3,8 @@ kind: VirtualService
 metadata:
   name: {{ include "auth-server.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
 spec:
   hosts:
   - {{ include "auth-server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
