@@ -23,6 +23,8 @@ spec:
       tls:
         mode: SIMPLE
         credentialName: "peer0.org1.net-tls"
+        subjectAltNames:
+          - "web.org1.net"
       hosts:
         - "web.org1.net"
 ---

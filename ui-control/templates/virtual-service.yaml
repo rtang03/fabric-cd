@@ -8,6 +8,7 @@ metadata:
 spec:
   hosts:
     - web.{{ .Values.global.domain }}
+    - {{ include "ui-control.fullname" . }}
   gateways:
     - {{ .Values.global.istiogateway }}
   http:
