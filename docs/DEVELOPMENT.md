@@ -311,6 +311,8 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 **Authenticate**
 
+There are two accounts: (1) default account 'admin', and (2) an optional account 'cli', which is defined by `argocd/values-argocd.yaml`
+
 ```shell script
 # the initial password is pod-id
 POD=$(kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2)
@@ -324,21 +326,9 @@ argocd account update-password --current-password $POD --new-password [NEW-PASSW
 # Update password for account "cli"
 argocd account update-password --account cli --current-password [CURRENT ADMIN-PASSWORD] --new-password [NEW-PASSWORD]
 
-# Optional Step
-# if argocd server is re-installed, the json web token of CLI need to be re-created
-# application tear down does NOT need to re-install argo and argcd
-# kubectl -n n0 delete secret argocd-cli-jwt
-# kubectl -n n1 delete secret argocd-cli-jwt
-# kubectl -n n2 delete secret argocd-cli-jwt
-
-# Generate JWT for "cli"
-CONTENT=$(argocd account generate-token --account cli)
-kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
-kubectl -n n1 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
-kubectl -n n2 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
-
 # optionally, save it locally; for repeated use, during development
 # Remind to gitignore "download" directory.
+CONTENT=$(argocd account generate-token --account cli)
 echo $CONTENT > download/ARGOCD_TOKEN_CLI.txt
 
 # get all accounts, "admin", "cli"
@@ -349,16 +339,31 @@ argocd account list
 # cli    true     apiKey, login
 ```
 
+The argocd account 'cli' is not currently used. This is created for future use, when additional devOps engineer is on board.
+
 ```shell script
 kubectl -n argocd apply -f argocd/project.yaml
 
 # Generate JWT, for use by automated process
 # Remind to gitignore "download" directory.
 # In ArgoCD, no JWT will persist. Need to store it locally
-argocd proj role create-token my-project ci-role > download/ARGOCD_TOKEN_CI.txt
+CONTENT=$(argocd proj role create-token my-project ci-role)
+echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
+
+# Optional Step
+# if argocd server is re-installed, the json web token of CLI need to be re-created
+# application tear down does NOT need to re-install argo and argcd
+# kubectl -n n0 delete secret argocd-cli-jwt
+# kubectl -n n1 delete secret argocd-cli-jwt
+# kubectl -n n2 delete secret argocd-cli-jwt
+
+# Generate JWT for "cli"
+kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
+kubectl -n n1 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
+kubectl -n n2 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
 ```
 
-The above jwt is required in order to run bootstraping scripts.
+The above jwt is required in order to run bootstraping scripts, used by workflow template `argocd-cli` of `argo-wf/argocd-cli.yaml`.
 
 TODO: If *orgX* is created in separate cluster, the *argo* server will be independently installed. The above jwt
 is required as well.
