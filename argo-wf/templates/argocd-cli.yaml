@@ -48,6 +48,7 @@ spec:
               exit 1
             else
               echo "ARGOCD_AUTH_TOKEN found"
+              echo $ARGOCD_AUTH_TOKEN
             fi
             ### Download argocd binary ####
             set -x
@@ -70,6 +71,8 @@ spec:
               exit $res
             fi
             set -x
+            argocd account get --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
+            argocd account can-i sync applications '*' --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             argocd app sync {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             res=$?
             set +x

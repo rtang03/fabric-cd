@@ -324,6 +324,13 @@ argocd account update-password --current-password $POD --new-password [NEW-PASSW
 # Update password for account "cli"
 argocd account update-password --account cli --current-password [CURRENT ADMIN-PASSWORD] --new-password [NEW-PASSWORD]
 
+# Optional Step
+# if argocd server is re-installed, the json web token of CLI need to be re-created
+# application tear down does NOT need to re-install argo and argcd
+# kubectl -n n0 delete secret argocd-cli-jwt
+# kubectl -n n1 delete secret argocd-cli-jwt
+# kubectl -n n2 delete secret argocd-cli-jwt
+
 # Generate JWT for "cli"
 CONTENT=$(argocd account generate-token --account cli)
 kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
@@ -336,6 +343,10 @@ echo $CONTENT > download/ARGOCD_TOKEN_CLI.txt
 
 # get all accounts, "admin", "cli"
 argocd account list
+# should output:
+# NAME   ENABLED  CAPABILITIES
+# admin  true     login
+# cli    true     apiKey, login
 ```
 
 ```shell script
@@ -391,7 +402,7 @@ As a development, *argo* is not hard-coded host file. Update the `/etc/hosts` to
 
 *Pre-requisite: service accounts*
 
-All workflow are performed by rbac backed service accounts. There are two service accounts:
+All workflows are performed by rbac backed service accounts. There are two service accounts:
 - *workflow*: is created for each namespace, e.g. n0 and n1. It can perform any verbs.
 - *orgadmin*: can do a subset of admin task, (subject to futher requirement).
 
@@ -444,6 +455,8 @@ cli requires the active port-forwarding of *Argo* server.
 ```shell script
 ARGO_TOKEN=$(argo auth token)
 echo $ARGO_TOKEN
+# should return something like:
+# Bearer ya29.xxxxxxxxx
 
 # using UI, open http://argo.server (ip address 35.202.107.80 <== expose via istio gateway)
 # login by copy-and-past the above access token in the login page
@@ -452,7 +465,11 @@ echo $ARGO_TOKEN
 **cUrl: invoke workflow within the same namespace**
 
 ```shell script
-curl -v -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
+# run below to test the connection
+curl -H "Authorization: $ARGO_TOKEN" -H "Host: argo.server"  http://35.202.107.80/api/v1/workflows/argo
+
+# should return http status 200 and output below:
+# {"metadata":{"resourceVersion":"25084184"},"items":null}
 ```
 
 **Obtain access token for service-account "workflow"**
@@ -468,9 +485,10 @@ ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}
 
 **Service Account: guest**
 
-Organization needs a service account *guest*; if exposing *workflow* via by REST API.
+Organization needs a service account *guest*; if exposing *workflow* via by REST API. Notice that if *argo* is re-installed
+(e.g. via *helm uninstall*), the access token of all previous service accounts "workflow" and "guest" will be gone.
 
-*Org1 create ARGO_TOKEN*
+*Org1 create ARGO_TOKEN used by Org2*
 
 ```shell script
 # CREATE SERVICE ACCOUNT "org2.net". This SA is used for inter-organization workflow, via Events
@@ -483,6 +501,11 @@ ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}
 
 *OrgX create secret for Org1 ARGO_TOKEN in n2*
 ```shell script
+# Optional step
+# if there is pre-existing guest token in org2, remove it
+# kubectl -n n2 delete secret org1.net-guest-token
+
+# NOTE: this is service-account "guest" (not "workflow") created by org1
 kubectl -n n2 create secret generic org1.net-guest-token --from-literal=ARGO_TOKEN="$ARGO_TOKEN"
 ```
 
@@ -511,8 +534,8 @@ organization.
 # E.g. inside bootstrapping script.
 # helm template ../argo-app --set ns=n1,path=argo-wf,target=dev-0.1,rel=argo-org1,file=values-org1.yaml | argocd app create -f -
 
-# Test the deployed templates, e.g. "simple-echo"
-argo -n n1 submit argo-wf/test/xxxx.test.yaml
+# ONLY AFTER bootstrapping script is executed succesfully, you can test the deployed templates, e.g. "simple-echo"
+# argo -n n1 submit argo-wf/test/xxxx.test.yaml
 ```
 
 There will be no direct response of event execution; which will be the request on queue.
@@ -524,8 +547,11 @@ Instead, use `kubectl -n n1 logs simple-echo-xxxxx -c main` for the result.
 # Deploy WorkflowEventBinding, for use by Argo server REST API
 kubectl -n n1 apply -f argo/eventbinding.yaml
 
+# Similarly, ONLY AFTER bootstrapping script is executed succesfully,
 # run smoke test for REST api. Beforehand, make sure env variable ARGO_TOKEN is set for service account "guest"
-curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
+# SECRET=$(kubectl -n n1 get sa guest -o=jsonpath='{.secrets[0].name}')
+# ARGO_TOKEN="Bearer $(kubectl -n n1 get secret $SECRET -o=jsonpath='{.data.token}' | base64 --decode)"
+# curl http://argo.server/api/v1/events/n1/my-discriminator -H "Authorization: $ARGO_TOKEN" -d '{"message": "hello"}'
 ```
 
 This enables Argo Events, such that the cross-organization workflow orchrestration is performed.
@@ -550,7 +576,7 @@ kubectl get secret elastic-istio-es-elastic-user -n logging  -o=jsonpath='{.data
 
 Kibana is using self-signed cert.
 
-### External chaincode container
+### (Out-of-dated) External chaincode container
 To remove the shortcoming of DockerInDocker chaincode, here uses the external chaincode, which requires v2.0+.
 See [Fabric Documentation](https://hyperledger-fabric.readthedocs.io/en/latest/cc_launcher.html)
 
@@ -578,6 +604,12 @@ volume claims.
 ./recreate-pvc.sh org1
 ./recreate-pvc.sh org2
 
+# Step 3: Optional Step
+# In org1, remove service-account guest of other organization
+# This step is required only if org1 wants to remove the service-account used by other organization
+kubectl -n n1 delete -f ./argo/service-account-guest.yaml
+
+# Step 5: Optional Step
 # just in case, remove istio objects. If you want to re-run installation of the same cluster, unnecessarily removing istio object
 # kubectl -n n0 delete -f networking/istio-n0.yaml
 # kubectl -n n1 delete -f networking/istio-n1.yaml
