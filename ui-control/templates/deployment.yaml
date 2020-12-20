@@ -20,7 +20,7 @@ spec:
         sidecar.istio.io/proxyCPULimit: "50m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
-        sidecar.istio.io/logLevel: "debug"
+        sidecar.istio.io/logLevel: "info"
       labels:
 {{ include "labels.standard" . | indent 8 }}
     spec:
