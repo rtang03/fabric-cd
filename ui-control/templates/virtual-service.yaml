@@ -11,10 +11,7 @@ spec:
   gateways:
     - {{ .Values.global.istiogateway }}
   http:
-    - match:
-        - uri:
-            exact: /
-      route:
+    - route:
         - destination:
             host: {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
             port:
