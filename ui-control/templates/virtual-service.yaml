@@ -18,4 +18,4 @@ spec:
         - destination:
             host: {{ include "ui-control.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
             port:
-              number: 3000
+              number: 3001
