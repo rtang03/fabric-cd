@@ -18,14 +18,13 @@ spec:
         mode: PASSTHROUGH
     - port:
         number: 443
-        name: https-443
+        name: https
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: httpbin-credential
-#        credentialName: "peer0.org1.net-tls"
+        credentialName: "peer0.org1.net-tls"
       hosts:
-        - httpbin.example.com
+        - "*"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
