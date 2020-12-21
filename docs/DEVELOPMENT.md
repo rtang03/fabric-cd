@@ -52,12 +52,6 @@ gcloud beta container --project "fdi-cd" clusters create "dev-core-b" --zone "us
   --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --no-shielded-integrity-monitoring
 ```
 
-**Upgrade from Istio v1.4 to v1.6**
-
-The out-of-box running Istio is v1.4.10. It needs a manual step to upgrade to v1.6.x.
-[See Upgrade with Istio Operator](https://cloud.google.com/istio/docs/istio-on-gke/upgrade-with-operator)
-
-
 **Configure namespace**
 
 Here assumes to deploy 2 organizations, and a commonly shared argo and argocd.
@@ -72,6 +66,12 @@ kubectl create namespace n2
 
 
 ### Istio
+**MUST DO: Upgrade from Istio v1.4 to v1.6**
+
+The out-of-box running Istio is v1.4.10. It needs a manual step to upgrade to v1.6.x.
+[See Upgrade with Istio Operator](https://cloud.google.com/istio/docs/istio-on-gke/upgrade-with-operator)
+
+
 **Install istioctl cli**
 
 Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
@@ -805,6 +805,7 @@ curl -d '{"spec":"grpc=debug:debug"}' -H "Content-Type: application/json" -X PUT
 - [logging istio + efk (src)](https://github.com/fai555/istio-eck-fluent-bit)
 - [fluentbit](https://medium.com/swlh/fluentbit-stream-processing-with-kubernetes-plugin-caefffd9f9e4)
 - [setup tls for elastic](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html#k8s-setting-up-your-own-certificate)
+- [Upgrade Istio](https://cloud.google.com/istio/docs/istio-on-gke/upgrade-with-operator)
 
 ### TODO
 **Sops commit hook**
