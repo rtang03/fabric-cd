@@ -15,8 +15,8 @@ the latest runnable deployment; and is protected. It should perform pull request
 
 **Technology**
 
-- GKE 1.16.13-gke.401/regular channel (n1-standard-4: 4 vcpu/15GB x 1 node)
-- Istio v1.4.10
+- GKE 1.18.13-gke.1200/regular channel (n1-standard-4: 4 vcpu/15GB x 1 node)
+- Istio v1.6.11
 - installation of gcloud cli, kubectl and istioctl
 - helm charts v3
 - Fabric v2.2.0
@@ -41,6 +41,23 @@ is `fabric-cd-dev`. Also, make sure `gcloud`, `gsutil`, and `kubectl` are instal
 gcloud container clusters get-credentials dev-core-b --zone us-central1-c
 ```
 
+```shell
+# Alternatively, create new GKE using gcloud cli
+gcloud beta container --project "fdi-cd" clusters create "dev-core-b" --zone "us-central1-c" --no-enable-basic-auth \
+  --cluster-version "1.18.12-gke.1200" --release-channel "rapid" --machine-type "n1-standard-4" --image-type "COS" \
+  --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" \
+  --preemptible --num-nodes "1" --enable-stackdriver-kubernetes --enable-ip-alias --network "projects/fdi-cd/global/networks/fdi-core" \
+  --subnetwork "projects/fdi-cd/regions/us-central1/subnetworks/org0msp" --default-max-pods-per-node "110" \
+  --no-enable-master-authorized-networks --addons HorizontalPodAutoscaling,HttpLoadBalancing,Istio --istio-config auth=MTLS_PERMISSIVE \
+  --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --no-shielded-integrity-monitoring
+```
+
+**Upgrade from Istio v1.4 to v1.6**
+
+The out-of-box running Istio is v1.4.10. It needs a manual step to upgrade to v1.6.x.
+[See Upgrade with Istio Operator](https://cloud.google.com/istio/docs/istio-on-gke/upgrade-with-operator)
+
+
 **Configure namespace**
 
 Here assumes to deploy 2 organizations, and a commonly shared argo and argocd.
@@ -58,14 +75,13 @@ kubectl create namespace n2
 **Install istioctl cli**
 
 Be noted different GKE version comes with different version of istio. After the GKE is created, validate the version of
-istio. Also, istio is a pre-GA, I also found that GKE 1.17 comes with dual control plane (v1.4 and 1.6). Make sure
-to install the correct version level of istio cli; compatibile with GKE bundled istio version.
+istio. Make sure to install the correct version level of istio cli; compatibile with GKE bundled istio version.
 
 *WARNING*: the latest / recent version may not work.
 
 ```shell script
 # client installation of istioctl v1.4.10 CLI on local machine
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.10 TARGET_ARCH=x86_64 sh -
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.4 TARGET_ARCH=x86_64 sh -
 ```
 
 Here uses Istio Service Mesh, and istio CRD is located `networking` directory.
@@ -88,12 +104,21 @@ kubectl -n argocd apply -f networking/istio-argocd.yaml
 
 **Auto injection**
 
+It needs to find the "revision number" of istio by:
+
+```shell
+kubectl -n istio-system get pods -lapp=istiod --show-labels
+```
+
 ```shell script
-kubectl label namespace n0 istio-injection=enabled
-kubectl label namespace n1 istio-injection=enabled
-kubectl label namespace n2 istio-injection=enabled
-kubectl label namespace argo istio-injection=enabled
-kubectl label namespace argocd istio-injection=enabled
+# REV number is 1611
+# kubectl label namespace [NAMESPACE] istio.io/rev=istio-[REV-NUMBER]
+
+kubectl label namespace n0 istio.io/rev=istio-1611
+kubectl label namespace n1 istio.io/rev=istio-1611
+kubectl label namespace n2 istio.io/rev=istio-1611
+kubectl label namespace argo istio.io/rev=istio-1611
+kubectl label namespace argocd istio.io/rev=istio-1611
 ```
 
 **Optionally, istio probe rewrite**
@@ -809,4 +834,8 @@ This is unfinished part, to use Istio to add TLS support, for both *Argo* and *A
 ```shell script
 # testing code. Not working.
 helm template workflow/secrets -f workflow/secrets/values-istio-org1.yaml | argo -n $NS1 submit - --wait
+```
+
+```shell
+gcloud beta container --project "fdi-cd" clusters create "dev-core-c" --zone "us-central1-c" --no-enable-basic-auth --cluster-version "1.18.12-gke.1200" --release-channel "rapid" --machine-type "n1-standard-4" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/cloud-platform" --preemptible --num-nodes "1" --no-enable-stackdriver-kubernetes --enable-ip-alias --network "projects/fdi-cd/global/networks/fdi-core" --subnetwork "projects/fdi-cd/regions/us-central1/subnetworks/org0msp" --default-max-pods-per-node "110" --no-enable-master-authorized-networks --addons HorizontalPodAutoscaling,HttpLoadBalancing,Istio --istio-config auth=MTLS_PERMISSIVE --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --no-shielded-integrity-monitoring
 ```

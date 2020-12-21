@@ -17,6 +17,14 @@ spec:
       tls:
         mode: PASSTHROUGH
     - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "web.org1.net"
+      tls:
+        httpsRedirect: true
+    - port:
         number: 443
         name: https
         protocol: HTTPS
