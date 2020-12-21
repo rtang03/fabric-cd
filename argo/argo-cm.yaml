@@ -5,6 +5,8 @@ kind: ConfigMap
 metadata:
   name: artifact-repositories
 data:
+  dummy: |
+    hello: true
   gcp_dev: |
     archiveLogs: true
     s3:
