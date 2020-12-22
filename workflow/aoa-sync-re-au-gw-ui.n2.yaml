@@ -21,6 +21,14 @@ spec:
               parameters:
                 - name: app
                   value: "redis2"
+        - - name: sync-auth1
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "auth-server2"
         - - name: sync-gw-org2
             templateRef:
               name: argocd-cli
@@ -36,4 +44,4 @@ spec:
             arguments:
               parameters:
                 - name: app
-                  value: "ui-org2-ui-control"
+                  value: "ui-org2"

@@ -4,7 +4,7 @@ metadata:
   name: bootstrap-channel-org1
 spec:
   entrypoint: main
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 600
   ttlStrategy:
     secondsAfterCompletion: 3600
     secondsAfterSuccess: 3600
