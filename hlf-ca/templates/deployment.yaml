@@ -17,7 +17,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/proxyCPU: "10m"
-        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/proxyCPULimit: "100m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
         sidecar.istio.io/logLevel: "info"
