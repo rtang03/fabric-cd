@@ -3,7 +3,7 @@ kind: Workflow
 metadata:
   name: aoa-sync-gw-org1
 spec:
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 900
   ttlStrategy:
     secondsAfterCompletion: 3600
     secondsAfterSuccess: 3600
