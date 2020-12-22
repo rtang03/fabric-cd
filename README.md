@@ -131,7 +131,47 @@ cd scripts
 
 # Bootstrap Org0 and Org1
 ./bootstrap.org1.sh
+```
 
+The successful deployment should show:
+
+```text
+Name:                bootstrap-channel-org1
+Namespace:           n1
+ServiceAccount:      workflow
+Status:              Succeeded
+Conditions:
+ Completed           True
+Created:             Tue Dec 22 14:11:15 +0800 (5 minutes ago)
+Started:             Tue Dec 22 14:11:15 +0800 (5 minutes ago)
+Finished:            Tue Dec 22 14:16:22 +0800 (now)
+Duration:            5 minutes 7 seconds
+ResourcesDuration:   10m54s*(1 cpu),10m54s*(100Mi memory)
+
+STEP                              TEMPLATE                                DURATION
+ ✔ bootstrap-channel-org1         main
+ ├-·-✔ sync-g1                    argocd-cli/argocd-app-sync              1m
+ | └-✔ sync-p0o1                  argocd-cli/argocd-app-sync              1m
+ ├---✔ dl-create-tlscacert        download-and-create-secret/main
+ |   ├---✔ retrieve               retrieve-tmpl                           6s
+ |   ├---✔ delete-secret-tmpl     secret-resource/delete-secret-tmpl      1s
+ |   └---✔ create-secret-tmpl     secret-resource/create-secret-1key-tmpl 2s
+ ├---✔ create-channel(0)          create-channel/main                     11s
+ ├---✔ join-channel(0)            join-channel/main                       20s
+ ├---✔ update-anchor-peer         update-anchor-peer/main                 18s
+ ├---✔ package-install-chaincode  package-install-chaincode/main          13s
+ ├---✔ chaincode-id-resource      chaincode-id-resource/main
+ |   ├---✔ delete-ccid            delete-ccid                             2s
+ |   └---✔ create-ccid            create-ccid                             2s
+ ├---✔ sync-chaincode             argocd-cli/argocd-app-sync              1m
+ ├---✔ approve-chaincode          approve-chaincode/main                  11s
+ ├---✔ commit-chaincode           commit-chaincode/main                   13s
+ └---✔ smoke-test(0)              smoke-test/main                         21s
+```
+
+**Bootstrap org2**
+
+```shell
 # Bootstrap Org2
 ./bootstrap.orgx.sh org2
 ```
@@ -187,9 +227,9 @@ STEP                                  TEMPLATE                                  
 ```
 
 
-**B. Install redis and gw-orgX - org0 and org1**
+**B. Install redis, auth-server, gw-orgX, ui-control - org0 and org1**
 ```shell
-argo submit -n n1 workflow/aoa-sync-gw-org.n1.yaml --watch --request-timeout 300s
+argo submit -n n1 workflow/aoa-sync-re-au-gw-ui.n1.yaml --watch --request-timeout 600s
 ```
 
 
