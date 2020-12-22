@@ -378,9 +378,9 @@ echo $CONTENT > download/ARGOCD_TOKEN_CI.txt
 # Optional Step
 # if argocd server is re-installed, the json web token of CLI need to be re-created
 # application tear down does NOT need to re-install argo and argcd
-# kubectl -n n0 delete secret argocd-cli-jwt
-# kubectl -n n1 delete secret argocd-cli-jwt
-# kubectl -n n2 delete secret argocd-cli-jwt
+kubectl -n n0 delete secret argocd-cli-jwt
+kubectl -n n1 delete secret argocd-cli-jwt
+kubectl -n n2 delete secret argocd-cli-jwt
 
 # Generate JWT for "cli"
 kubectl -n n0 create secret generic argocd-cli-jwt --from-literal=jwt="$CONTENT"
@@ -458,6 +458,7 @@ helm -n argo install argo -f argo/values-argo.yaml --set installCRDs=false argo/
 
 ```shell script
 # configure artifactory to using GCS Storage
+# NOTE: run below AFTER argo server starts successfully. The first start may take a while
 kubectl -n argo apply -f ./argo/argo-cm.yaml
 ```
 
@@ -645,7 +646,7 @@ volume claims.
 # This step is required only if org1 wants to remove the service-account used by other organization
 kubectl -n n1 delete -f ./argo/service-account-guest.yaml
 
-# Step 5: Optional Step
+# Step 4: Optional Step
 # just in case, remove istio objects. If you want to re-run installation of the same cluster, unnecessarily removing istio object
 # kubectl -n n0 delete -f networking/istio-n0.yaml
 # kubectl -n n1 delete -f networking/istio-n1.yaml
