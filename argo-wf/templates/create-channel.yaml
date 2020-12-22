@@ -64,6 +64,7 @@ spec:
         workingDir: /var/hyperledger
         args:
           - |-
+            sleep 10
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             ORDERER_URL={{ .Values.ordererUrl }}
             FABRIC_CFG_PATH=/etc/hyperledger

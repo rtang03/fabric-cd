@@ -55,6 +55,7 @@ spec:
         workingDir: /var/hyperledger
         args:
           - |-
+            sleep 10s
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             FABRIC_CFG_PATH=/etc/hyperledger
             CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.joinChannel.corePeerTlsRootCert }}
