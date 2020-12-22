@@ -11,15 +11,8 @@ spec:
     - {{ include "gw-org.fullname" . }}
   gateways:
     - {{ .Values.global.istiogateway }}
-  tls:
-    - match:
-        - port: {{ .Values.global.istiogatewayPort }}
-          sniHosts:
-            - gw.{{ .Values.global.domain }}
-        - port: 4001
-          sniHosts:
-            - {{ include "gw-org.fullname" . }}
-      route:
+  http:
+    - route:
         - destination:
             host: {{ include "gw-org.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
             port:
