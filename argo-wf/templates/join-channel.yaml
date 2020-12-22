@@ -15,6 +15,12 @@ spec:
   templates:
     - name: main
 {{ toYaml .Values.no_istio | indent 6 }}
+      retryStrategy:
+        limit: 2
+        backoff:
+          duration: "1m"
+          factor: 2
+          maxDuration: "1m"
       inputs:
         parameters:
           - name: channelname
