@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: aoa-sync-gw-org2
+spec:
+  activeDeadlineSeconds: 300
+  ttlStrategy:
+    secondsAfterCompletion: 3600
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 3600
+  entrypoint: main
+  serviceAccountName: workflow
+  templates:
+    - name: main
+      steps:
+        - - name: sync-redis2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "redis2"
+        - - name: sync-auth1
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "auth-server2"
+        - - name: sync-gw-org2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "gw-org2"
+        - - name: sync-ui-org2
+            templateRef:
+              name: argocd-cli
+              template: argocd-app-sync
+            arguments:
+              parameters:
+                - name: app
+                  value: "ui-org2"

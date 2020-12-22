@@ -12,6 +12,6 @@ podGC: true
 items:
   - id: peer0.org2.net
     type: peer
-    csrHosts: "p0o2-hlf-peer,peer0.org2.net,gupload.org2.net,argo.org2.net,argocd.org2.net"
+    csrHosts: "p0o2-hlf-peer,peer0.org2.net,gupload.org2.net,argo.org2.net,argocd.org2.net,gw.org2.net,web.org2.net"
 pvcName: pvc-org2
 

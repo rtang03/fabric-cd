@@ -31,4 +31,12 @@ apps:
     file: values-org1.yaml
   - path: auth-server
     rel: auth-server1
+    secret: secrets.org1.yaml
+    file: values-org1.yaml
+  - path: gw-org
+    rel: gw-org1
+    secret: secrets.org1.yaml
+    file: values-org1.yaml
+  - path: ui-control
+    rel: ui-org1
     file: values-org1.yaml

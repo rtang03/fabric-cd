@@ -29,3 +29,11 @@ apps:
   - path: redis
     rel: redis2
     file: values-org2.yaml
+  - path: auth-server
+    rel: auth-server2
+    secret: secrets.org2.yaml
+    file: values-org2.yaml
+  - path: gw-org
+    rel: gw-org2
+    secret: secrets.org2.yaml
+    file: values-org2.yaml

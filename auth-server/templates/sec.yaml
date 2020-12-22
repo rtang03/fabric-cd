@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "auth-server.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+type: Opaque
+data:
+  JWT_SECRET: {{ $.Values.jwtSecret }}
+  CLIENT_SECRET: {{ $.Values.rootClientApp.clientSecret }}
+  ORG_ADMIN_ID: {{ $.Values.orgAdmin.orgadmin }}
+  ORG_ADMIN_SECRET: {{ $.Values.orgAdmin.orgadminpw }}
+  TYPEORM_USERNAME: {{ $.Values.externalDatabase.username }}
+  TYPEORM_PASSWORD: {{ $.Values.externalDatabase.password }}

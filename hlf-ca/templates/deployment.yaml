@@ -17,7 +17,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/proxyCPU: "10m"
-        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/proxyCPULimit: "100m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
         sidecar.istio.io/logLevel: "info"
@@ -31,11 +31,6 @@ spec:
             claimName: {{ .Values.persistence.existingClaim | default (include "hlf-ca.fullname" .) }}
         {{- else }}
           emptyDir: {}
-        {{- end }}
-        {{- if (and .Values.config.mountTLS .Values.ingress.tls) }}
-        - name: tls-secret
-          secret:
-            secretName: {{ (index .Values.ingress.tls 0).secretName }}
         {{- end }}
         - name: ca-config
           configMap:
@@ -142,11 +137,6 @@ spec:
             - name: ca-config
               readOnly: true
               mountPath: /var/hyperledger/ca_config
-            {{- if (and .Values.config.mountTLS .Values.ingress.tls) }}
-            - name: tls-secret
-              readOnly: true
-              mountPath: /var/hyperledger/tls/secret
-          {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
@@ -160,4 +150,4 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
-  {{- end }}
+    {{- end }}

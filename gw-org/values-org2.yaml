@@ -1,0 +1,117 @@
+global:
+  TZ: Asia/Hong_Kong
+  mspId: Org2MSP
+  workingDir: /home/app
+  # info | debug
+  logging: info
+  domain: org2.net
+  istiogateway: p0o2-gateway
+  istiogatewayPort: 15443
+
+image:
+  repository: ghcr.io/rtang03/gw-org2
+  tag: 0.7.1
+  pullPolicy: IfNotPresent
+
+hostAlias:
+  - hostnames:
+      - orderer0.org0.com
+      - orderer1.org0.com
+      - orderer2.org0.com
+      - orderer3.org0.com
+      - orderer4.org0.com
+      - peer0.org1.net
+    ip: 35.202.107.80
+  - hostnames:
+      - peer0.org2.net
+    ip: 35.202.107.80
+
+persistence:
+  ### Default
+  # annotations: {}
+  ### Default
+  # accessMode: ReadWriteOnce
+  ### Default
+  # enabled: true
+  pvcName: pvc-p0o2
+
+config:
+  orgAdmin: admin-peer0.org2.net
+  orgAdminSecret: admin-peer0.org2.netPW
+  gatewayHost: gw-org2
+  redisHost: redis2
+  packageName: gw-org2
+  authServerUri: auth-server2:8080
+
+connection:
+  registrar:
+    enrollId: rca2-admin
+    enrollSecret: rca2-adminPW
+  ca:
+    name: rca2
+    url: rca2-hlf-ca:7054
+    tlscacerts:
+      path: /tmp/org2.net-tlscacert.pem
+  channelName: loanapp
+  ordererCa: /tmp/org0.com-tlscacert.pem
+  peers:
+    - name: peer0
+      healthz: p0o2-hlf-peer:80
+      url: p0o2-hlf-peer:7051
+      eventUrl: p0o2-hlf-peer:7053
+      grpcOptions:
+        nameOverride: p0o2-hlf-peer
+      tlscacert: /tmp/org2.net-tlscacert.pem
+  orderers:
+    - name: orderer0
+      url: orderer0.org0.com:15443
+      grpcOptions:
+        nameOverride: orderer0.org0.com
+    - name: orderer1
+      url: orderer1.org0.com:15443
+      grpcOptions:
+        nameOverride: orderer1.org0.com
+    - name: orderer2
+      url: orderer2.org0.com:15443
+      grpcOptions:
+        nameOverride: orderer2.org0.com
+    - name: orderer3
+      url: orderer3.org0.com:15443
+      grpcOptions:
+        nameOverride: orderer3.org0.com
+    - name: orderer4
+      url: orderer4.org0.com:15443
+      grpcOptions:
+        nameOverride: orderer4.org0.com
+
+secrets:
+  - name: org0-tlscacert
+    secretName: org0.com-tlscacert
+    mountPath: /tmp/org0.com-tlscacert.pem
+    subPath: tlscacert.pem
+  - name: org1-tlscacert
+    secretName: org1.net-tlscacert
+    mountPath: /tmp/org1.net-tlscacert.pem
+    subPath: tlscacert.pem
+  - name: admin-cert
+    secretName: peer0.org2.net-admincert
+    mountPath: /tmp/org2.net-admin-cert.pem
+    subPath: org2.net-admin-cert.pem
+  - name: admin-key
+    secretName: peer0.org2.net-adminkey
+    mountPath: /tmp/org2.net-admin-key.pem
+    subPath: org2.net-admin-key.pem
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1536Mi
+  requests:
+    cpu: 50m
+    memory: 1024Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

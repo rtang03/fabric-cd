@@ -15,6 +15,12 @@ spec:
   templates:
     - name: main
 {{ toYaml .Values.no_istio | indent 6 }}
+      retryStrategy:
+        limit: 2
+        backoff:
+          duration: "1m"
+          factor: 2
+          maxDuration: "1m"
       inputs:
         parameters:
           - name: channelname
@@ -52,6 +58,16 @@ spec:
           secret:
             secretName: {{ .secretName }}
         {{- end }}
+      initContainers:
+        - name: wait-for-orderer
+          image: jwilder/dockerize
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c"]
+          args:
+            - |-
+              ORDERER_URL={{ .Values.ordererUrl }}
+              set -x
+              dockerize -wait tcp://$ORDERER_URL -timeout 60s && echo "$ORDERER_URL is ready"
       container:
         image: library/alpine:3.12.0
         command: ["sh", "-c"]

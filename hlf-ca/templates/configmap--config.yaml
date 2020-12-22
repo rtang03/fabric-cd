@@ -253,12 +253,8 @@ data:
          - localhost
          # K8S Service
          - {{ include "hlf-ca.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-    {{- if .Values.ingress.enabled }}
-         # Ingresses
-    {{- range .Values.ingress.hosts }}
-         - {{ . }}
-    {{- end }}
-    {{- end }}
+         # NOTE: If exposing to external network, here removes the ingress section, because it is replaced by Istio
+         # In future, it may add host, provided Istio
        ca:
           expiry: 131400h
           pathlength: {{ .Values.config.csr.ca.pathlength}}

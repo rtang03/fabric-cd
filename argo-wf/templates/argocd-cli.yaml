@@ -3,7 +3,7 @@ kind: WorkflowTemplate
 metadata:
   name: argocd-cli
 spec:
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 900
   ttlStrategy:
     secondsAfterCompletion: 3600 # Time to live after workflow is completed, replaces ttlSecondsAfterFinished
     secondsAfterSuccess: 3600     # Time to live after workflow is successful
@@ -70,6 +70,7 @@ spec:
               exit $res
             fi
             set -x
+            argocd account get --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             argocd app sync {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext
             res=$?
             set +x
@@ -78,7 +79,7 @@ spec:
               exit $res
             fi
             set -x
-            argocd app wait {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext --timeout 300
+            argocd app wait {{ .Values.alias.input_app | quote }} --server "${ARGOCD_SERVER}:80" --grpc-web --plaintext --timeout 600
             res=$?
             set +x
             if [ $res -ne 0 ]; then

@@ -4,7 +4,7 @@ kind: WorkflowTemplate
 metadata:
   name: smoke-test
 spec:
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 600
   ttlStrategy:
     secondsAfterCompletion: 3600
     secondsAfterSuccess: 3600
@@ -15,6 +15,12 @@ spec:
   templates:
     - name: main
 {{ toYaml .Values.no_istio | indent 6 }}
+      retryStrategy:
+        limit: 2
+        backoff:
+          duration: "1m"
+          factor: 2
+          maxDuration: "1m"
       inputs:
         parameters:
           - name: channelname
@@ -50,6 +56,7 @@ spec:
         workingDir: /var/hyperledger
         args:
           - |-
+            sleep 10s
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             ORDERER_URL={{ .Values.ordererUrl }}
             FABRIC_CFG_PATH=/etc/hyperledger

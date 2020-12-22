@@ -14,6 +14,8 @@ spec:
       hosts:
         - "peer0.org3.net"
         - "gupload.org3.net"
+        - "gw.org3.net"
+        - "web.org3.net"
       tls:
         mode: PASSTHROUGH
 ---

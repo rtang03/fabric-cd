@@ -17,7 +17,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/proxyCPU: "10m"
-        sidecar.istio.io/proxyCPULimit: "50m"
+        sidecar.istio.io/proxyCPULimit: "100m"
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
         # trace|debug|info|warning|error|critical|off
         sidecar.istio.io/logLevel: "info"
@@ -195,10 +195,6 @@ spec:
               echo "🚀   peer node start"
               peer node start
           envFrom:
-            {{- if eq .Values.peer.databaseType "CouchDB" }}
-            - secretRef:
-                name: {{ .Values.peer.couchdbInstance }}-hlf-couchdb
-            {{- end }}
             - configMapRef:
                 name: {{ include "hlf-peer.fullname" . }}--peer
           volumeMounts:

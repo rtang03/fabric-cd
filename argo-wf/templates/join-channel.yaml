@@ -15,6 +15,12 @@ spec:
   templates:
     - name: main
 {{ toYaml .Values.no_istio | indent 6 }}
+      retryStrategy:
+        limit: 2
+        backoff:
+          duration: "1m"
+          factor: 2
+          maxDuration: "1m"
       inputs:
         parameters:
           - name: channelname
@@ -49,6 +55,7 @@ spec:
         workingDir: /var/hyperledger
         args:
           - |-
+            sleep 10s
             CHANNEL_NAME={{ .Values.alias.input_channelname | quote }}
             FABRIC_CFG_PATH=/etc/hyperledger
             CORE_PEER_TLS_ROOTCERT_FILE={{ .Values.joinChannel.corePeerTlsRootCert }}

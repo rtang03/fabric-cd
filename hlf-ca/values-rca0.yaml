@@ -38,14 +38,6 @@ config:
   #     port: 7054
   ## Affiliations used in ca Server configuration file
 
-ingress:
-  enabled: false
-  annotations: {}
-  path: /
-  hosts:
-    - rca0
-  tls: []
-
 persistence:
   ### Default
   # enabled: true

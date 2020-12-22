@@ -9,6 +9,7 @@ image:
   pullPolicy: IfNotPresent
 
 config:
+  orgadminEmail: admin@org1.net
   jwtExpInSecond: 3600
   redisHost: redis1
   redisPort: 6379
@@ -16,3 +17,17 @@ config:
   port: 8080
   postgresHost: admin1-postgresql-0
   postgresPort: 5432
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

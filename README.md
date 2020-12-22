@@ -110,7 +110,31 @@ In local machine:
 35.202.107.80 argo.server
 ```
 
-**Install org0 and org1**
+### 1. Prepare secrets file
+Credentials, secrets, and passwords are re-located to `secrets.*.yaml`, in corresponding Helm chart directories. For example,
+see `orgadmin/secrets.admin1-example.yaml`, `tlsca_caadmin` must be a base64 encoded value, and created as k8s Secret resource.
+
+```shell script
+# encode ==> dGxzY2ExLWFkbWluCg==
+echo -n 'tlsca1-admin' | base64
+
+# decode => tlsca1-admin
+echo -n 'dGxzY2ExLWFkbWluCg==' | base64 -d
+```
+
+`orgadmin/secrets.admin1-example.yaml` is an encoded yaml. You copy its file content into `orgadmin/secrets.admin1.yaml`;
+and then run below command to perform sops encryption. `-i` means in-place replacement; the previous unencrypted/encoded
+yaml will be replaced. Repeat the same steps for every `secrets.*.yaml`. The yaml property ending with "_unencrypted" will skip encryption.
+
+```shell script
+# encrypt
+sops -e -i orgadmin/secrets.admin1.yaml
+
+# decrypt
+sops -d orgadmin/secrets.admin1.yaml
+```
+
+### 2. Install fabric-network - org0 and org1
 
 The run may take 30+ minutes. In addition to CLI, you may also use GKE dashboard, *argocd* and *argo* web UI to monitor the live
 status.
@@ -131,7 +155,47 @@ cd scripts
 
 # Bootstrap Org0 and Org1
 ./bootstrap.org1.sh
+```
 
+The successful deployment should show:
+
+```text
+Name:                bootstrap-channel-org1
+Namespace:           n1
+ServiceAccount:      workflow
+Status:              Succeeded
+Conditions:
+ Completed           True
+Created:             Tue Dec 22 14:11:15 +0800 (5 minutes ago)
+Started:             Tue Dec 22 14:11:15 +0800 (5 minutes ago)
+Finished:            Tue Dec 22 14:16:22 +0800 (now)
+Duration:            5 minutes 7 seconds
+ResourcesDuration:   10m54s*(1 cpu),10m54s*(100Mi memory)
+
+STEP                              TEMPLATE                                DURATION
+ ✔ bootstrap-channel-org1         main
+ ├-·-✔ sync-g1                    argocd-cli/argocd-app-sync              1m
+ | └-✔ sync-p0o1                  argocd-cli/argocd-app-sync              1m
+ ├---✔ dl-create-tlscacert        download-and-create-secret/main
+ |   ├---✔ retrieve               retrieve-tmpl                           6s
+ |   ├---✔ delete-secret-tmpl     secret-resource/delete-secret-tmpl      1s
+ |   └---✔ create-secret-tmpl     secret-resource/create-secret-1key-tmpl 2s
+ ├---✔ create-channel(0)          create-channel/main                     11s
+ ├---✔ join-channel(0)            join-channel/main                       20s
+ ├---✔ update-anchor-peer         update-anchor-peer/main                 18s
+ ├---✔ package-install-chaincode  package-install-chaincode/main          13s
+ ├---✔ chaincode-id-resource      chaincode-id-resource/main
+ |   ├---✔ delete-ccid            delete-ccid                             2s
+ |   └---✔ create-ccid            create-ccid                             2s
+ ├---✔ sync-chaincode             argocd-cli/argocd-app-sync              1m
+ ├---✔ approve-chaincode          approve-chaincode/main                  11s
+ ├---✔ commit-chaincode           commit-chaincode/main                   13s
+ └---✔ smoke-test(0)              smoke-test/main                         21s
+```
+
+### 3. Install fabric-network - org2
+
+```shell
 # Bootstrap Org2
 ./bootstrap.orgx.sh org2
 ```
@@ -186,6 +250,77 @@ STEP                                  TEMPLATE                                  
  └---✔ smoke-test                     smoke-test/main                           13s
 ```
 
+
+### 4. Install redis, auth-server, gw-orgX, ui-control - org0 and org1
+
+**Create tls secret to enable secure istio gateway**
+
+For org1, both *ui-control* and *gw-org* are required to expose to public internet. Here utilizes the secure gateway of
+istio (see [istio v1.6 doc](https://istio.io/v1.6/docs/tasks/traffic-management/ingress/secure-ingress/)). As below code,
+`https://web.org1.net` is exposed, and requiring the secret `peer0.org1.net-tls`.
+
+```yaml
+# networking/istio-n1.yaml
+- port:
+    number: 443
+    name: https
+    protocol: HTTPS
+  tls:
+    mode: SIMPLE
+    credentialName: "peer0.org1.net-tls"
+  hosts:
+    - "web.org1.net"
+    - "gw.org1.net"
+```
+
+```shell
+# delete existing tls cert
+kubectl -n istio-system delete secret peer0.org1.net-tls
+
+# retrieve tls cert from org1
+CERT="$(kubectl -n n1 get secret peer0.org1.net-tls -o=jsonpath='{.data.tls\.crt}' | base64 --decode)"
+KEY="$(kubectl -n n1 get secret peer0.org1.net-tls -o=jsonpath='{.data.tls\.key}' | base64 --decode)"
+
+# create tls cert for Istio secure gateway
+kubectl -n istio-system create secret generic peer0.org1.net-tls --from-literal=tls.crt="$CERT" --from-literal=tls.key="$KEY"
+
+# Debugging step
+kubectl logs -n istio-system "$(kubectl get pod -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].metadata.name}')"
+# should return
+# 2020-12-22T08:23:04.850277Z	info	Channel Connectivity change to READY
+# 2020-12-22T08:45:28.961386Z	info	sds	resource:peer0.org1.net-tls pushed key/cert pair to proxy
+# 2020-12-22T08:45:28.961426Z	info	sds	Dynamic push for secret peer0.org1.net-tls
+```
+**Synchronize apps**
+
+```shell
+argo submit -n n1 workflow/aoa-sync-re-au-gw-ui.n1.yaml --watch --request-timeout 900s
+```
+
+It should return:
+
+```text
+Name:                aoa-sync-gw-org1
+Namespace:           n1
+ServiceAccount:      workflow
+Status:              Succeeded
+Conditions:
+ Completed           True
+Created:             Tue Dec 22 14:39:24 +0800 (8 minutes ago)
+Started:             Tue Dec 22 14:39:24 +0800 (8 minutes ago)
+Finished:            Tue Dec 22 14:48:03 +0800 (now)
+Duration:            8 minutes 39 seconds
+ResourcesDuration:   16m57s*(1 cpu),16m57s*(100Mi memory)
+
+STEP                 TEMPLATE                    PODNAME                      DURATION  MESSAGE
+ ✔ aoa-sync-gw-org1  main
+ ├---✔ sync-redis1   argocd-cli/argocd-app-sync  aoa-sync-gw-org1-3775298967  1m
+ ├---✔ sync-auth1    argocd-cli/argocd-app-sync  aoa-sync-gw-org1-3067430853  1m
+ ├---✔ sync-gw-org1  argocd-cli/argocd-app-sync  aoa-sync-gw-org1-1951236881  3m
+ └---✔ sync-ui-org1  argocd-cli/argocd-app-sync  aoa-sync-gw-org1-2916683662  2m
+```
+
+
 ### Tear-down
 ```shell script
 cd scripts
@@ -200,29 +335,6 @@ cd scripts
 Lastly, remove the 'fabric-cd-dev' storage bucket.
 
 
-### Prepare secrets file
-Credentials, secrets, and passwords are re-located to `secrets.*.yaml`, in corresponding Helm chart directories. For example,
-see `orgadmin/secrets.admin1-example.yaml`, `tlsca_caadmin` must be a base64 encoded value, and created as k8s Secret resource.
-
-```shell script
-# encode ==> dGxzY2ExLWFkbWluCg==
-echo -n 'tlsca1-admin' | base64
-
-# decode => tlsca1-admin
-echo -n 'dGxzY2ExLWFkbWluCg==' | base64 -d
-```
-
-`orgadmin/secrets.admin1-example.yaml` is an encoded yaml. You copy its file content into `orgadmin/secrets.admin1.yaml`;
-and then run below command to perform sops encryption. `-i` means in-place replacement; the previous unencrypted/encoded
-yaml will be replaced. Repeat the same steps for every `secrets.*.yaml`. The yaml property ending with "_unencrypted" will skip encryption.
-
-```shell script
-# encrypt
-sops -e -i orgadmin/secrets.admin1.yaml
-
-# decrypt
-sops -d orgadmin/secrets.admin1.yaml
-```
 
 
 ### For gitOps Contributors

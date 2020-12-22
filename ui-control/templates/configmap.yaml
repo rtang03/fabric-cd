@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ui-control.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  AUTH_HOST: {{ .Values.config.authServerUri | quote }}
+  GW_ORG_EXTERNAL_HOST: {{ .Values.config.gwOrgExternalHost | quote }}
+  LOG_LEVEL: {{ .Values.global.logging | quote }}
+  LOG_TARGET: "console"
+  PORT: "3000"
+  QH_EXTERNAL_HOST: {{ .Values.config.queryHandlerExternalHost | quote }}

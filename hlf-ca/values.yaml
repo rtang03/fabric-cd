@@ -41,24 +41,6 @@ config:
   ### Affiliations used in ca Server configuration file, in ca.yaml
   # org1: []
 
-### Not decided if it requires external network for CA
-### Ingress is not properly implemented
-ingress:
-  enabled: false
-  annotations: {}
-#    kubernetes.io/ingress.class: "nginx"
-#    nginx.ingress.kubernetes.io/rewrite-target: /
-#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    # certmanager.k8s.io/cluster-issuer: "letsencrypt-staging"
-  path: /
-  hosts:
-    - tlsca0
-  tls: []
-    # secretName is {{ Release.Name }}-tls. For org0, it must be tlsca0-tls
-#    - secretName: "tlsca0-tls"
-#      hosts:
-#        - tlsca0
-
 persistence:
   # Always true
   enabled: true

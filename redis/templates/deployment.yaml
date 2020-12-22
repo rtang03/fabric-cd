@@ -31,19 +31,40 @@ spec:
         - name: redis
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          command:
-            - redis-server
-            - "/redis-master/redis.conf"
+          # command:
+          #   - redis-server
+          #   - "/redis-master/redis.conf"
           ports:
             - containerPort: 6379
               protocol: TCP
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 15
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
             - mountPath: /data
               name: data
-            - mountPath: /redis-master
+            - mountPath: /user/local/etc/redis/redis.conf
               name: config
+              subPath: redis.conf
       volumes:
         - name: host-sys
           hostPath:

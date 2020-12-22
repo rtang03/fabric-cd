@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gw-org.fullname" . }}
+  labels:
+{{- include "labels.standard" . | nindent 4 }}
+data:
+  AUTHORIZATION_SERVER_URI: "http://{{ .Values.config.authServerUri }}/oauth/authenticate"
+  CA_NAME: {{ .Values.connection.ca.name | quote }}
+  CHANNEL_NAME: "loanapp"
+  CONNECTION_PROFILE: "/etc/hyperledger/fabric/connection.yaml"
+  GATEWAY_HOST: {{ .Values.config.gatewayHost | quote }}
+  LOG_LEVEL: {{ .Values.global.logging | quote }}
+  LOG_TARGET: "console"
+  MSPID: "Org1MSP"
+  # used by model-organization
+  ORGNAME: "org1.net"
+  ORG_CA_URL: {{ .Values.connection.ca.url | quote }}
+  # used by model-organization
+  ORGURL: "http://localhost:4001/graphql"
+  # redundant
+  QUERY_PORT: "5001"
+  # redundant
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: "6379"
+  REMOTE_URI: "http://gw-org2:4001/graphql\ http://gw-org3:4001/graphql"
+  WALLET: /var/hyperledger/crypto-config/{{ .Values.global.mspId }}/{{ .Values.config.gatewayHost }}
