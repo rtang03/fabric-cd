@@ -11,8 +11,8 @@ image:
 config:
   waitForAuthServer: auth-server1:8080
   authServerUri: http://auth-server1:8080
-  gwOrgExternalHost: http://gw.org1.net:4001/graphql
-  queryHandlerExternalHost: http://gw.org1.net:4001/graphql
+  gwOrgExternalHost: http://gw.org1.net:443/graphql
+  queryHandlerExternalHost: http://gw.org1.net:443/graphql
 
 resources:
   limits:

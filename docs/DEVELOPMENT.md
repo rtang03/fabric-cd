@@ -133,6 +133,17 @@ kubectl label namespace argocd istio.io/rev=istio-1611
 Notice that the current version of istio (v1.4.x) provided by GKE is too low version. The addon of istio v1.7, like kiali and prometheus
 do not work well. No traffic metric is able to capture in control plane. Still, istio traffic is fine.
 
+**Install kiali**
+
+Kiali is the web ui dashboard for Istio. GKE's istio does not come with kiali; requiring manual installation.
+
+```shell
+# Install kiali
+helm install --namespace istio-system --set auth.strategy="anonymous" --repo https://kiali.org/helm-charts kiali-server kiali-server
+
+# use port-forward to launch kiali
+istioctl dashboard kiali
+```
 
 ### Cloud DNS
 **Update Cloud Private Zone DNS**
