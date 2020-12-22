@@ -8,11 +8,16 @@
 
 - helm chart for RediSearch [\#64](https://github.com/rtang03/fabric-cd/issues/64)
 - improve documentation [\#54](https://github.com/rtang03/fabric-cd/issues/54)
-- add hlf explorer [\#5](https://github.com/rtang03/fabric-cd/issues/5)
+- attempt Fluent bit [\#51](https://github.com/rtang03/fabric-cd/issues/51)
 - Redis Helm Chart up and running [\#66](https://github.com/rtang03/fabric-cd/pull/66) ([rtang03](https://github.com/rtang03))
+
+**Closed issues:**
+
+- add hlf explorer [\#5](https://github.com/rtang03/fabric-cd/issues/5)
 
 **Merged pull requests:**
 
+- feat: add redis1, auth-server1, ui-org1, gw-org1 [\#68](https://github.com/rtang03/fabric-cd/pull/68) ([rtang03](https://github.com/rtang03))
 - merge interim changes [\#67](https://github.com/rtang03/fabric-cd/pull/67) ([rtang03](https://github.com/rtang03))
 - fix: misplaced files [\#63](https://github.com/rtang03/fabric-cd/pull/63) ([rtang03](https://github.com/rtang03))
 
